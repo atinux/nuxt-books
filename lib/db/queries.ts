@@ -1,135 +1,252 @@
-import { sql, and, gte, eq, lte, not, isNull } from 'drizzle-orm';
-import { db } from './drizzle';
-import { books, authors, bookToAuthor } from './schema';
-import { SearchParams } from '@/lib/url-state';
+import "server-only";
 
-export const ITEMS_PER_PAGE = 28;
+import { cacheLife, cacheTag } from "next/cache";
+import { and, eq, lte, sql } from "drizzle-orm";
+import { db } from "./drizzle";
+import { authors, books, bookToAuthor } from "./schema";
+import type { SearchParams } from "@/lib/url-state";
+
+export const ITEMS_PER_PAGE = 24;
 export const EMPTY_IMAGE_URL =
-  'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
+  "https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png";
 
-const yearFilter = (yr?: string) => {
-  if (yr) {
-    const maxYear = Math.max(1950, Math.min(2023, Number(yr)));
-    return and(
-      gte(books.publication_year, 1950),
-      lte(books.publication_year, maxYear)
-    );
-  }
-  return and(
-    gte(books.publication_year, 1950),
-    lte(books.publication_year, 2023)
+export type BookSummary = {
+  id: number;
+  title: string;
+  image_url: string | null;
+  thumbhash: string | null;
+  publication_year: number | null;
+  average_rating: string | null;
+};
+
+export type BookDetails = BookSummary & {
+  isbn: string | null;
+  publisher: string | null;
+  description: string | null;
+  num_pages: number | null;
+  language_code: string | null;
+  ratings_count: number | null;
+  authors: string[];
+};
+
+export type BooksPage = {
+  books: BookSummary[];
+  total: number;
+  preview: boolean;
+};
+
+const previewBooks: BookDetails[] = [
+  {
+    id: 5333265,
+    title: "W.C. Fields: A Life on Film",
+    image_url: "https://images.gr-assets.com/books/1310220028m/5333265.jpg",
+    thumbhash: null,
+    publication_year: 1984,
+    average_rating: "4.00",
+    isbn: "0312853122",
+    publisher: "St. Martin's Press",
+    description:
+      "A portrait of the legendary performer and the life behind his unmistakable screen persona.",
+    num_pages: 256,
+    language_code: "eng",
+    ratings_count: 3,
+    authors: ["Ronald J. Fields"],
+  },
+  {
+    id: 1333909,
+    title: "Good Harbor",
+    image_url: EMPTY_IMAGE_URL,
+    thumbhash: null,
+    publication_year: 2001,
+    average_rating: "3.23",
+    isbn: "0743509986",
+    publisher: "Simon & Schuster Audio",
+    description:
+      "A story about the strength and necessity of adult friendship, set against the rocky coast of Gloucester, Massachusetts.",
+    num_pages: null,
+    language_code: "eng",
+    ratings_count: 10,
+    authors: ["Anita Diamant"],
+  },
+  {
+    id: 7327624,
+    title: "The Unschooled Wizard",
+    image_url: "https://images.gr-assets.com/books/1304100136m/7327624.jpg",
+    thumbhash: null,
+    publication_year: 1987,
+    average_rating: "4.03",
+    isbn: null,
+    publisher: "Nelson Doubleday, Inc.",
+    description:
+      "An omnibus edition containing The Ladies of Mandrigyn and The Witches of Wenshar.",
+    num_pages: 600,
+    language_code: "eng",
+    ratings_count: 140,
+    authors: ["Barbara Hambly"],
+  },
+  {
+    id: 6066819,
+    title: "Best Friends Forever",
+    image_url: EMPTY_IMAGE_URL,
+    thumbhash: null,
+    publication_year: 2009,
+    average_rating: "3.49",
+    isbn: "0743294297",
+    publisher: "Atria Books",
+    description:
+      "Two childhood friends reunite twenty-five years later and begin an unexpected adventure together.",
+    num_pages: 368,
+    language_code: "eng",
+    ratings_count: 89_000,
+    authors: ["Jennifer Weiner"],
+  },
+];
+
+const yearFilter = (year?: string) => {
+  if (!year) return undefined;
+  const maxYear = Math.max(
+    1450,
+    Math.min(new Date().getFullYear(), Number(year)),
   );
+  return lte(books.publication_year, maxYear);
 };
 
-const ratingFilter = (rtg?: string) => {
-  if (rtg) {
-    const minRating = Number(rtg);
-    return sql`${books.average_rating} >= ${minRating}`;
-  }
-  return undefined;
-};
+const ratingFilter = (rating?: string) =>
+  rating ? sql`${books.average_rating} >= ${Number(rating)}` : undefined;
 
-const languageFilter = (lng?: string) => {
-  if (lng === 'en') {
+const languageFilter = (language?: string) => {
+  if (language === "en") {
     return sql`${books.language_code} IN ('eng', 'en-US', 'en-GB')`;
   }
-  return lng ? eq(books.language_code, lng) : undefined;
+  return language ? eq(books.language_code, language) : undefined;
 };
 
-const pageFilter = (pgs?: string) => {
-  if (pgs) {
-    const maxPages = Math.min(1000, Number(pgs));
-    return lte(books.num_pages, maxPages);
-  }
-  return lte(books.num_pages, 1000);
-};
+const pageFilter = (pages?: string) =>
+  pages ? lte(books.num_pages, Math.min(2_000, Number(pages))) : undefined;
 
-const searchFilter = (q?: string) => {
-  if (q) {
-    const tsQuery = q.trim().split(/\s+/).join(' & ');
-    return sql`${books.title_tsv} @@ to_tsquery('english', ${tsQuery})`;
-  }
-  return undefined;
-};
-
-const imageFilter = () => {
-  return and(
-    not(isNull(books.image_url)),
-    sql`${books.image_url} != ${EMPTY_IMAGE_URL}`
-  );
-};
+const searchFilter = (query?: string) =>
+  query?.trim()
+    ? sql`${books.title_tsv} @@ plainto_tsquery('english', ${query.trim()})`
+    : undefined;
 
 const isbnFilter = (isbn?: string) => {
-  if (isbn) {
-    const isbnArray = isbn.split(',').map((id) => id.trim());
-    return sql`books.isbn IN (${sql.join(
-      isbnArray.map((id) => sql`${id}`),
-      sql`, `
-    )})`;
-  }
-  return undefined;
+  if (!isbn) return undefined;
+  const values = isbn.split(",").map((value) => value.trim());
+  return sql`${books.isbn} IN (${sql.join(
+    values.map((value) => sql`${value}`),
+    sql`, `,
+  )})`;
 };
 
-export async function fetchBooksWithPagination(searchParams: SearchParams) {
-  let requestedPage = Math.max(1, Number(searchParams?.page) || 1);
-
+function getWhereClause(searchParams: SearchParams) {
   const filters = [
     yearFilter(searchParams.yr),
     ratingFilter(searchParams.rtg),
     languageFilter(searchParams.lng),
     pageFilter(searchParams.pgs),
-    imageFilter(),
     searchFilter(searchParams.search),
     isbnFilter(searchParams.isbn),
-  ].filter(Boolean);
+  ].filter((filter) => filter !== undefined);
 
-  const whereClause = filters.length > 0 ? and(...filters) : undefined;
-  const offset = (requestedPage - 1) * ITEMS_PER_PAGE;
-
-  const paginatedBooks = await db
-    .select({
-      id: books.id,
-      title: books.title,
-      image_url: books.image_url,
-      thumbhash: books.thumbhash,
-    })
-    .from(books)
-    .where(whereClause)
-    .orderBy(books.id)
-    .limit(ITEMS_PER_PAGE)
-    .offset(offset);
-
-  return paginatedBooks;
+  return filters.length ? and(...filters) : undefined;
 }
 
-export async function estimateTotalBooks(searchParams: SearchParams) {
-  const filters = [
-    yearFilter(searchParams.yr),
-    ratingFilter(searchParams.rtg),
-    languageFilter(searchParams.lng),
-    pageFilter(searchParams.pgs),
-    imageFilter(),
-    searchFilter(searchParams.search),
-    isbnFilter(searchParams.isbn),
-  ].filter(Boolean);
+function getPreviewBooks(searchParams: SearchParams): BooksPage {
+  const query = searchParams.search?.trim().toLocaleLowerCase();
+  const isbns = searchParams.isbn?.split(",");
+  const maxYear = searchParams.yr ? Number(searchParams.yr) : Infinity;
+  const minRating = searchParams.rtg ? Number(searchParams.rtg) : 0;
+  const maxPages = searchParams.pgs ? Number(searchParams.pgs) : Infinity;
 
-  const whereClause = filters.length > 0 ? and(...filters) : undefined;
+  const filtered = previewBooks.filter((book) => {
+    const matchesQuery =
+      !query ||
+      book.title.toLocaleLowerCase().includes(query) ||
+      book.authors.some((author) => author.toLocaleLowerCase().includes(query));
+    const matchesLanguage =
+      !searchParams.lng ||
+      (searchParams.lng === "en"
+        ? ["eng", "en-US", "en-GB"].includes(book.language_code ?? "")
+        : book.language_code === searchParams.lng);
 
-  // Use explain to get an estimate
-  const explainResult = await db.execute(sql`
-    EXPLAIN (FORMAT JSON)
-    SELECT id FROM books
-    ${whereClause ? sql`WHERE ${whereClause}` : sql``}
-  `);
+    return (
+      matchesQuery &&
+      matchesLanguage &&
+      (!isbns || (!!book.isbn && isbns.includes(book.isbn))) &&
+      (book.publication_year ?? Infinity) <= maxYear &&
+      Number(book.average_rating ?? 0) >= minRating &&
+      (book.num_pages ?? 0) <= maxPages
+    );
+  });
 
-  const planRows = (explainResult.rows[0] as any)['QUERY PLAN'][0]['Plan'][
-    'Plan Rows'
-  ];
-  return planRows;
+  const page = Math.max(1, Number(searchParams.page) || 1);
+  const start = (page - 1) * ITEMS_PER_PAGE;
+
+  return {
+    books: filtered.slice(start, start + ITEMS_PER_PAGE),
+    total: filtered.length,
+    preview: true,
+  };
 }
 
-export async function fetchBookById(id: string) {
-  let result = await db
+export async function getBooksPage(
+  searchParams: SearchParams,
+): Promise<BooksPage> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("books");
+
+  const database = db;
+  if (!database) return getPreviewBooks(searchParams);
+
+  const whereClause = getWhereClause(searchParams);
+  const page = Math.max(1, Number(searchParams.page) || 1);
+  const offset = (page - 1) * ITEMS_PER_PAGE;
+
+  const [result, explainResult] = await Promise.all([
+    database
+      .select({
+        id: books.id,
+        title: books.title,
+        image_url: books.image_url,
+        thumbhash: books.thumbhash,
+        publication_year: books.publication_year,
+        average_rating: books.average_rating,
+      })
+      .from(books)
+      .where(whereClause)
+      .orderBy(books.id)
+      .limit(ITEMS_PER_PAGE)
+      .offset(offset),
+    database.execute(sql`
+      EXPLAIN (FORMAT JSON)
+      SELECT id FROM books
+      ${whereClause ? sql`WHERE ${whereClause}` : sql``}
+    `),
+  ]);
+
+  const queryPlan = explainResult.rows[0]?.["QUERY PLAN"] as
+    Array<{ Plan?: { "Plan Rows"?: number } }> | undefined;
+  const estimate = Number(queryPlan?.[0]?.Plan?.["Plan Rows"] ?? result.length);
+
+  return {
+    books: result,
+    total: Math.max(result.length, estimate),
+    preview: false,
+  };
+}
+
+export async function getBookById(
+  id: string,
+): Promise<BookDetails | undefined> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("books", `book-${id}`);
+
+  const database = db;
+  if (!database) return previewBooks.find((book) => book.id === Number(id));
+
+  const result = await database
     .select({
       id: books.id,
       isbn: books.isbn,
@@ -140,18 +257,15 @@ export async function fetchBookById(id: string) {
       description: books.description,
       num_pages: books.num_pages,
       language_code: books.language_code,
-      text_reviews_count: books.text_reviews_count,
       ratings_count: books.ratings_count,
       average_rating: books.average_rating,
-      series: books.series,
-      createdAt: books.createdAt,
-      authors: sql<string[]>`array_agg(${authors.name})`,
+      authors: sql<string[]>`array_remove(array_agg(${authors.name}), NULL)`,
       thumbhash: books.thumbhash,
     })
     .from(books)
     .leftJoin(bookToAuthor, eq(books.id, bookToAuthor.bookId))
     .leftJoin(authors, eq(bookToAuthor.authorId, authors.id))
-    .where(eq(books.id, parseInt(id)))
+    .where(eq(books.id, Number(id)))
     .groupBy(books.id)
     .limit(1);
 

@@ -1,23 +1,23 @@
-import fs from 'fs';
-import readline from 'readline';
-import { NeonQueryFunction } from '@neondatabase/serverless';
+import fs from "fs";
+import readline from "readline";
+import { NeonQueryFunction } from "@neondatabase/serverless";
 
 export async function saveCheckpoint(
   checkpointFile: string,
-  processedLines: number
+  processedLines: number,
 ) {
   await fs.promises.writeFile(
     checkpointFile,
     JSON.stringify({ processedLines }),
-    'utf8'
+    "utf8",
   );
 }
 
 export async function loadCheckpoint(checkpointFile: string): Promise<number> {
   try {
-    const data = await fs.promises.readFile(checkpointFile, 'utf8');
+    const data = await fs.promises.readFile(checkpointFile, "utf8");
     return JSON.parse(data).processedLines;
-  } catch (error) {
+  } catch {
     return 0;
   }
 }
@@ -28,10 +28,10 @@ export async function processEntities<T>(
   batchSize: number,
   batchInsertFunction: (
     batch: T[],
-    sqlQuery: NeonQueryFunction<false, false>
-  ) => Promise<any>,
+    sqlQuery: NeonQueryFunction<false, false>,
+  ) => Promise<unknown>,
   sqlQuery: NeonQueryFunction<false, false>,
-  totalEntities: number
+  totalEntities: number,
 ): Promise<number> {
   const startLine = await loadCheckpoint(checkpointFile);
   let processedLines = startLine;
@@ -69,11 +69,11 @@ export async function processEntities<T>(
         console.log(
           `Processed ${processedLines.toLocaleString()} / ${totalEntities.toLocaleString()} entities (${progressPercentage.toFixed(2)}%). ` +
             `Batch took ${batchSeconds.toFixed(2)}s. ` +
-            `Estimated remaining time: ${(estimatedRemainingSeconds / 60).toFixed(2)} minutes`
+            `Estimated remaining time: ${(estimatedRemainingSeconds / 60).toFixed(2)} minutes`,
         );
       }
     } catch (error) {
-      console.error('Error processing line:', error);
+      console.error("Error processing line:", error);
     }
   }
 
@@ -84,7 +84,7 @@ export async function processEntities<T>(
 
   const totalSeconds = (Date.now() - startTime) / 1000;
   console.log(
-    `Total processing time: ${(totalSeconds / 60).toFixed(2)} minutes`
+    `Total processing time: ${(totalSeconds / 60).toFixed(2)} minutes`,
   );
 
   return processedLines;

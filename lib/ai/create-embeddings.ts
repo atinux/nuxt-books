@@ -1,11 +1,11 @@
-import { sql } from 'drizzle-orm';
-import { db } from '../db/drizzle';
-import { books } from '../db/schema';
-import { openai } from '@ai-sdk/openai';
-import { embed, generateObject } from 'ai';
-import { z } from 'zod';
+import { sql } from "drizzle-orm";
+import { requireDb } from "../db/drizzle";
+import { books } from "../db/schema";
+import { openai } from "@ai-sdk/openai";
+import { embed, generateObject } from "ai";
+import { z } from "zod";
 
-const embeddingModel = openai.embedding('text-embedding-3-small');
+const embeddingModel = openai.embedding("text-embedding-3-small");
 const BATCH_SIZE = 1000;
 const CONCURRENCY = 5;
 
@@ -27,18 +27,16 @@ const bookMetadataSchema = z.object({
 
 async function generateBookMetadata(book: typeof books.$inferSelect) {
   const result = await generateObject({
-    model: openai('gpt-4o-2024-08-06', {
-      structuredOutputs: true,
-    }),
-    schemaName: 'bookMetadata',
-    schemaDescription: 'Information for semantic search',
+    model: openai("gpt-4o-2024-08-06"),
+    schemaName: "bookMetadata",
+    schemaDescription: "Information for semantic search",
     schema: bookMetadataSchema,
     prompt: `
       Analyze the following book information and generate metadata:
       Title: ${book.title}
-      Description: ${book.description || 'N/A'}
-      Average Rating: ${book.average_rating || 'N/A'}
-      Popular Shelves: ${JSON.stringify(book.popular_shelves) || 'N/A'}
+      Description: ${book.description || "N/A"}
+      Average Rating: ${book.average_rating || "N/A"}
+      Popular Shelves: ${JSON.stringify(book.popular_shelves) || "N/A"}
 
       Based on this information, provide the metadata as specified in the schema.
     `,
@@ -49,14 +47,15 @@ async function generateBookMetadata(book: typeof books.$inferSelect) {
 
 async function processBook(book: typeof books.$inferSelect) {
   try {
+    const db = requireDb();
     const metadata = await generateBookMetadata(book);
 
     const embeddingText = `
       Title: ${book.title}
-      Description: ${book.description || ''}
+      Description: ${book.description || ""}
       Genre: ${metadata.genre}
       Mood: ${metadata.mood}
-      Themes: ${metadata.themes.join(', ')}
+      Themes: ${metadata.themes.join(", ")}
       Target Audience: ${metadata.targetAudience}
       Writing Style: ${metadata.writingStyle}
     `.trim();
@@ -85,6 +84,7 @@ async function processBookBatch(bookBatch: (typeof books.$inferSelect)[]) {
 }
 
 export async function updateBooksWithEmbeddings() {
+  const db = requireDb();
   let offset = 0;
   let batchCount = 0;
   let totalProcessed = 0;
@@ -111,7 +111,7 @@ export async function updateBooksWithEmbeddings() {
     batchCount++;
     totalProcessed += batchBooks.length;
     console.log(
-      `Processed batch ${batchCount}, Total books processed: ${totalProcessed}`
+      `Processed batch ${batchCount}, Total books processed: ${totalProcessed}`,
     );
   }
 
