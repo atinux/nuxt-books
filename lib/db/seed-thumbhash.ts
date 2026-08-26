@@ -1,14 +1,14 @@
-import path from 'path';
-import { sql } from './drizzle';
-import { NeonQueryFunction } from '@neondatabase/serverless';
-import { processEntities } from './seed-utils';
-import sharp from 'sharp';
-import * as ThumbHash from 'thumbhash';
-import { EMPTY_IMAGE_URL } from './queries';
-import pLimit from 'p-limit';
+import path from "path";
+import { requireSql } from "./drizzle";
+import { NeonQueryFunction } from "@neondatabase/serverless";
+import { processEntities } from "./seed-utils";
+import sharp from "sharp";
+import * as ThumbHash from "thumbhash";
+import { EMPTY_IMAGE_URL } from "./queries";
+import pLimit from "p-limit";
 
 const BATCH_SIZE = 900;
-const CHECKPOINT_FILE = 'thumbhash_update_checkpoint.json';
+const CHECKPOINT_FILE = "thumbhash_update_checkpoint.json";
 const TOTAL_BOOKS = 2360655;
 const CONCURRENCY_LIMIT = 10;
 
@@ -23,7 +23,7 @@ async function fetchImage(url: string): Promise<Buffer | null> {
     const response = await fetch(url);
     if (!response.ok) {
       console.error(
-        `Failed to fetch image: ${url} - Status: ${response.status}`
+        `Failed to fetch image: ${url} - Status: ${response.status}`,
       );
       return null;
     }
@@ -37,7 +37,7 @@ async function fetchImage(url: string): Promise<Buffer | null> {
 async function generateThumbHash(imageBuffer: Buffer): Promise<string | null> {
   try {
     const { data, info } = await sharp(imageBuffer)
-      .resize(100, 100, { fit: 'inside' })
+      .resize(100, 100, { fit: "inside" })
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -45,11 +45,11 @@ async function generateThumbHash(imageBuffer: Buffer): Promise<string | null> {
     const binaryThumbHash = ThumbHash.rgbaToThumbHash(
       info.width,
       info.height,
-      data
+      data,
     );
-    return Buffer.from(binaryThumbHash).toString('base64');
+    return Buffer.from(binaryThumbHash).toString("base64");
   } catch (error) {
-    console.error('Error generating thumbhash:', error);
+    console.error("Error generating thumbhash:", error);
     return null;
   }
 }
@@ -69,7 +69,7 @@ async function processBook(book: BookData): Promise<[string, string] | null> {
 
 async function batchUpdateThumbHash(
   batch: BookData[],
-  sqlQuery: NeonQueryFunction<false, false>
+  sqlQuery: NeonQueryFunction<false, false>,
 ) {
   const updateThumbhashQuery = `
     UPDATE books
@@ -78,33 +78,34 @@ async function batchUpdateThumbHash(
   `;
 
   const processedBooks = await Promise.all(
-    batch.map((book) => limit(() => processBook(book)))
+    batch.map((book) => limit(() => processBook(book))),
   );
 
   const queries = processedBooks
     .filter((result): result is [string, string] => result !== null)
     .map(([thumbHash, imageUrl]) =>
-      sqlQuery(updateThumbhashQuery, [thumbHash, imageUrl])
+      sqlQuery.query(updateThumbhashQuery, [thumbHash, imageUrl]),
     );
 
-  return sqlQuery.transaction((tx) => queries);
+  return sqlQuery.transaction(queries);
 }
 
 async function main() {
   try {
+    const sql = requireSql();
     const bookCount = await processEntities<BookData>(
-      path.resolve('./lib/db/books-full.json'),
+      path.resolve("./lib/db/books-full.json"),
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchUpdateThumbHash,
       sql,
-      TOTAL_BOOKS
+      TOTAL_BOOKS,
     );
     console.log(
-      `Updated thumbhash for ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`
+      `Updated thumbhash for ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`,
     );
   } catch (error) {
-    console.error('Error updating thumbhash:', error);
+    console.error("Error updating thumbhash:", error);
   }
 }
 

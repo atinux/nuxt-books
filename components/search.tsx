@@ -1,100 +1,97 @@
-'use client';
+"use client";
 
-import Form from 'next/form';
-import { useFormStatus } from 'react-dom';
-import { useRef, use, useEffect, useState } from 'react';
-import { SearchIcon } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { useSearchParams } from 'next/navigation';
-import { useBackpressure } from '@/lib/use-backpressure';
+import { LoaderCircle, SearchIcon, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useRef, useTransition } from "react";
 
-function SearchBase({ initialQuery }: { initialQuery: string }) {
-  let [inputValue, setInputValue] = useState(initialQuery);
-  let inputRef = useRef<HTMLInputElement>(null);
-  let { triggerUpdate, shouldSuspend, formRef } = useBackpressure();
+function SearchBase({
+  initialQuery = "",
+  initialParams = "",
+}: {
+  initialQuery?: string;
+  initialParams?: string;
+}) {
+  const router = useRouter();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isPending, startTransition] = useTransition();
 
-  async function handleSubmit(formData: FormData) {
-    let query = formData.get('search') as string;
-    let newUrl = `/?search=${encodeURIComponent(query)}`;
-    await triggerUpdate(newUrl);
-  }
+  const navigate = (value: string) => {
+    const params = new URLSearchParams(initialParams);
+    const query = value.trim();
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    let newValue = e.target.value;
-    setInputValue(newValue);
-    formRef.current?.requestSubmit();
-  }
+    if (query) params.set("search", query);
+    else params.delete("search");
+    params.delete("page");
 
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.setSelectionRange(
-        inputRef.current.value.length,
-        inputRef.current.value.length
-      );
-    }
-  }, []);
+    startTransition(() => {
+      router.replace(params.size ? `/?${params}` : "/", { scroll: false });
+    });
+  };
 
-  if (shouldSuspend) {
-    use(Promise.resolve());
-  }
+  const queueNavigation = (value: string) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => navigate(value), 220);
+  };
 
   return (
-    <Form
-      ref={formRef}
-      action={handleSubmit}
-      className="relative flex flex-1 flex-shrink-0 w-full rounded shadow-sm"
+    <form
+      className="relative min-w-0 flex-1"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (timerRef.current) clearTimeout(timerRef.current);
+        navigate(inputRef.current?.value ?? "");
+      }}
     >
       <label htmlFor="search" className="sr-only">
-        Search
+        Search by title or author
       </label>
-      <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
+      <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+      <input
+        key={initialQuery}
         ref={inputRef}
-        onChange={handleInputChange}
-        type="text"
-        name="search"
         id="search"
-        placeholder="Search books..."
-        value={inputValue}
-        className="w-full border-0 px-10 py-6 text-base md:text-sm overflow-hidden focus-visible:ring-0"
+        name="search"
+        type="search"
+        defaultValue={initialQuery}
+        onChange={(event) => queueNavigation(event.currentTarget.value)}
+        placeholder="Search by title or author…"
+        autoComplete="off"
+        className="border-border bg-card/90 placeholder:text-muted-foreground h-11 w-full rounded-xl border pr-20 pl-11 text-sm shadow-sm outline-none transition focus:border-primary/40 focus:ring-3 focus:ring-primary/10"
       />
-      <LoadingSpinner />
-    </Form>
-  );
-}
-
-function LoadingSpinner() {
-  let { pending } = useFormStatus();
-
-  return (
-    <div
-      data-pending={pending ? '' : undefined}
-      className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-300"
-    >
-      <svg className="h-5 w-5" viewBox="0 0 100 100">
-        <circle
-          cx="50"
-          cy="50"
-          r="45"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="10"
-          strokeDasharray="282.7"
-          strokeDashoffset="282.7"
-          className={pending ? 'animate-fill-clock' : ''}
-          transform="rotate(-90 50 50)"
-        />
-      </svg>
-    </div>
+      <span className="absolute top-1/2 right-4 -translate-y-1/2">
+        {isPending ? (
+          <LoaderCircle className="text-primary size-4 animate-spin" />
+        ) : initialQuery ? (
+          <button
+            type="button"
+            onClick={() => {
+              if (inputRef.current) inputRef.current.value = "";
+              navigate("");
+            }}
+            className="text-muted-foreground hover:text-foreground grid size-6 place-items-center rounded-full"
+            aria-label="Clear search"
+          >
+            <X className="size-3.5" />
+          </button>
+        ) : (
+          <kbd className="text-muted-foreground hidden rounded border px-1.5 py-0.5 font-sans text-[10px] sm:inline">
+            /
+          </kbd>
+        )}
+      </span>
+    </form>
   );
 }
 
 export function SearchFallback() {
-  return <SearchBase initialQuery="" />;
+  return <SearchBase />;
 }
 
 export function Search() {
-  let query = useSearchParams().get('search') ?? '';
-  return <SearchBase initialQuery={query} />;
+  const searchParams = useSearchParams();
+  const query = searchParams.get("search") ?? "";
+  return (
+    <SearchBase initialQuery={query} initialParams={searchParams.toString()} />
+  );
 }

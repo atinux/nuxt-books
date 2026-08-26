@@ -1,132 +1,187 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
-  StarIcon,
-  BookOpenIcon,
-  GlobeIcon,
-  CalendarIcon,
-  ArrowLeftIcon,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { fetchBookById, fetchBooksWithPagination } from '@/lib/db/queries';
-import { Photo } from '@/components/photo';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import Link from 'next/link';
-import { SearchParams, stringifySearchParams } from '@/lib/url-state';
+  ArrowLeft,
+  BookOpen,
+  Building2,
+  CalendarDays,
+  Globe2,
+  Star,
+} from "lucide-react";
+import { Suspense } from "react";
+import { Photo } from "@/components/photo";
+import { getBookById } from "@/lib/db/queries";
+import { parseSearchParams, stringifySearchParams } from "@/lib/url-state";
 
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'spa', label: 'Spanish' },
-  { value: 'ita', label: 'Italian' },
-  { value: 'ara', label: 'Arabic' },
-  { value: 'fre', label: 'French' },
-  { value: 'ger', label: 'German' },
-  { value: 'ind', label: 'Indonesian' },
-  { value: 'por', label: 'Portuguese' },
-];
+const languageNames: Record<string, string> = {
+  eng: "English",
+  en: "English",
+  "en-US": "English",
+  "en-GB": "English",
+  spa: "Spanish",
+  ita: "Italian",
+  ara: "Arabic",
+  fre: "French",
+  ger: "German",
+  ind: "Indonesian",
+  por: "Portuguese",
+};
 
-function getLanguageLabel(code: string | null): string {
-  if (!code) return 'Unknown';
-  const language = LANGUAGES.find((lang) => lang.value === code.toLowerCase());
-  return language ? language.label : 'Unknown';
+type RawSearchParams = Record<string, string | string[] | undefined>;
+type BookPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<RawSearchParams>;
+};
+
+export async function generateMetadata({
+  params,
+}: BookPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const book = await getBookById(id);
+  return book ? { title: book.title, description: book.description } : {};
 }
 
-// Prerender the first page of books
-export async function generateStaticParams() {
-  const books = await fetchBooksWithPagination({});
-
-  return books.map((books) => ({
-    id: books.id.toString(),
-  }));
-}
-
-export default async function Page(
-  props: {
-    params: Promise<{ id: string }>;
-    searchParams: Promise<SearchParams>;
-  }
-) {
-  const searchParams = await props.searchParams;
-  const params = await props.params;
-  const book = await fetchBookById(params.id);
-
+export default function Page({ params, searchParams }: BookPageProps) {
   return (
-    <ScrollArea className="px-4 h-full">
-      <Button variant="ghost" className="mb-4" asChild>
-        <Link href={`/?${stringifySearchParams(searchParams)}`}>
-          <ArrowLeftIcon className="mr-2 h-4 w-4" /> Back to Books
-        </Link>
-      </Button>
-
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="w-1/2 md:w-1/4 mx-auto md:mx-0">
-          <Photo
-            src={book.image_url!}
-            title={book.title}
-            thumbhash={book.thumbhash!}
-            priority={true}
-          />
-        </div>
-
-        <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">{book.title}</h1>
-          <div className="text-lg md:text-xl mb-4">
-            {book.authors.map((author, index) => (
-              <span key={author}>
-                {author}
-                {index < book.authors.length - 1 ? ', ' : ''}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex items-center mb-4">
-            <StarRating rating={book.average_rating} />
-            <span className="text-lg font-semibold">
-              {Number(book.average_rating).toFixed(1)}
-            </span>
-            <span className="text-gray-600 ml-2">
-              ({Number(book.ratings_count).toLocaleString()} ratings)
-            </span>
-          </div>
-
-          <p className="text-gray-700 mb-6">{book.description}</p>
-
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="flex items-center">
-              <BookOpenIcon className="w-5 h-5 mr-2 text-gray-600" />
-              <span>{book.num_pages} pages</span>
-            </div>
-            <div className="flex items-center">
-              <GlobeIcon className="w-5 h-5 mr-2 text-gray-600" />
-              <span>{getLanguageLabel(book.language_code)}</span>
-            </div>
-            <div className="flex items-center">
-              <CalendarIcon className="w-5 h-5 mr-2 text-gray-600" />
-              <span>{book.publication_year}</span>
-            </div>
-            <div className="flex items-center">
-              <span>ISBN: {book.isbn || 'None'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ScrollArea>
+    <main className="px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
+      <Suspense fallback={<BookDetailsSkeleton />}>
+        <BookDetails params={params} searchParams={searchParams} />
+      </Suspense>
+    </main>
   );
 }
 
-function StarRating({ rating }: { rating: string | null }) {
-  if (rating === null) return null;
+async function BookDetails({
+  params,
+  searchParams,
+}: {
+  params: BookPageProps["params"];
+  searchParams: BookPageProps["searchParams"];
+}) {
+  const [{ id }, rawSearchParams] = await Promise.all([params, searchParams]);
+  const book = await getBookById(id);
+  if (!book) notFound();
+
+  const query = stringifySearchParams(parseSearchParams(rawSearchParams));
 
   return (
-    <div className="flex items-center mr-4">
-      {[...Array(5)].map((_, i) => (
-        <StarIcon
-          key={i}
-          className={`w-5 h-5 ${
-            i < Math.floor(Number(rating))
-              ? 'text-yellow-400 fill-current'
-              : 'text-gray-300'
-          }`}
-        />
-      ))}
+    <article className="book-enter mx-auto max-w-6xl">
+      <Link
+        href={query ? `/?${query}` : "/"}
+        prefetch={true}
+        className="text-muted-foreground hover:text-foreground mb-8 inline-flex items-center gap-2 rounded-lg py-2 text-xs font-semibold transition-colors"
+      >
+        <ArrowLeft className="size-3.5" />
+        Back to the shelves
+      </Link>
+
+      <div className="grid items-start gap-8 md:grid-cols-[minmax(220px,0.68fr)_minmax(0,1.5fr)] lg:gap-14">
+        <div className="mx-auto w-full max-w-[340px] md:sticky md:top-32">
+          <Photo
+            src={book.image_url}
+            title={book.title}
+            thumbhash={book.thumbhash}
+            priority
+            sizes="(min-width: 768px) 28vw, 80vw"
+          />
+        </div>
+
+        <div className="pt-1">
+          <p className="text-primary mb-3 text-xs font-semibold tracking-[0.16em] uppercase">
+            {book.publisher ?? "From the collection"}
+          </p>
+          <h1 className="font-serif text-balance text-4xl leading-[0.98] font-medium tracking-[-0.035em] sm:text-5xl lg:text-6xl">
+            {book.title}
+          </h1>
+          {book.authors.length ? (
+            <p className="text-muted-foreground mt-4 text-lg">
+              by {book.authors.join(", ")}
+            </p>
+          ) : null}
+
+          {book.average_rating ? (
+            <div className="mt-7 flex items-center gap-3 border-y py-4">
+              <span className="text-primary inline-flex items-center gap-1.5 font-semibold">
+                <Star className="size-4 fill-current text-amber-600" />
+                {Number(book.average_rating).toFixed(2)}
+              </span>
+              <span className="text-muted-foreground text-sm">
+                {book.ratings_count?.toLocaleString() ?? "No"} ratings
+              </span>
+            </div>
+          ) : null}
+
+          <p className="text-foreground/80 mt-7 max-w-3xl text-base leading-7">
+            {book.description ||
+              "No description is available for this edition yet."}
+          </p>
+
+          <dl className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border bg-border sm:grid-cols-4">
+            <Fact
+              icon={<CalendarDays />}
+              label="Published"
+              value={book.publication_year?.toString() ?? "Unknown"}
+            />
+            <Fact
+              icon={<BookOpen />}
+              label="Length"
+              value={book.num_pages ? `${book.num_pages} pages` : "Unknown"}
+            />
+            <Fact
+              icon={<Globe2 />}
+              label="Language"
+              value={
+                book.language_code
+                  ? (languageNames[book.language_code] ?? book.language_code)
+                  : "Unknown"
+              }
+            />
+            <Fact
+              icon={<Building2 />}
+              label="ISBN"
+              value={book.isbn ?? "Not listed"}
+            />
+          </dl>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Fact({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="bg-card min-w-0 p-4">
+      <dt className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.12em] uppercase [&_svg]:size-3.5">
+        {icon}
+        {label}
+      </dt>
+      <dd className="mt-2 truncate text-sm font-medium">{value}</dd>
+    </div>
+  );
+}
+
+export function BookDetailsSkeleton() {
+  return (
+    <div className="mx-auto max-w-6xl animate-pulse" aria-busy="true">
+      <div className="bg-muted mb-8 h-8 w-32 rounded-lg" />
+      <div className="grid gap-8 md:grid-cols-[minmax(220px,0.68fr)_minmax(0,1.5fr)] lg:gap-14">
+        <div className="bg-muted mx-auto aspect-[2/3] w-full max-w-[340px] rounded-[1.1rem]" />
+        <div className="space-y-5 py-4">
+          <div className="bg-muted h-3 w-28 rounded-full" />
+          <div className="bg-muted h-14 w-4/5 rounded-xl" />
+          <div className="bg-muted h-4 w-2/5 rounded-full" />
+          <div className="bg-muted mt-10 h-36 rounded-2xl" />
+        </div>
+      </div>
     </div>
   );
 }

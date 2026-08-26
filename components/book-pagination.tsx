@@ -1,37 +1,7 @@
-'use client';
-
-import Form from 'next/form';
-import { useFormStatus } from 'react-dom';
-import { Button } from '@/components/ui/button';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from '@/components/ui/pagination';
-import { SearchParams } from '@/lib/url-state';
-
-function FormValues({
-  searchParams,
-  pageNumber,
-}: {
-  searchParams: SearchParams;
-  pageNumber: number;
-}) {
-  let { pending } = useFormStatus();
-
-  return (
-    <div data-pending={pending ? '' : undefined}>
-      {/* Keep the existing search params */}
-      {Object.entries(searchParams).map(
-        ([key, value]) =>
-          key !== 'page' && (
-            <input key={key} type="hidden" name={key} value={value as string} />
-          )
-      )}
-      <input type="hidden" name="page" value={pageNumber.toString()} />
-    </div>
-  );
-}
+import Link from "next/link";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import type { SearchParams } from "@/lib/url-state";
+import { stringifySearchParams } from "@/lib/url-state";
 
 export function BookPagination({
   currentPage,
@@ -44,52 +14,76 @@ export function BookPagination({
   totalResults: number;
   searchParams: SearchParams;
 }) {
-  if (totalPages <= 1) {
-    return null;
-  }
+  if (totalPages <= 1) return null;
 
   return (
-    <Pagination>
-      <PaginationContent className="flex items-center justify-between">
-        <PaginationItem>
-          <Form action="/">
-            <FormValues
-              searchParams={searchParams}
-              pageNumber={Math.max(1, currentPage - 1)}
-            />
-            <Button
-              variant="ghost"
-              type="submit"
-              size="icon"
-              disabled={currentPage <= 1}
-            >
-              ←
-            </Button>
-          </Form>
-        </PaginationItem>
+    <nav
+      aria-label="Book pages"
+      className="mt-12 flex items-center justify-between gap-4 border-t pt-5"
+    >
+      <PaginationLink
+        page={currentPage - 1}
+        disabled={currentPage <= 1}
+        searchParams={searchParams}
+        label="Previous"
+        icon={<ArrowLeft className="size-3.5" />}
+      />
+      <p className="text-muted-foreground text-center text-xs">
+        Page <strong className="text-foreground">{currentPage}</strong> of{" "}
+        {totalPages.toLocaleString()}
+        <span className="hidden sm:inline">
+          {" "}
+          · {totalResults.toLocaleString()} results
+        </span>
+      </p>
+      <PaginationLink
+        page={currentPage + 1}
+        disabled={currentPage >= totalPages}
+        searchParams={searchParams}
+        label="Next"
+        icon={<ArrowRight className="size-3.5" />}
+        reverse
+      />
+    </nav>
+  );
+}
 
-        <div className="text-sm text-muted-foreground">
-          {totalResults.toLocaleString()} results (
-          {currentPage.toLocaleString()} of {totalPages.toLocaleString()})
-        </div>
+function PaginationLink({
+  page,
+  disabled,
+  searchParams,
+  label,
+  icon,
+  reverse = false,
+}: {
+  page: number;
+  disabled: boolean;
+  searchParams: SearchParams;
+  label: string;
+  icon: React.ReactNode;
+  reverse?: boolean;
+}) {
+  if (disabled) {
+    return (
+      <span className="text-muted-foreground/45 inline-flex min-w-20 items-center gap-2 text-xs font-semibold sm:min-w-24">
+        {!reverse ? icon : null}
+        {label}
+        {reverse ? icon : null}
+      </span>
+    );
+  }
 
-        <PaginationItem>
-          <Form action="/">
-            <FormValues
-              searchParams={searchParams}
-              pageNumber={Math.min(totalPages, currentPage + 1)}
-            />
-            <Button
-              variant="ghost"
-              type="submit"
-              size="icon"
-              disabled={currentPage >= totalPages}
-            >
-              →
-            </Button>
-          </Form>
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+  const query = stringifySearchParams({ ...searchParams, page: String(page) });
+
+  return (
+    <Link
+      href={`/?${query}`}
+      prefetch={true}
+      className={`hover:bg-accent inline-flex min-w-20 items-center gap-2 rounded-lg px-2 py-2 text-xs font-semibold transition-colors sm:min-w-24 ${reverse ? "justify-end" : ""}`}
+    >
+      {!reverse ? icon : null}
+      {label}
+      {reverse ? icon : null}
+    </Link>
   );
 }

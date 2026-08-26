@@ -1,6 +1,13 @@
-export default {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  cacheComponents: true,
+  partialPrefetching: true,
+  reactCompiler: true,
+  typedRoutes: true,
   experimental: {
-    ppr: true,
+    inlineCss: true,
+    exposeTestingApiInProductionBuild: true,
   },
   logging: {
     fetches: {
@@ -10,10 +17,12 @@ export default {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '*.gr-assets.com',
-        port: '',
+        protocol: "https",
+        hostname: "*.gr-assets.com",
+        port: "",
       },
     ],
   },
 };
+
+export default nextConfig;

@@ -1,10 +1,10 @@
-import path from 'path';
-import { sql } from './drizzle';
-import { NeonQueryFunction } from '@neondatabase/serverless';
-import { processEntities } from './seed-utils';
+import path from "path";
+import { requireSql } from "./drizzle";
+import { NeonQueryFunction } from "@neondatabase/serverless";
+import { processEntities } from "./seed-utils";
 
 const BATCH_SIZE = 900;
-const CHECKPOINT_FILE = 'book_import_checkpoint.json';
+const CHECKPOINT_FILE = "book_import_checkpoint.json";
 
 // https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_books.json.gz
 const TOTAL_BOOKS = 4; // 2360655 in full dataset, 4 in sample data
@@ -29,7 +29,7 @@ interface BookData {
 
 async function batchInsertBooks(
   batch: BookData[],
-  sqlQuery: NeonQueryFunction<false, false>
+  sqlQuery: NeonQueryFunction<false, false>,
 ) {
   const insertBookAndAuthorsQuery = `
     WITH inserted_book AS (
@@ -47,7 +47,7 @@ async function batchInsertBooks(
 
   return sqlQuery.transaction((tx) => {
     return batch.map((book) =>
-      tx(insertBookAndAuthorsQuery, [
+      tx.query(insertBookAndAuthorsQuery, [
         book.isbn || null,
         book.isbn13 || null,
         book.title,
@@ -63,26 +63,27 @@ async function batchInsertBooks(
         book.series || null,
         JSON.stringify(book.popular_shelves),
         book.authors.map((author) => author.author_id),
-      ])
+      ]),
     );
   });
 }
 
 async function main() {
   try {
+    const sql = requireSql();
     const bookCount = await processEntities<BookData>(
-      path.resolve('./lib/db/books-full.json'),
+      path.resolve("./lib/db/books-full.json"),
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchInsertBooks,
       sql,
-      TOTAL_BOOKS
+      TOTAL_BOOKS,
     );
     console.log(
-      `Seeded ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`
+      `Seeded ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`,
     );
   } catch (error) {
-    console.error('Error seeding books:', error);
+    console.error("Error seeding books:", error);
   }
 }
 
