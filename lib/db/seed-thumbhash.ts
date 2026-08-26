@@ -9,7 +9,7 @@ import pLimit from "p-limit";
 
 const BATCH_SIZE = 900;
 const CHECKPOINT_FILE = "thumbhash_update_checkpoint.json";
-const TOTAL_BOOKS = 2360655;
+const TOTAL_BOOKS = 4; // 2360655 in full dataset, 4 in sample data
 const CONCURRENCY_LIMIT = 10;
 
 interface BookData {
@@ -94,7 +94,7 @@ async function main() {
   try {
     const sql = requireSql();
     const bookCount = await processEntities<BookData>(
-      path.resolve("./lib/db/books-full.json"),
+      path.resolve("./lib/db/books.json"),
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchUpdateThumbHash,
@@ -106,7 +106,11 @@ async function main() {
     );
   } catch (error) {
     console.error("Error updating thumbhash:", error);
+    process.exitCode = 1;
   }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

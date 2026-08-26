@@ -9,7 +9,7 @@ A modern revival of the original [Book Inventory](https://github.com/vercel-labs
 - Intent-based `prefetch={true}` for dynamic book pages
 - Cached Postgres queries with `use cache`, cache lifetimes, and tags
 - Streaming search and filter results behind focused Suspense boundaries
-- React Compiler, typed routes, Turbopack, Tailwind CSS 4, and React 19
+- React Compiler, typed routes, Turbopack, Tailwind CSS, and React 19
 - `@next/playwright` regression tests for instant navigation
 
 ## Run locally
@@ -38,3 +38,15 @@ CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
 The source dataset is available from the [UCSD Book Graph project](https://mengtingwan.github.io/data/goodreads.html).
+
+Set `POSTGRES_URL`, then create the schema and load the bundled four-book sample:
+
+```bash
+pnpm db:setup
+```
+
+Optionally generate the cover-image placeholders after seeding:
+
+```bash
+pnpm db:seed-thumbhash
+```

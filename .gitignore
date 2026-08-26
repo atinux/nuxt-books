@@ -34,6 +34,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Database import checkpoints
+*_import_checkpoint.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

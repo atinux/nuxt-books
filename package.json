@@ -13,6 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "tsx lib/db/migrate.ts",
+    "db:setup": "pnpm db:migrate && pnpm db:seed-authors && pnpm db:seed-books",
     "db:seed-authors": "tsx lib/db/seed-authors.ts",
     "db:seed-books": "tsx lib/db/seed-books.ts",
     "db:seed-thumbhash": "tsx lib/db/seed-thumbhash.ts",

@@ -44,7 +44,7 @@ async function main() {
   try {
     const sql = requireSql();
     const authorCount = await processEntities<AuthorData>(
-      path.resolve("./lib/db/authors-full.json"),
+      path.resolve("./lib/db/authors.json"),
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchInsertAuthors,
@@ -56,7 +56,11 @@ async function main() {
     );
   } catch (error) {
     console.error("Error seeding authors:", error);
+    process.exitCode = 1;
   }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

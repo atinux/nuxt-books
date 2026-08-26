@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export default function Error() {
   return (
@@ -7,15 +7,15 @@ export default function Error() {
         Database Setup Required
       </h2>
       <p className="text-gray-700">
-        Your database does not have a{' '}
+        Your database does not have a{" "}
         <code className="p-1 font-mono text-red-600 bg-gray-200 dark:bg-gray-800 rounded">
           books
-        </code>{' '}
-        table. Please run the script{' '}
+        </code>{" "}
+        table. Please run{" "}
         <code className="p-1 font-mono text-green-600 bg-gray-200 dark:bg-gray-800 rounded">
-          npm run seed
-        </code>{' '}
-        to create the table and seed it with data.
+          pnpm db:setup
+        </code>{" "}
+        to create the schema and seed it with data.
       </p>
     </div>
   );

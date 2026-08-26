@@ -33,13 +33,19 @@ async function batchInsertBooks(
 ) {
   const insertBookAndAuthorsQuery = `
     WITH inserted_book AS (
-      INSERT INTO books (isbn, isbn13, title, publication_year, publisher, image_url, description, num_pages, language_code, text_reviews_count, ratings_count, average_rating, series, popular_shelves)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      INSERT INTO books (isbn, isbn13, title, publication_year, publisher, image_url, description, num_pages, language_code, text_reviews_count, ratings_count, average_rating, series, popular_shelves, title_tsv)
+      SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM books
+        WHERE title = $3
+          AND image_url IS NOT DISTINCT FROM $6
+      )
       ON CONFLICT (isbn) DO NOTHING
       RETURNING id
     )
     INSERT INTO book_to_author (book_id, author_id)
-    SELECT inserted_book.id, unnest($15::text[])
+    SELECT inserted_book.id, unnest($16::text[])
     FROM inserted_book
     WHERE inserted_book.id IS NOT NULL
     ON CONFLICT DO NOTHING
@@ -62,6 +68,7 @@ async function batchInsertBooks(
         book.average_rating ? book.average_rating : null,
         book.series || null,
         JSON.stringify(book.popular_shelves),
+        book.title,
         book.authors.map((author) => author.author_id),
       ]),
     );
@@ -72,7 +79,7 @@ async function main() {
   try {
     const sql = requireSql();
     const bookCount = await processEntities<BookData>(
-      path.resolve("./lib/db/books-full.json"),
+      path.resolve("./lib/db/books.json"),
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchInsertBooks,
@@ -84,7 +91,11 @@ async function main() {
     );
   } catch (error) {
     console.error("Error seeding books:", error);
+    process.exitCode = 1;
   }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

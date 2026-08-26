@@ -33,8 +33,9 @@ export async function processEntities<T>(
   sqlQuery: NeonQueryFunction<false, false>,
   totalEntities: number,
 ): Promise<number> {
-  const startLine = await loadCheckpoint(checkpointFile);
-  let processedLines = startLine;
+  const usesCheckpoints = totalEntities > batchSize;
+  const startLine = usesCheckpoints ? await loadCheckpoint(checkpointFile) : 0;
+  let processedLines = 0;
   let batch: T[] = [];
   const startTime = Date.now();
 
@@ -49,37 +50,45 @@ export async function processEntities<T>(
       continue;
     }
 
+    let entity: T;
     try {
-      const entity = JSON.parse(line) as T;
-      batch.push(entity);
-      processedLines++;
-
-      if (batch.length >= batchSize) {
-        const batchStartTime = Date.now();
-        await batchInsertFunction(batch, sqlQuery);
-        const batchEndTime = Date.now();
-        batch = [];
-        await saveCheckpoint(checkpointFile, processedLines);
-        const elapsedSeconds = (Date.now() - startTime) / 1000;
-        const batchSeconds = (batchEndTime - batchStartTime) / 1000;
-        const remainingEntities = totalEntities - processedLines;
-        const estimatedRemainingSeconds =
-          (elapsedSeconds / processedLines) * remainingEntities;
-        const progressPercentage = (processedLines / totalEntities) * 100;
-        console.log(
-          `Processed ${processedLines.toLocaleString()} / ${totalEntities.toLocaleString()} entities (${progressPercentage.toFixed(2)}%). ` +
-            `Batch took ${batchSeconds.toFixed(2)}s. ` +
-            `Estimated remaining time: ${(estimatedRemainingSeconds / 60).toFixed(2)} minutes`,
-        );
-      }
+      entity = JSON.parse(line) as T;
     } catch (error) {
+      processedLines++;
       console.error("Error processing line:", error);
+      continue;
+    }
+
+    batch.push(entity);
+    processedLines++;
+
+    if (batch.length >= batchSize) {
+      const batchStartTime = Date.now();
+      await batchInsertFunction(batch, sqlQuery);
+      const batchEndTime = Date.now();
+      batch = [];
+      if (usesCheckpoints) {
+        await saveCheckpoint(checkpointFile, processedLines);
+      }
+      const elapsedSeconds = (Date.now() - startTime) / 1000;
+      const batchSeconds = (batchEndTime - batchStartTime) / 1000;
+      const remainingEntities = totalEntities - processedLines;
+      const estimatedRemainingSeconds =
+        (elapsedSeconds / processedLines) * remainingEntities;
+      const progressPercentage = (processedLines / totalEntities) * 100;
+      console.log(
+        `Processed ${processedLines.toLocaleString()} / ${totalEntities.toLocaleString()} entities (${progressPercentage.toFixed(2)}%). ` +
+          `Batch took ${batchSeconds.toFixed(2)}s. ` +
+          `Estimated remaining time: ${(estimatedRemainingSeconds / 60).toFixed(2)} minutes`,
+      );
     }
   }
 
   if (batch.length > 0) {
     await batchInsertFunction(batch, sqlQuery);
-    await saveCheckpoint(checkpointFile, processedLines);
+    if (usesCheckpoints) {
+      await saveCheckpoint(checkpointFile, processedLines);
+    }
   }
 
   const totalSeconds = (Date.now() - startTime) / 1000;
