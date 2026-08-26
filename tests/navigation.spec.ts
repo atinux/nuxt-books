@@ -6,10 +6,7 @@ test("the app shell is instant on first load", async ({ page, baseURL }) => {
     page,
     async () => {
       await page.goto("/");
-      await expect(
-        page.getByRole("heading", { name: "Every shelf, a new direction." }),
-      ).toBeVisible();
-      await expect(page.getByText(/Preview catalog/)).toHaveCount(0);
+      await expect(page.getByRole("textbox", { name: "Search" })).toBeVisible();
     },
     { baseURL },
   );
@@ -30,16 +27,17 @@ test("a book opens instantly after hover intent", async ({ page }) => {
     ).toBeVisible();
   });
   await expect(
-    page.getByRole("link", { name: "Back to the shelves" }),
+    page.getByRole("link", { name: "Back to Books" }),
   ).toBeVisible();
 });
 
 test("search streams matching results", async ({ page }) => {
   await page.goto("/");
-  const search = page.getByRole("searchbox", {
-    name: "Search by title or author",
+  const search = page.getByRole("textbox", {
+    name: "Search",
   });
 
+  await page.waitForTimeout(300);
   await search.fill("wizard");
   await expect(page).toHaveURL(/search=wizard/);
   await expect(

@@ -1,96 +1,113 @@
-"use client";
+'use client';
 
-import { LoaderCircle, SearchIcon, X } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useTransition } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import { SearchIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 function SearchBase({
-  initialQuery = "",
-  initialParams = "",
+  initialQuery,
+  initialParams = '',
 }: {
-  initialQuery?: string;
+  initialQuery: string;
   initialParams?: string;
 }) {
   const router = useRouter();
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [inputValue, setInputValue] = useState(initialQuery);
   const [isPending, startTransition] = useTransition();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const navigate = (value: string) => {
+  function navigate(value: string) {
     const params = new URLSearchParams(initialParams);
     const query = value.trim();
 
-    if (query) params.set("search", query);
-    else params.delete("search");
-    params.delete("page");
+    if (query) params.set('search', query);
+    else params.delete('search');
+    params.delete('page');
 
     startTransition(() => {
-      router.replace(params.size ? `/?${params}` : "/", { scroll: false });
+      router.replace(params.size ? `/?${params}` : '/', { scroll: false });
     });
-  };
+  }
 
-  const queueNavigation = (value: string) => {
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value;
+    setInputValue(value);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => navigate(value), 220);
-  };
+  }
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   return (
     <form
-      className="relative min-w-0 flex-1"
+      className="relative flex flex-1 flex-shrink-0 w-full rounded shadow-sm"
       onSubmit={(event) => {
         event.preventDefault();
         if (timerRef.current) clearTimeout(timerRef.current);
-        navigate(inputRef.current?.value ?? "");
+        navigate(inputValue);
       }}
     >
       <label htmlFor="search" className="sr-only">
-        Search by title or author
+        Search
       </label>
-      <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2" />
-      <input
-        key={initialQuery}
+      <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
         ref={inputRef}
-        id="search"
+        onChange={handleInputChange}
+        type="text"
         name="search"
-        type="search"
-        defaultValue={initialQuery}
-        onChange={(event) => queueNavigation(event.currentTarget.value)}
-        placeholder="Search by title or author…"
-        autoComplete="off"
-        className="border-border bg-card/90 placeholder:text-muted-foreground h-11 w-full rounded-xl border pr-20 pl-11 text-sm shadow-sm outline-none transition focus:border-primary/40 focus:ring-3 focus:ring-primary/10"
+        id="search"
+        placeholder="Search books..."
+        value={inputValue}
+        className="w-full border-0 px-10 py-6 text-base md:text-sm overflow-hidden focus-visible:ring-0"
       />
-      <span className="absolute top-1/2 right-4 -translate-y-1/2">
-        {isPending ? (
-          <LoaderCircle className="text-primary size-4 animate-spin" />
-        ) : initialQuery ? (
-          <button
-            type="button"
-            onClick={() => {
-              if (inputRef.current) inputRef.current.value = "";
-              navigate("");
-            }}
-            className="text-muted-foreground hover:text-foreground grid size-6 place-items-center rounded-full"
-            aria-label="Clear search"
-          >
-            <X className="size-3.5" />
-          </button>
-        ) : (
-          <kbd className="text-muted-foreground hidden rounded border px-1.5 py-0.5 font-sans text-[10px] sm:inline">
-            /
-          </kbd>
-        )}
-      </span>
+      <LoadingSpinner pending={isPending} />
     </form>
   );
 }
 
+function LoadingSpinner({ pending }: { pending: boolean }) {
+  return (
+    <div
+      data-pending={pending ? '' : undefined}
+      className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-300"
+    >
+      <svg className="h-5 w-5" viewBox="0 0 100 100">
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="10"
+          strokeDasharray="282.7"
+          strokeDashoffset="282.7"
+          className={pending ? 'animate-fill-clock' : ''}
+          transform="rotate(-90 50 50)"
+        />
+      </svg>
+    </div>
+  );
+}
+
 export function SearchFallback() {
-  return <SearchBase />;
+  return <SearchBase initialQuery="" />;
 }
 
 export function Search() {
   const searchParams = useSearchParams();
-  const query = searchParams.get("search") ?? "";
+  const query = searchParams.get('search') ?? '';
   return (
     <SearchBase initialQuery={query} initialParams={searchParams.toString()} />
   );
