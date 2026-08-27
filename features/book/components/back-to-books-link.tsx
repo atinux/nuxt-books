@@ -30,7 +30,7 @@ function BackLinkWithFilters({ className }: { className?: string }) {
 
 function BackLink({ className, href }: { className?: string; href: Route }) {
   return (
-    <Link className={cn(linkClass, className)} href={href} prefetch transitionTypes={['nav-back']}>
+    <Link className={cn(linkClass, className)} href={href} prefetch>
       <LinkStatus>
         <ArrowLeft aria-hidden className="size-4" />
         Back to books

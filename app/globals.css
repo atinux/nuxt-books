@@ -225,26 +225,6 @@ input[type='range']::-moz-range-thumb {
   --duration-move: 260ms;
 }
 
-@keyframes fade {
-  from {
-    filter: blur(2px);
-    opacity: 0;
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide {
-  from {
-    translate: var(--slide-offset);
-  }
-  to {
-    translate: 0;
-  }
-}
-
 @keyframes opacity-fade {
   from {
     opacity: 0;
@@ -252,38 +232,6 @@ input[type='range']::-moz-range-thumb {
   to {
     opacity: 1;
   }
-}
-
-::view-transition-old(.nav-crossfade) {
-  animation: var(--duration-exit) ease-in both opacity-fade reverse;
-}
-::view-transition-new(.nav-crossfade) {
-  animation: var(--duration-enter) ease-out var(--duration-exit) both opacity-fade;
-}
-
-::view-transition-old(.nav-forward) {
-  --slide-offset: -60px;
-  animation:
-    var(--duration-exit) ease-in both fade reverse,
-    var(--duration-move) ease-in-out both slide reverse;
-}
-::view-transition-new(.nav-forward) {
-  --slide-offset: 60px;
-  animation:
-    var(--duration-enter) ease-out var(--duration-exit) both fade,
-    var(--duration-move) ease-in-out both slide;
-}
-::view-transition-old(.nav-back) {
-  --slide-offset: 60px;
-  animation:
-    var(--duration-exit) ease-in both fade reverse,
-    var(--duration-move) ease-in-out both slide reverse;
-}
-::view-transition-new(.nav-back) {
-  --slide-offset: -60px;
-  animation:
-    var(--duration-enter) ease-out var(--duration-exit) both fade,
-    var(--duration-move) ease-in-out both slide;
 }
 
 /* Book covers morph between the grid and the detail hero: geometry only, no crossfade. */

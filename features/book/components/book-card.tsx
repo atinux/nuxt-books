@@ -23,7 +23,6 @@ export function BookCard({ book, priority, searchParams }: Props) {
     <HoverPrefetchLink
       className="focus-visible:ring-action focus-visible:ring-offset-surface dark:focus-visible:ring-offset-surface-dark group relative block rounded-md transition-transform duration-200 ease-out hover:z-10 hover:scale-[1.04] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       href={href}
-      transitionTypes={['nav-forward']}
     >
       <BookCover
         bookId={book.id}

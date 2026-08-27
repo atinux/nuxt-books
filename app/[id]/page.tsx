@@ -1,4 +1,5 @@
-import { Suspense, ViewTransition } from 'react';
+import { Suspense } from 'react';
+import { Crossfade } from '@/components/ui/crossfade';
 import ErrorBoundary from '@/components/ui/error-boundary';
 import { getBookById } from '@/features/book/book-queries';
 import { BackToBooksLink } from '@/features/book/components/back-to-books-link';
@@ -18,15 +19,11 @@ export default function Page({ params }: PageProps<'/[id]'>) {
       <BackToBooksLink className="mb-6" />
       <ErrorBoundary body="We couldn't load this book's details." title="Can't load book">
         <Suspense fallback={<BookDetailSkeleton />}>
-          <ViewTransition
-            default="none"
-            enter={{ 'nav-back': 'nav-back', 'nav-forward': 'nav-forward', default: 'nav-crossfade' }}
-            exit={{ 'nav-back': 'nav-back', 'nav-forward': 'nav-forward', default: 'none' }}
-          >
+          <Crossfade>
             {params.then(({ id }) => (
               <BookDetail id={id} />
             ))}
-          </ViewTransition>
+          </Crossfade>
         </Suspense>
       </ErrorBoundary>
     </div>
