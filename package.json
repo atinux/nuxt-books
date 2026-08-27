@@ -55,7 +55,7 @@
     "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
-    "typescript": "npm:@typescript/typescript6@^6.0.2"
+    "typescript": "^6.0.2"
   },
   "packageManager": "pnpm@11.24.0"
 }
