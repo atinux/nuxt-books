@@ -1,5 +1,6 @@
 import {
   LANGUAGES,
+  LISTS,
   MAX_PAGES,
   MAX_RATING,
   MAX_YEAR,
@@ -25,12 +26,6 @@ export function formatCount(n: number): string {
   return `${(n / 1_000_000).toFixed(1)}M`;
 }
 
-export function getActiveList(isbn: string | undefined, lists: { name: string; isbns: string }[]) {
-  if (!isbn) return undefined;
-  const first = isbn.split(',')[0];
-  return lists.find(list => list.isbns.split(',')[0] === first)?.name;
-}
-
 export function toBookQuery(params: SearchParams) {
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
   const num = (raw: string | undefined, fallback: number) => {
@@ -39,7 +34,7 @@ export function toBookQuery(params: SearchParams) {
   };
 
   return {
-    isbns: params.isbn ?? '',
+    isbns: LISTS.find(list => list.slug === params.list)?.isbns ?? '',
     language: params.lng ?? '',
     maxPages: clamp(num(params.pgs, MAX_PAGES), MIN_PAGES, MAX_PAGES),
     page: Math.max(1, Math.trunc(num(params.page, 1))),

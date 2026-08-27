@@ -19,31 +19,32 @@ import {
   RATING_STEP,
   YEAR_STEP,
 } from '@/features/book/book-constants';
-import { getActiveList } from '@/features/book/book-utils';
 import { buildHref, parseSearchParams, withFilters } from '@/lib/url-state';
 import type { SearchParams } from '@/lib/url-state';
 
-function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
+type FilterAction = { patch: Partial<SearchParams>; type: 'change' } | { type: 'reset' };
+
+function filterReducer(filters: SearchParams, action: FilterAction): SearchParams {
+  return action.type === 'reset' ? {} : withFilters(filters, action.patch);
+}
+
+function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [filters, setFilters] = useOptimistic(initialParams);
+  const [filters, dispatch] = useOptimistic(initialParams, filterReducer);
 
-  const activeCount = Object.values(initialParams).filter(Boolean).length;
-  const activeList = getActiveList(filters.isbn, LISTS);
+  const activeCount = Object.entries(initialParams).filter(([key, value]) => key !== 'page' && Boolean(value)).length;
 
   function commit(patch: Partial<SearchParams>) {
     const next = withFilters(filters, patch);
     startTransition(() => {
-      setFilters(next);
+      dispatch({ patch, type: 'change' });
       router.replace(buildHref(next), { scroll: false });
     });
   }
 
-  function toggleList(isbns: string) {
-    const listIsbns = isbns.split(',');
-    const current = filters.isbn?.split(',') ?? [];
-    const isActive = current.includes(listIsbns[0]);
-    commit({ isbn: isActive ? undefined : isbns });
+  function toggleList(slug: string) {
+    commit({ list: filters.list === slug ? undefined : slug });
   }
 
   return (
@@ -126,8 +127,8 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
                 key={list.name}
               >
                 <Input
-                  checked={activeList === list.name}
-                  onChange={() => toggleList(list.isbns)}
+                  checked={filters.list === list.slug}
+                  onChange={() => toggleList(list.slug)}
                   type="checkbox"
                   variant="checkbox"
                 />
@@ -144,7 +145,7 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
             className="w-full"
             onClick={() =>
               startTransition(() => {
-                setFilters({});
+                dispatch({ type: 'reset' });
                 router.replace('/', { scroll: false });
               })
             }
@@ -159,10 +160,10 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
 }
 
 export function BookFiltersFallback() {
-  return <FiltersBase initialParams={{}} />;
+  return <BookFiltersForm initialParams={{}} />;
 }
 
 export function BookFilters() {
   const searchParams = useSearchParams();
-  return <FiltersBase initialParams={parseSearchParams(Object.fromEntries(searchParams))} />;
+  return <BookFiltersForm initialParams={parseSearchParams(Object.fromEntries(searchParams))} />;
 }

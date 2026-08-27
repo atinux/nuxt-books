@@ -8,12 +8,12 @@ export type SearchParams = {
   lng?: string;
   pgs?: string;
   page?: string;
-  isbn?: string;
+  list?: string;
 };
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
 
-const FILTER_KEYS = ['search', 'yr', 'rtg', 'lng', 'pgs', 'isbn'] as const;
+const FILTER_KEYS = ['search', 'yr', 'rtg', 'lng', 'pgs', 'list'] as const;
 
 function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -21,7 +21,7 @@ function first(value: string | string[] | undefined): string | undefined {
 
 export function parseSearchParams(params: RawSearchParams): SearchParams {
   return {
-    isbn: first(params.isbn),
+    list: first(params.list),
     lng: first(params.lng),
     page: first(params.page),
     pgs: first(params.pgs),

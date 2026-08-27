@@ -38,6 +38,15 @@ test('the language filter drives the URL', async ({ page }) => {
   await expect(page).toHaveURL(/lng=fre/);
 });
 
+test('book lists use readable URL state', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Sci-Fi & Fantasy').check();
+
+  await expect(page).toHaveURL(/list=sci-fi-fantasy/);
+  await expect(page).not.toHaveURL(/isbn=/);
+  await expect(page.getByLabel('Sci-Fi & Fantasy')).toBeChecked();
+});
+
 test('the catalog only dims while a filter is in flight', async ({ page }) => {
   await page.goto('/');
   const grid = page.locator('[data-filtering]');
