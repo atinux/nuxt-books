@@ -20,7 +20,7 @@ See [Ensuring instant navigations](https://nextjs.org/docs/app/guides/instant-na
 
 - **[Cache Components](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents)** cache each query with `'use cache'` and `cacheLife`. See [Migrating to Cache Components](https://nextjs.org/docs/app/guides/migrating-to-cache-components).
 - **[Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching)** prefetches the shared App Shell of links entering the viewport.
-- **[Per-link prefetching](https://nextjs.org/docs/app/guides/optimizing-prefetching#resolve-url-data-at-prefetch-time)** resolves URL data for visible book and pagination links with `<Link prefetch={true}>` before navigation.
+- **[Per-link prefetching](https://nextjs.org/docs/app/guides/optimizing-prefetching#resolve-url-data-at-prefetch-time)** resolves URL data before navigation. Book links on the first catalog page always use `prefetch={true}`. On later pages, book links upgrade from `auto` to `true` on hover or keyboard focus. Pagination links always use `prefetch={true}`.
 
 ## Run locally
 
