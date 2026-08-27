@@ -20,17 +20,14 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    // A production server, not `next dev`: Next allows only one dev server per
-    // directory, so `next dev` here is refused whenever one is already running.
-    command: `pnpm exec next build && pnpm exec next start --hostname 127.0.0.1 --port ${port}`,
+    command: `pnpm exec next dev --hostname 127.0.0.1 --port ${port}`,
     // Blanking POSTGRES_URL drops the app onto the generated preview catalog, so the
     // suite runs on a fixed dataset with no database.
     env: { POSTGRES_URL: '' },
-    // Never attach this suite to an unrelated local app that happens to own
-    // the configured port. Playwright should only test the build it started.
-    reuseExistingServer: false,
+    // Next allows one dev server per directory. If you already have one running,
+    // point the suite at it with PLAYWRIGHT_BASE_URL instead of starting a second.
+    reuseExistingServer: true,
     stdout: 'pipe',
-    timeout: 300_000,
     url: baseURL,
   },
   workers: 1,
