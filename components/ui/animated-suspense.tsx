@@ -8,16 +8,8 @@ type AnimatedSuspenseProps = {
 
 export function AnimatedSuspense({ children, fallback }: AnimatedSuspenseProps) {
   return (
-    <Suspense
-      fallback={
-        <ViewTransition default="none" exit="auto">
-          {fallback}
-        </ViewTransition>
-      }
-    >
-      <ViewTransition default="none" enter="auto">
-        {children}
-      </ViewTransition>
-    </Suspense>
+    <ViewTransition default="none" update="auto">
+      <Suspense fallback={fallback}>{children}</Suspense>
+    </ViewTransition>
   );
 }
