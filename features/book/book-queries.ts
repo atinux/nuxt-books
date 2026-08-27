@@ -5,6 +5,7 @@ import { and, count, eq, gte, isNull, lte, not, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { authors, books, bookToAuthor } from '@/lib/db/schema';
 import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MAX_PAGES, MAX_YEAR, MIN_YEAR } from '@/features/book/book-constants';
+import { GENERATED_PREVIEW_BOOKS } from '@/features/book/book-preview-catalog';
 import type { SearchParams } from '@/lib/url-state';
 
 export type BookSummary = {
@@ -31,7 +32,7 @@ export type BooksPage = {
   total: number;
 };
 
-const previewBooks: BookDetails[] = [
+const sampleBooks: BookDetails[] = [
   {
     id: 5333265,
     title: 'W.C. Fields: A Life on Film',
@@ -94,6 +95,13 @@ const previewBooks: BookDetails[] = [
     authors: ['Jennifer Weiner'],
   },
 ];
+
+const previewBooks: BookDetails[] = [...sampleBooks, ...GENERATED_PREVIEW_BOOKS];
+
+/** Preview books that would survive the catalog's "has a real cover" filter. */
+function getPreviewCatalog(): BookDetails[] {
+  return previewBooks.filter(book => book.image_url !== EMPTY_IMAGE_URL);
+}
 
 const yearFilter = (year?: string) => {
   const maxYear = year ? Math.max(MIN_YEAR, Math.min(MAX_YEAR, Number(year))) : MAX_YEAR;
@@ -208,6 +216,21 @@ export async function getBooksPage(searchParams: SearchParams): Promise<BooksPag
     books: result,
     total,
   };
+}
+
+/**
+ * Size of the whole catalog, ignoring every filter. Drives the sidebar headline, so
+ * it gets its own long-lived cache entry rather than riding along with a filtered page.
+ */
+export async function getCatalogSize(): Promise<number> {
+  'use cache';
+  cacheLife('days');
+
+  const database = db;
+  if (!database) return getPreviewCatalog().length;
+
+  const [{ total }] = await database.select({ total: count() }).from(books).where(imageFilter());
+  return total;
 }
 
 export async function getBookById(id: string): Promise<BookDetails | undefined> {

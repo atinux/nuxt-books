@@ -49,7 +49,7 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" data-pending={isPending ? '' : undefined}>
+    <div className="flex min-h-0 flex-1 flex-col" data-filtering={isPending ? '' : undefined}>
       <div className="min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto overscroll-contain px-1 pb-6">
         <div className="flex flex-col gap-6">
           <Range
@@ -149,7 +149,7 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
             }
             variant="secondary"
           >
-            Clear {activeCount} filter{activeCount === 1 ? '' : 's'}
+            Clear all filters
           </Button>
         </div>
       ) : null}

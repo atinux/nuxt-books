@@ -38,7 +38,7 @@ function SearchBase({ initialParams }: { initialParams: SearchParams }) {
   return (
     <form
       className="relative flex-1"
-      data-pending={isPending ? '' : undefined}
+      data-filtering={isPending ? '' : undefined}
       onSubmit={event => {
         event.preventDefault();
         if (timerRef.current) clearTimeout(timerRef.current);

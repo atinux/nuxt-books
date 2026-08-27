@@ -1,14 +1,18 @@
 import { BookOpen, Building2, CalendarDays, Globe, Hash } from 'lucide-react';
+import { notFound } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StarRating } from '@/components/ui/star-rating';
 import { BookCover, BookCoverSkeleton } from '@/features/book/components/book-cover';
+import { getBookById } from '@/features/book/book-queries';
 import { formatCount, getLanguageLabel } from '@/features/book/book-utils';
-import type { BookDetails } from '@/features/book/book-queries';
 import type { ReactNode } from 'react';
 
 const DETAIL_SIZES = '(min-width: 768px) 18rem, 60vw';
 
-export function BookDetail({ book }: { book: BookDetails }) {
+export async function BookDetail({ id }: { id: string }) {
+  const book = await getBookById(id);
+  if (!book) notFound();
+
   const rating = Number(book.average_rating);
   const hasRating = book.average_rating !== null && !Number.isNaN(rating);
 

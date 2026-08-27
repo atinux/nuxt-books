@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { HoverPrefetchLink } from '@/components/ui/hover-prefetch-link';
 import { BookCover, BookCoverSkeleton } from '@/features/book/components/book-cover';
 import { buildHref } from '@/lib/url-state';
 import type { BookSummary } from '@/features/book/book-queries';
@@ -20,7 +20,7 @@ export function BookCard({ book, priority, searchParams }: Props) {
   const href = (back === '/' ? `/${book.id}` : `/${book.id}?${back.slice(2)}`) as Route;
 
   return (
-    <Link
+    <HoverPrefetchLink
       className="focus-visible:ring-action/50 group block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent focus-visible:outline-none"
       href={href}
     >
@@ -34,7 +34,7 @@ export function BookCard({ book, priority, searchParams }: Props) {
         title={book.title}
       />
       <span className="sr-only">{book.title}</span>
-    </Link>
+    </HoverPrefetchLink>
   );
 }
 

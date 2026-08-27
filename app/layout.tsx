@@ -5,11 +5,11 @@ import { Suspense, ViewTransition } from 'react';
 import { BookMark } from '@/components/book-mark';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
-import { Toaster } from '@/components/toaster';
+import { Crossfade } from '@/components/ui/crossfade';
 import ErrorBoundary from '@/components/ui/error-boundary';
-import { WelcomeToast } from '@/components/welcome-toast';
 import { BookFilters, BookFiltersFallback } from '@/features/book/components/book-filters';
 import { BookSearch, BookSearchFallback } from '@/features/book/components/book-search';
+import { CatalogSize, CatalogSizeSkeleton } from '@/features/book/components/catalog-size';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
@@ -60,14 +60,31 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     Book Inventory
                   </Link>
                 </div>
-                <p className="text-muted mt-6 mb-4 text-xs font-semibold tracking-wide uppercase">Filters</p>
+                <div className="border-divider dark:border-divider-dark mt-6 border-b pb-5">
+                  <ErrorBoundary compact title="Catalog size unavailable">
+                    <Suspense fallback={<CatalogSizeSkeleton />}>
+                      <Crossfade>
+                        <CatalogSize />
+                      </Crossfade>
+                    </Suspense>
+                  </ErrorBoundary>
+                </div>
+                <p className="text-muted mt-5 mb-4 text-xs font-semibold tracking-wide uppercase">Filters</p>
                 <ErrorBoundary compact title="Filters unavailable">
                   <Suspense fallback={<BookFiltersFallback />}>
                     <BookFilters />
                   </Suspense>
                 </ErrorBoundary>
-                <div className="border-divider dark:border-divider-dark mt-4 border-t pt-4">
+                <div className="border-divider dark:border-divider-dark mt-4 flex items-center justify-between gap-2 border-t pt-4">
                   <ThemeToggle variant="inline" />
+                  <a
+                    className="text-muted text-xs font-medium transition-colors hover:text-black dark:hover:text-white"
+                    href="https://github.com/vercel-labs/book-inventory-16"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Source
+                  </a>
                 </div>
               </aside>
             </ViewTransition>
@@ -90,8 +107,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <main className="flex min-w-0 flex-1 flex-col">{children}</main>
             </div>
           </div>
-          <Toaster />
-          <WelcomeToast />
         </ThemeProvider>
       </body>
     </html>
