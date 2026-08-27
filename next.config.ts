@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   experimental: {
     inlineCss: true,
+    useOffline: true,
   },
   images: {
     remotePatterns: [
