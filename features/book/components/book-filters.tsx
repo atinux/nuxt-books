@@ -33,7 +33,7 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
   const [isPending, startTransition] = useTransition();
   const [filters, dispatch] = useOptimistic(initialParams, filterReducer);
 
-  const activeCount = Object.entries(initialParams).filter(([key, value]) => key !== 'page' && Boolean(value)).length;
+  const activeCount = Object.entries(filters).filter(([key, value]) => key !== 'page' && Boolean(value)).length;
 
   function commit(patch: Partial<SearchParams>) {
     const next = withFilters(filters, patch);
@@ -62,10 +62,10 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
             label="Published before"
             max={MAX_YEAR}
             min={MIN_YEAR}
-            onChange={event => commit({ yr: event.target.value })}
-            readout={filters.yr ? filters.yr : 'Any year'}
+            onChange={event => commit({ year: event.target.value })}
+            readout={filters.year ? filters.year : 'Any year'}
             step={YEAR_STEP}
-            value={filters.yr ?? String(MAX_YEAR)}
+            value={filters.year ?? String(MAX_YEAR)}
           />
 
           <Range
@@ -79,10 +79,10 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
             label="Minimum rating"
             max={MAX_RATING}
             min={MIN_RATING}
-            onChange={event => commit({ rtg: event.target.value })}
-            readout={Number(filters.rtg) > 0 ? `${filters.rtg}+ stars` : 'Any rating'}
+            onChange={event => commit({ rating: event.target.value })}
+            readout={Number(filters.rating) > 0 ? `${filters.rating}+ stars` : 'Any rating'}
             step={RATING_STEP}
-            value={filters.rtg ?? String(MIN_RATING)}
+            value={filters.rating ?? String(MIN_RATING)}
           />
 
           <Range
@@ -96,10 +96,10 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
             label="Max pages"
             max={MAX_PAGES}
             min={MIN_PAGES}
-            onChange={event => commit({ pgs: event.target.value })}
-            readout={filters.pgs ? `${Number(filters.pgs).toLocaleString()} pages` : 'Any length'}
+            onChange={event => commit({ pages: event.target.value })}
+            readout={filters.pages ? `${Number(filters.pages).toLocaleString()} pages` : 'Any length'}
             step={PAGES_STEP}
-            value={filters.pgs ?? String(MAX_PAGES)}
+            value={filters.pages ?? String(MAX_PAGES)}
           />
 
           <div className="flex flex-col gap-2">
@@ -108,8 +108,8 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
             </label>
             <Select
               id="filter-language"
-              onChange={event => commit({ lng: event.target.value })}
-              value={filters.lng ?? 'en'}
+              onChange={event => commit({ language: event.target.value })}
+              value={filters.language ?? 'en'}
             >
               {LANGUAGES.map(language => (
                 <option key={language.value} value={language.value}>

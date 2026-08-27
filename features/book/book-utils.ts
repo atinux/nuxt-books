@@ -35,11 +35,11 @@ export function toBookQuery(params: SearchParams) {
 
   return {
     isbns: LISTS.find(list => list.slug === params.list)?.isbns ?? '',
-    language: params.lng ?? '',
-    maxPages: clamp(num(params.pgs, MAX_PAGES), MIN_PAGES, MAX_PAGES),
+    language: params.language ?? '',
+    maxPages: clamp(num(params.pages, MAX_PAGES), MIN_PAGES, MAX_PAGES),
     page: Math.max(1, Math.trunc(num(params.page, 1))),
-    rating: clamp(num(params.rtg, MIN_RATING), MIN_RATING, MAX_RATING),
+    rating: clamp(num(params.rating, MIN_RATING), MIN_RATING, MAX_RATING),
     search: params.search?.trim() ?? '',
-    year: clamp(num(params.yr, MAX_YEAR), MIN_YEAR, MAX_YEAR),
+    year: clamp(num(params.year, MAX_YEAR), MIN_YEAR, MAX_YEAR),
   };
 }

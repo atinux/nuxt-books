@@ -2,18 +2,18 @@ import { ITEMS_PER_PAGE } from '@/features/book/book-constants';
 import type { Route } from 'next';
 
 export type SearchParams = {
-  search?: string;
-  yr?: string;
-  rtg?: string;
-  lng?: string;
-  pgs?: string;
-  page?: string;
+  language?: string;
   list?: string;
+  page?: string;
+  pages?: string;
+  rating?: string;
+  search?: string;
+  year?: string;
 };
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
 
-const FILTER_KEYS = ['search', 'yr', 'rtg', 'lng', 'pgs', 'list'] as const;
+const FILTER_KEYS = ['search', 'year', 'rating', 'pages', 'language', 'list'] as const;
 
 function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -21,13 +21,13 @@ function first(value: string | string[] | undefined): string | undefined {
 
 export function parseSearchParams(params: RawSearchParams): SearchParams {
   return {
+    language: first(params.language),
     list: first(params.list),
-    lng: first(params.lng),
     page: first(params.page),
-    pgs: first(params.pgs),
-    rtg: first(params.rtg),
+    pages: first(params.pages),
+    rating: first(params.rating),
     search: first(params.search),
-    yr: first(params.yr),
+    year: first(params.year),
   };
 }
 
