@@ -1,16 +1,19 @@
 # Book Inventory 16
 
-A modern revival of the original [Book Inventory](https://github.com/vercel-labs/book-inventory) demo. It browses the Goodreads catalog with a fast, URL-driven interface built around the latest Next.js navigation and caching model.
+Demo: https://book-inventory-16.labs.vercel.dev
 
-## What this demonstrates
+This is a book inventory app built with Next.js, Drizzle, and PostgreSQL. The database contains over 2,000,000 books from Goodreads. [Full dataset here](https://mengtingwan.github.io/data/goodreads.html).
 
-- Next.js 16 Cache Components and Partial Prefetching
-- A reusable App Shell for instant first visits
-- Intent-based `prefetch={true}` for dynamic book pages
-- Cached Postgres queries with `use cache` and explicit cache lifetimes
-- Streaming search and filter results behind focused Suspense boundaries
-- React Compiler, typed routes, Turbopack, Tailwind CSS, and React 19
-- `@next/playwright` regression tests for instant navigation
+It rebuilds [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory), now archived, on [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations).
+
+## Instant navigations
+
+Clicking a cover in a catalog this large doesn't wait on Postgres. Two config flags do the work:
+
+- `cacheComponents` splits a route into a cached shell and the dynamic parts inside it. See [Cache Components](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents).
+- `partialPrefetching` prefetches that shell for the links in the viewport. See [Adopting Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching).
+
+Each cover then upgrades to a [runtime prefetch](https://nextjs.org/docs/app/guides/runtime-prefetching) on hover or focus, so a page of 28 covers doesn't wake the server 28 times.
 
 ## Run locally
 
@@ -24,8 +27,15 @@ Without environment variables, the app runs against a small preview catalog so c
 ```bash
 pnpm lint
 pnpm exec tsc --noEmit
-pnpm test:e2e
 pnpm build
+```
+
+## Testing
+
+The end-to-end tests use [`@next/playwright`](https://nextjs.org/docs/app/guides/testing/playwright) with the [`instant()`](https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config/instant) API to assert that loading states appear and that navigations stay instant, and they run in CI. They use the preview catalog, so no database is needed.
+
+```bash
+pnpm test:e2e
 ```
 
 ## Database
