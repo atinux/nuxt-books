@@ -4,9 +4,9 @@
 
 # NextBooks
 
-A catalog of over 2,000,000 Goodreads books, built with [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations), Drizzle, and PostgreSQL, showcasing [Instant Navigations](https://nextjs.org/docs/app/guides/instant-navigation).
+A catalog of over 2,000,000 Goodreads books, built with [Next.js 16.3](https://nextjs.org/blog/next-16-3), Drizzle, and PostgreSQL, showcasing [Instant Navigations](https://nextjs.org/blog/next-16-3-instant-navigations).
 
-[**Live demo →**](https://book-inventory-16.labs.vercel.dev)
+[**Live demo →**](https://www.next-books.dev)
 
 </div>
 
@@ -15,6 +15,8 @@ A catalog of over 2,000,000 Goodreads books, built with [Next.js 16.3](https://n
 Rebuild of [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory), now archived. [Full dataset here](https://mengtingwan.github.io/data/goodreads.html).
 
 ## Instant Navigations
+
+See [Ensuring instant navigations](https://nextjs.org/docs/app/guides/instant-navigation).
 
 - **[Cache Components](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents)** cache each query with `'use cache'` and `cacheLife`. See [Migrating to Cache Components](https://nextjs.org/docs/app/guides/migrating-to-cache-components).
 - **[Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching)** prefetches the shared App Shell of links entering the viewport.
