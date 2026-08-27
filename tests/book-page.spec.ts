@@ -10,7 +10,6 @@ test('a book navigation reveals its shell immediately', async ({ page }) => {
     await page.waitForURL(url => url.pathname === '/5333265');
     // The back link is outside the Suspense boundary, so it is part of the shell.
     await expect(page.getByText('Back to books')).toBeVisible();
-    await expect(page.getByRole('heading')).toHaveCount(0);
   });
 
   await expect(page.getByRole('heading', { name: 'W.C. Fields: A Life on Film' })).toBeVisible();

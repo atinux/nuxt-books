@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils';
 import type { ComponentProps, ReactNode } from 'react';
 
-type Props = Omit<ComponentProps<'input'>, 'type'> & {
+type Props = Omit<ComponentProps<'input'>, 'type' | 'value'> & {
   label: string;
-  value: ReactNode;
+  value: number | string;
   hint?: ReactNode;
 };
 
@@ -23,6 +23,7 @@ export function Range({ className, hint, id, label, value, ...props }: Props) {
         )}
         id={id}
         type="range"
+        value={value}
         {...props}
       />
       {hint ? <div className="text-muted flex justify-between text-[11px] tabular-nums">{hint}</div> : null}
