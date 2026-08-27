@@ -12,15 +12,8 @@ import type { Route } from 'next';
 const linkClass =
   'text-muted hover:bg-card dark:hover:bg-card-dark -ml-1.5 inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors hover:text-black dark:hover:text-white';
 
-/**
- * "Back to books" that keeps the grid's filters.
- *
- * `useSearchParams` is dynamic under `cacheComponents`, so it needs a Suspense
- * boundary. This one is a *read* boundary, not a data boundary: the fallback renders
- * the identical link pointing at `/`, so the shell paints the final layout and only
- * the `href` upgrades once the params resolve. Nothing moves. Same shape as the
- * `NavLink` primitive in the demos this app borrows from.
- */
+// `useSearchParams` needs a boundary under `cacheComponents`. The fallback is the
+// same link pointing at `/`, so only the `href` upgrades and nothing moves.
 export function BackToBooksLink({ className }: { className?: string }) {
   return (
     <Suspense fallback={<BackLink className={className} href="/" />}>

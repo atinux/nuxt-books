@@ -15,11 +15,8 @@ type Props = {
   className?: string;
 };
 
-/**
- * A book cover that morphs between the grid and the detail hero. The shared
- * `book-cover-<id>` name pairs the two, and `share="book-cover"` hands the
- * transition to the geometry-only recipe in `globals.css`.
- */
+// The shared `book-cover-<id>` name pairs grid and detail hero; `share` hands the
+// pair to the geometry-only recipe in globals.css.
 export function BookCover({ bookId, className, priority, sizes, src, thumbhash, title }: Props) {
   return (
     <ViewTransition default="none" name={`book-cover-${bookId}`} share="book-cover">

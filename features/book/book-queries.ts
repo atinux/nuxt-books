@@ -98,7 +98,6 @@ const sampleBooks: BookDetails[] = [
 
 const previewBooks: BookDetails[] = [...sampleBooks, ...GENERATED_PREVIEW_BOOKS];
 
-/** Preview books that would survive the catalog's "has a real cover" filter. */
 function getPreviewCatalog(): BookDetails[] {
   return previewBooks.filter(book => book.image_url !== EMPTY_IMAGE_URL);
 }
@@ -218,10 +217,6 @@ export async function getBooksPage(searchParams: SearchParams): Promise<BooksPag
   };
 }
 
-/**
- * Size of the whole catalog, ignoring every filter. Drives the sidebar headline, so
- * it gets its own long-lived cache entry rather than riding along with a filtered page.
- */
 export async function getCatalogSize(): Promise<number> {
   'use cache';
   cacheLife('days');

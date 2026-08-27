@@ -31,8 +31,8 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
   const activeCount = Object.values(filters).filter(Boolean).length;
   const activeList = getActiveList(filters.isbn, LISTS);
 
-  // Optimistic value and navigation share one transition: `useOptimistic` reverts the
-  // moment its transition settles, so the URL update has to ride along with it.
+  // `useOptimistic` reverts when its transition settles, so the navigation has to
+  // ride along inside the same transition.
   function commit(patch: Partial<SearchParams>) {
     const next = withFilters(filters, patch);
     startTransition(() => {

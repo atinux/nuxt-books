@@ -11,14 +11,7 @@ type Props = {
   variant?: 'dim' | 'spinner';
 };
 
-/**
- * Reflects the enclosing `<Link>`'s navigation state. `spinner` swaps in a spinner
- * beside the label; `dim` fades the label in place.
- *
- * The `data-pending` attribute is for this element's own styling only. Nothing above it
- * keys off it: the catalog dims on `data-filtering` instead, so a pending link never
- * greys out the whole grid.
- */
+// Reflects the enclosing `<Link>`'s navigation state.
 export function LinkStatus({ children, className, variant = 'spinner' }: Props) {
   const { pending } = useLinkStatus();
 

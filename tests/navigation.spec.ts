@@ -6,7 +6,7 @@ test('the app shell is instant on first load', async ({ page, baseURL }) => {
     page,
     async () => {
       await page.goto('/');
-      await expect(page.getByRole('textbox', { name: 'Search' })).toBeVisible();
+      await expect(page.getByRole('searchbox', { name: 'Search books' })).toBeVisible();
     },
     { baseURL },
   );
@@ -21,12 +21,12 @@ test('a book navigation reveals its shell immediately', async ({ page }) => {
   await instant(page, async () => {
     await book.click();
     await page.waitForURL(url => url.pathname === '/5333265');
-    await expect(page.getByText('Back to Books')).toBeVisible();
+    await expect(page.getByText('Back to books')).toBeVisible();
     await expect(page.getByRole('heading')).toHaveCount(0);
   });
 
   await expect(page.getByRole('heading', { name: 'W.C. Fields: A Life on Film' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Back to Books' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Back to books' })).toBeVisible();
 });
 
 test('the next page is resolved by per-link prefetching', async ({ page }) => {
@@ -43,9 +43,7 @@ test('the next page is resolved by per-link prefetching', async ({ page }) => {
 
 test('search streams matching results', async ({ page }) => {
   await page.goto('/');
-  const search = page.getByRole('textbox', {
-    name: 'Search',
-  });
+  const search = page.getByRole('searchbox', { name: 'Search books' });
 
   await page.waitForTimeout(300);
   await search.fill('wizard');
@@ -60,12 +58,12 @@ test('book details preserve search state on the instant back navigation', async 
   await book.click();
   await expect(page.getByRole('heading', { name: 'The Unschooled Wizard' })).toBeVisible();
 
-  const back = page.getByRole('link', { name: 'Back to Books' });
+  const back = page.getByRole('link', { name: 'Back to books' });
   await expect(back).toHaveAttribute('href', '/?search=wizard');
   await back.click();
 
   await expect(page).toHaveURL('/?search=wizard');
-  await expect(page.getByRole('textbox', { name: 'Search' })).toHaveValue('wizard');
+  await expect(page.getByRole('searchbox', { name: 'Search books' })).toHaveValue('wizard');
   await expect(page.getByRole('link', { name: /Unschooled Wizard/ })).toBeVisible();
 });
 

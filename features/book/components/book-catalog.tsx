@@ -33,14 +33,8 @@ export function BookCatalogSkeleton() {
   );
 }
 
-/**
- * Shared geometry for the catalog and its skeleton, so the App Shell paints the
- * skeleton and swaps to real covers without a layout shift.
- *
- * The grid dims off `data-filtering` only. Keying it off `data-pending` would also
- * catch every `useLinkStatus` in the tree, which made the grid flash grey on any
- * back-navigation from a cached book page.
- */
+// `data-filtering`, not `data-pending`: the latter would also match every
+// `useLinkStatus` in the tree and grey the grid out on plain navigation.
 function Frame({ children, footer }: { children: ReactNode; footer: ReactNode }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">

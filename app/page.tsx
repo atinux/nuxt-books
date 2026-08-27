@@ -11,7 +11,11 @@ export default function Page({ searchParams }: PageProps<'/'>) {
       title="Can't load books"
     >
       <Suspense fallback={<BookCatalogSkeleton />}>
-        <Crossfade>{searchParams.then(sp => <BookCatalog searchParams={parseSearchParams(sp)} />)}</Crossfade>
+        <Crossfade>
+          {searchParams.then(sp => (
+            <BookCatalog searchParams={parseSearchParams(sp)} />
+          ))}
+        </Crossfade>
       </Suspense>
     </ErrorBoundary>
   );

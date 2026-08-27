@@ -17,13 +17,15 @@ export async function generateMetadata({ params }: PageProps<'/[id]'>): Promise<
 export default function Page({ params }: PageProps<'/[id]'>) {
   return (
     <div className="flex flex-1 flex-col px-4 py-5 sm:px-6">
-      {/* Outside the boundary: the back link is part of the shell, so it paints and
-          stays clickable while the book streams, and never shifts underneath. */}
       <BackToBooksLink className="mb-6" />
       <ErrorBoundary body="We couldn't load this book's details." title="Can't load book">
         <Suspense fallback={<BookDetailSkeleton />}>
           <DirectionalSlide name="book-detail">
-            <Crossfade>{params.then(({ id }) => <BookDetail id={id} />)}</Crossfade>
+            <Crossfade>
+              {params.then(({ id }) => (
+                <BookDetail id={id} />
+              ))}
+            </Crossfade>
           </DirectionalSlide>
         </Suspense>
       </ErrorBoundary>
