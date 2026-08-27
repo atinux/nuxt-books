@@ -57,7 +57,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
                     href="/"
                   >
-                    <BookMark className="size-5" />
+                    <BookMark className="text-action size-5" />
                     NextBooks
                   </Link>
                 </div>
@@ -95,7 +95,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <ViewTransition default="none" name="search-bar">
                 <header className="border-divider bg-surface/80 dark:border-divider-dark dark:bg-surface-dark/80 sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-md backdrop-saturate-150 sm:px-6">
                   <Link aria-label="NextBooks home" className="md:hidden" href="/">
-                    <BookMark className="size-5" />
+                    <BookMark className="text-action size-5" />
                   </Link>
                   <Suspense fallback={<BookSearchFallback />}>
                     <BookSearch />

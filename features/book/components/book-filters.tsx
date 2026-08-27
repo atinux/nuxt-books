@@ -64,6 +64,7 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
             max={MAX_YEAR}
             min={MIN_YEAR}
             onChange={event => commit({ yr: event.target.value })}
+            readout={filters.yr ? filters.yr : 'Any year'}
             step={YEAR_STEP}
             value={filters.yr ?? String(MAX_YEAR)}
           />
@@ -80,6 +81,7 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
             max={MAX_RATING}
             min={MIN_RATING}
             onChange={event => commit({ rtg: event.target.value })}
+            readout={Number(filters.rtg) > 0 ? `${filters.rtg}+ stars` : 'Any rating'}
             step={RATING_STEP}
             value={filters.rtg ?? String(MIN_RATING)}
           />
@@ -96,6 +98,7 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
             max={MAX_PAGES}
             min={MIN_PAGES}
             onChange={event => commit({ pgs: event.target.value })}
+            readout={filters.pgs ? `${Number(filters.pgs).toLocaleString()} pages` : 'Any length'}
             step={PAGES_STEP}
             value={filters.pgs ?? String(MAX_PAGES)}
           />
