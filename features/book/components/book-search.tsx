@@ -72,7 +72,10 @@ export function BookSearch() {
       />
       <SeedFromSearchParam param="search" targetId={inputId} />
       {isPending ? (
-        <span aria-hidden className="absolute top-1/2 right-3.5 -translate-y-1/2">
+        <span
+          aria-hidden
+          className="absolute top-1/2 right-3.5 flex size-4 -translate-y-1/2 items-center justify-center"
+        >
           <Spinner className="text-muted size-4" />
         </span>
       ) : null}
