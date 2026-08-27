@@ -23,6 +23,7 @@ export function ThemeToggle({ variant = 'pill' }: { variant?: 'inline' | 'pill' 
 
   return (
     <div
+      style={{ viewTransitionName: 'theme-toggle' }}
       className={
         variant === 'inline'
           ? 'inline-flex items-center gap-0.5'

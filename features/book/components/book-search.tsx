@@ -1,9 +1,10 @@
 'use client';
 
-import { Search as SearchIcon } from 'lucide-react';
+import { Search as SearchIcon, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useTransition } from 'react';
 import { SeedFromSearchParam } from '@/components/scripts/seed-from-search-param';
+import { IconButton } from '@/components/ui/icon-button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { useSyncSearchParamToInput } from '@/hooks/use-sync-search-param-to-input';
@@ -57,7 +58,7 @@ export function BookSearch() {
         {isPending ? <Spinner className="size-4" /> : <SearchIcon className="size-4" />}
       </span>
       <Input
-        className="pr-3"
+        className="peer"
         defaultValue=""
         id={inputId}
         name="search"
@@ -72,6 +73,18 @@ export function BookSearch() {
         type="search"
         variant="search"
       />
+      <IconButton
+        className="absolute top-1/2 right-1.5 -translate-y-1/2 peer-placeholder-shown:hidden"
+        label="Clear search"
+        onClick={() => {
+          if (timerRef.current) clearTimeout(timerRef.current);
+          if (inputRef.current) inputRef.current.value = '';
+          navigate('');
+          inputRef.current?.focus();
+        }}
+      >
+        <X className="size-4" />
+      </IconButton>
       <SeedFromSearchParam param="search" targetId={inputId} />
     </form>
   );

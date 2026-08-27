@@ -62,25 +62,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <MobileBookSidebar sidebar={<BookSidebarContent idPrefix="mobile" />}>
             <div className="group flex min-h-dvh">
               <aside
-                style={{ viewTransitionName: 'sidebar' }}
                 className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark sticky top-0 hidden h-dvh w-72 shrink-0 flex-col border-r px-5 py-5 md:flex"
+                style={{ viewTransitionName: 'sidebar' }}
               >
                 <BookSidebarContent idPrefix="desktop" />
               </aside>
 
               <div className="flex min-w-0 flex-1 flex-col">
                 <header
-                  style={{ viewTransitionName: 'site-header' }}
                   className="border-divider bg-surface/80 dark:border-divider-dark dark:bg-surface-dark/80 sticky top-0 z-20 flex items-center gap-2 border-b px-4 py-3 backdrop-blur-md backdrop-saturate-150 sm:gap-3 sm:px-6"
+                  style={{ viewTransitionName: 'site-header' }}
                 >
-                  <Link aria-label="NextBooks home" className="md:hidden" href="/">
-                    <BookMark className="text-action size-5" />
-                  </Link>
-                  <BookSearch />
                   <MobileBookSidebarTrigger />
-                  <div className="md:hidden">
-                    <ThemeToggle variant="inline" />
-                  </div>
+                  <BookSearch />
                 </header>
 
                 <main className="flex min-w-0 flex-1 flex-col">{children}</main>

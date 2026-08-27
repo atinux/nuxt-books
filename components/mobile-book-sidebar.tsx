@@ -15,13 +15,19 @@ export function MobileBookSidebar({ children, sidebar }: { children: ReactNode; 
     <MobileBookSidebarContext.Provider value={store}>
       {children}
       <Ariakit.Dialog
-        backdrop={<div className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px] md:hidden" />}
+        backdrop={
+          <div
+            className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px] md:hidden"
+            style={{ viewTransitionName: 'mobile-sidebar-backdrop' }}
+          />
+        }
         className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark fixed inset-y-0 left-0 z-50 flex w-[min(20rem,calc(100vw-3rem))] flex-col border-r pt-[max(1rem,env(safe-area-inset-top))] pr-4 pb-[max(1rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] shadow-2xl outline-none md:hidden"
         hideOnInteractOutside
         onClick={event => {
           if ((event.target as HTMLElement).closest('a[href]')) store.hide();
         }}
         store={store}
+        style={{ viewTransitionName: 'mobile-sidebar' }}
         unmountOnHide
       >
         <Ariakit.DialogHeading className="sr-only">Book filters</Ariakit.DialogHeading>
