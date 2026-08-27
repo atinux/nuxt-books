@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3002';
+const port = new URL(baseURL).port;
 
 export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
@@ -19,13 +20,15 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: `pnpm exec next dev --hostname 127.0.0.1 --port ${new URL(baseURL).port}`,
+    // A production server, not `next dev`: Next allows only one dev server per
+    // directory, so `next dev` here is refused whenever one is already running.
+    command: `pnpm exec next build && pnpm exec next start --hostname 127.0.0.1 --port ${port}`,
     // Blanking POSTGRES_URL drops the app onto the generated preview catalog, so the
-    // suite runs on a fixed dataset with no database. Its own port keeps a dev server
-    // on 3000 out of the way.
+    // suite runs on a fixed dataset with no database.
     env: { POSTGRES_URL: '' },
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
+    timeout: 300_000,
     url: baseURL,
   },
   workers: 1,

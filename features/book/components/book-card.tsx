@@ -21,12 +21,12 @@ export function BookCard({ book, priority, searchParams }: Props) {
 
   return (
     <HoverPrefetchLink
-      className="focus-visible:ring-action focus-visible:ring-offset-surface dark:focus-visible:ring-offset-surface-dark group block rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      className="focus-visible:ring-action focus-visible:ring-offset-surface dark:focus-visible:ring-offset-surface-dark group relative block rounded-md transition-transform duration-200 ease-out hover:z-10 hover:scale-[1.04] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       href={href}
     >
       <BookCover
         bookId={book.id}
-        className="ring-divider/70 dark:ring-divider-dark/70 group-hover:ring-gray/50 group-hover:shadow-soft ring-1 transition-shadow"
+        className="group-hover:shadow-soft transition-shadow"
         priority={priority}
         sizes={GRID_SIZES}
         src={book.image_url}
