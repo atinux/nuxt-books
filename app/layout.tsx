@@ -1,6 +1,5 @@
-import { GeistMono } from 'geist/font/mono';
-import { GeistSans } from 'geist/font/sans';
 import Link from 'next/link';
+import { Geist, Geist_Mono } from 'next/font/google';
 import { Suspense, ViewTransition } from 'react';
 import { BookMark } from '@/components/book-mark';
 import { ThemeProvider } from '@/components/theme/theme-provider';
@@ -14,6 +13,18 @@ import { CatalogSize, CatalogSizeSkeleton } from '@/features/book/components/cat
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+
+const geistSans = Geist({
+  display: 'block',
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
+});
+
+const geistMono = Geist_Mono({
+  display: 'block',
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
+});
 
 const description =
   'Browse two million Goodreads books with Next.js 16.3 Instant Navigations, streaming search, and URL-driven filters.';
@@ -45,7 +56,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html className={`${GeistSans.variable} ${GeistMono.variable}`} lang="en" suppressHydrationWarning>
+    <html className={`${geistSans.variable} ${geistMono.variable}`} lang="en" suppressHydrationWarning>
       <body className="bg-surface dark:bg-surface-dark text-black antialiased dark:text-white">
         <ThemeProvider>
           <div className="group flex min-h-dvh">
