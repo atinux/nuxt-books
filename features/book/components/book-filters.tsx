@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useOptimistic, useTransition } from 'react';
+import { useEffect, useOptimistic, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Range } from '@/components/ui/range';
@@ -25,8 +25,11 @@ import type { SearchParams } from '@/lib/url-state';
 
 function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
   const router = useRouter();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [filters, setFilters] = useOptimistic(initialParams);
+
+  useEffect(() => setIsHydrated(true), []);
 
   const activeCount = Object.values(filters).filter(Boolean).length;
   const activeList = getActiveList(filters.isbn, LISTS);
@@ -49,7 +52,11 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" data-filtering={isPending ? '' : undefined}>
+    <div
+      className="flex min-h-0 flex-1 flex-col"
+      data-filtering={isPending ? '' : undefined}
+      data-filters-ready={isHydrated ? '' : undefined}
+    >
       <div className="min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto overscroll-contain px-1 pb-6">
         <div className="flex flex-col gap-6">
           <Range

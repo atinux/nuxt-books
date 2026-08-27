@@ -1,7 +1,12 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function waitForFilters(page: Page) {
+  await expect(page.locator('[data-filters-ready]')).toBeAttached();
+}
 
 test('changing a filter resets pagination and clear restores the defaults', async ({ page }) => {
   await page.goto('/?page=2');
+  await waitForFilters(page);
 
   await page.getByRole('slider').nth(1).press('ArrowRight');
   await expect(page).toHaveURL(/rtg=0.5/);
@@ -17,6 +22,7 @@ test('changing a filter resets pagination and clear restores the defaults', asyn
 
 test('the clear button only appears once a filter is active', async ({ page }) => {
   await page.goto('/');
+  await waitForFilters(page);
   await expect(page.getByRole('button', { name: 'Clear all filters' })).toHaveCount(0);
 
   await page.getByRole('slider').nth(1).press('ArrowRight');
@@ -25,6 +31,7 @@ test('the clear button only appears once a filter is active', async ({ page }) =
 
 test('the language filter drives the URL', async ({ page }) => {
   await page.goto('/');
+  await waitForFilters(page);
 
   await page.getByLabel('Language').selectOption('fre');
   await expect(page).toHaveURL(/lng=fre/);
@@ -32,6 +39,7 @@ test('the language filter drives the URL', async ({ page }) => {
 
 test('the catalog only dims while a filter is in flight', async ({ page }) => {
   await page.goto('/');
+  await waitForFilters(page);
   const grid = page.locator('[data-filtering]');
 
   // Idle: nothing in the shell claims to be filtering, so the grid is at full opacity.
