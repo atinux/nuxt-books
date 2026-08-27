@@ -31,7 +31,10 @@ function FiltersBase({ initialParams }: { initialParams: SearchParams }) {
 
   useEffect(() => setIsHydrated(true), []);
 
-  const activeCount = Object.values(filters).filter(Boolean).length;
+  // Optimistic for the controls, committed for the chrome. `filters` carries the
+  // not-yet-navigated value so the sliders track the thumb instantly, but the Clear
+  // button keys off the URL that actually landed, so it does not appear mid-flight.
+  const activeCount = Object.values(initialParams).filter(Boolean).length;
   const activeList = getActiveList(filters.isbn, LISTS);
 
   // `useOptimistic` reverts when its transition settles, so the navigation has to
