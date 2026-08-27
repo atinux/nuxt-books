@@ -12,8 +12,7 @@ type Props = Omit<ComponentProps<'input'>, 'max' | 'min' | 'onChange' | 'step' |
 
 export function Range({ className, hint, id, label, onValueChange, readout, value, values, ...props }: Props) {
   const selectedIndex = values.reduce(
-    (closest, option, index) =>
-      Math.abs(option - value) < Math.abs(values[closest] - value) ? index : closest,
+    (closest, option, index) => (Math.abs(option - value) < Math.abs(values[closest] - value) ? index : closest),
     0,
   );
 

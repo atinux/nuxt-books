@@ -28,7 +28,7 @@ function filterReducer(filters: SearchParams, action: FilterAction): SearchParam
   return action.type === 'reset' ? {} : withFilters(filters, action.patch);
 }
 
-function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
+function BookFiltersForm({ idPrefix, initialParams }: { idPrefix: string; initialParams: SearchParams }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [filters, dispatch] = useOptimistic(initialParams, filterReducer);
@@ -58,7 +58,7 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
                 <span>{MAX_YEAR}</span>
               </>
             }
-            id="filter-year"
+            id={`${idPrefix}-filter-year`}
             label="Published before"
             onValueChange={value => commit({ year: value === MAX_YEAR ? undefined : String(value) })}
             readout={filters.year ? filters.year : 'Any year'}
@@ -73,7 +73,7 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
                 <span>{MAX_RATING} stars</span>
               </>
             }
-            id="filter-rating"
+            id={`${idPrefix}-filter-rating`}
             label="Minimum rating"
             onValueChange={value => commit({ rating: value === MIN_RATING ? undefined : String(value) })}
             readout={Number(filters.rating) > 0 ? `${filters.rating}+ stars` : 'Any rating'}
@@ -88,7 +88,7 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
                 <span>{MAX_PAGES.toLocaleString()}</span>
               </>
             }
-            id="filter-pages"
+            id={`${idPrefix}-filter-pages`}
             label="Max pages"
             onValueChange={value => commit({ pages: value === MAX_PAGES ? undefined : String(value) })}
             readout={filters.pages ? `${Number(filters.pages).toLocaleString()} pages` : 'Any length'}
@@ -97,11 +97,14 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
           />
 
           <div className="flex flex-col gap-2">
-            <label className="text-muted text-xs font-semibold tracking-wide uppercase" htmlFor="filter-language">
+            <label
+              className="text-muted text-xs font-semibold tracking-wide uppercase"
+              htmlFor={`${idPrefix}-filter-language`}
+            >
               Language
             </label>
             <Select
-              id="filter-language"
+              id={`${idPrefix}-filter-language`}
               onChange={event => commit({ language: event.target.value })}
               value={filters.language ?? 'en'}
             >
@@ -153,11 +156,11 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
   );
 }
 
-export function BookFiltersFallback() {
-  return <BookFiltersForm initialParams={{}} />;
+export function BookFiltersFallback({ idPrefix }: { idPrefix: string }) {
+  return <BookFiltersForm idPrefix={idPrefix} initialParams={{}} />;
 }
 
-export function BookFilters() {
+export function BookFilters({ idPrefix }: { idPrefix: string }) {
   const searchParams = useSearchParams();
-  return <BookFiltersForm initialParams={parseSearchParams(Object.fromEntries(searchParams))} />;
+  return <BookFiltersForm idPrefix={idPrefix} initialParams={parseSearchParams(Object.fromEntries(searchParams))} />;
 }

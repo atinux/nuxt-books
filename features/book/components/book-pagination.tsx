@@ -48,10 +48,10 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
       )}
 
       <p className="text-muted flex items-center gap-2 text-xs tabular-nums sm:text-sm">
-        <span>
+        <span className="hidden sm:inline">
           <span className="font-medium text-black dark:text-white">{totalResults.toLocaleString()}</span> books
         </span>
-        <span aria-hidden className="bg-divider dark:bg-divider-dark h-3 w-px" />
+        <span aria-hidden className="bg-divider dark:bg-divider-dark hidden h-3 w-px sm:block" />
         <span>
           Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
         </span>
@@ -87,8 +87,8 @@ export function BookPaginationSkeleton() {
         Previous
       </span>
       <div className="flex items-center gap-2">
-        <Skeleton className="skeleton-subtle h-4 w-20" />
-        <span className="bg-divider dark:bg-divider-dark h-3 w-px" />
+        <Skeleton className="skeleton-subtle hidden h-4 w-20 sm:block" />
+        <span className="bg-divider dark:bg-divider-dark hidden h-3 w-px sm:block" />
         <Skeleton className="skeleton-subtle h-4 w-20" />
       </div>
       <span className={cn(stepClass, 'pointer-events-none opacity-40')}>

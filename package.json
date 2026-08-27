@@ -19,6 +19,7 @@
     "db:seed-thumbhash": "tsx lib/db/seed-thumbhash.ts"
   },
   "dependencies": {
+    "@ariakit/react": "^0.4.38",
     "@neondatabase/serverless": "^1.1.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
