@@ -1,16 +1,12 @@
-import "./load-env";
-import path from "path";
-import { requireSql } from "./drizzle";
-import { NeonQueryFunction } from "@neondatabase/serverless";
-import { processEntities } from "./seed-utils";
+import './load-env';
+import path from 'path';
+import { requireSql } from './drizzle';
+import { NeonQueryFunction } from '@neondatabase/serverless';
+import { processEntities } from './seed-utils';
 
 const BATCH_SIZE = 900;
-const DATA_FILE = path.resolve(
-  process.env.BOOKS_DATA_PATH ?? "./lib/db/books.json",
-);
-const CHECKPOINT_FILE = path.resolve(
-  process.env.BOOKS_CHECKPOINT_PATH ?? "book_import_checkpoint.json",
-);
+const DATA_FILE = path.resolve(process.env.BOOKS_DATA_PATH ?? './lib/db/books.json');
+const CHECKPOINT_FILE = path.resolve(process.env.BOOKS_CHECKPOINT_PATH ?? 'book_import_checkpoint.json');
 
 // https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_books.json.gz
 const TOTAL_BOOKS = Number(process.env.TOTAL_BOOKS ?? 4);
@@ -34,10 +30,7 @@ interface BookData {
   popular_shelves: { count: string; name: string }[];
 }
 
-async function batchInsertBooks(
-  batch: BookData[],
-  sqlQuery: NeonQueryFunction<false, false>,
-) {
+async function batchInsertBooks(batch: BookData[], sqlQuery: NeonQueryFunction<false, false>) {
   const insertBookAndAuthorsQuery = `
     WITH inserted_book AS (
       INSERT INTO books (id, isbn, isbn13, title, publication_year, publisher, image_url, description, num_pages, language_code, text_reviews_count, ratings_count, average_rating, series, popular_shelves, title_tsv)
@@ -52,8 +45,8 @@ async function batchInsertBooks(
     ON CONFLICT DO NOTHING
   `;
 
-  return sqlQuery.transaction((tx) => {
-    return batch.map((book) =>
+  return sqlQuery.transaction(tx => {
+    return batch.map(book =>
       tx.query(insertBookAndAuthorsQuery, [
         parseInt(book.book_id),
         book.isbn || null,
@@ -70,7 +63,7 @@ async function batchInsertBooks(
         book.average_rating ? book.average_rating : null,
         book.series || null,
         JSON.stringify(book.popular_shelves),
-        book.authors.map((author) => author.author_id),
+        book.authors.map(author => author.author_id),
       ]),
     );
   });
@@ -87,19 +80,15 @@ async function main() {
       sql,
       TOTAL_BOOKS,
     );
-    await sql.query(
-      "SELECT setval(pg_get_serial_sequence('books', 'id'), (SELECT max(id) FROM books))",
-    );
-    console.log(
-      `Seeded ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`,
-    );
+    await sql.query("SELECT setval(pg_get_serial_sequence('books', 'id'), (SELECT max(id) FROM books))");
+    console.log(`Seeded ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`);
   } catch (error) {
-    console.error("Error seeding books:", error);
+    console.error('Error seeding books:', error);
     process.exitCode = 1;
   }
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error(error);
   process.exitCode = 1;
 });

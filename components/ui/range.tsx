@@ -14,7 +14,7 @@ export function Range({ className, hint, id, label, value, ...props }: Props) {
         <label className="text-muted text-xs font-semibold tracking-wide uppercase" htmlFor={id}>
           {label}
         </label>
-        <span className="text-sm font-medium tabular-nums text-black dark:text-white">{value}</span>
+        <span className="text-sm font-medium text-black tabular-nums dark:text-white">{value}</span>
       </div>
       <input
         className={cn(

@@ -1,0 +1,10 @@
+.next
+node_modules
+playwright-report
+test-results
+pnpm-lock.yaml
+
+# Newline-delimited seed data, not valid single-expression JSON
+lib/db/authors.json
+lib/db/books.json
+lib/db/migrations

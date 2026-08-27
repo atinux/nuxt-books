@@ -1,12 +1,12 @@
-import "./load-env";
-import path from "path";
-import { migrate } from "drizzle-orm/neon-http/migrator";
+import './load-env';
+import path from 'path';
+import { migrate } from 'drizzle-orm/neon-http/migrator';
 
-import { requireDb } from "./drizzle";
+import { requireDb } from './drizzle';
 
 async function main() {
   await migrate(requireDb(), {
-    migrationsFolder: path.join(__dirname, "./migrations"),
+    migrationsFolder: path.join(__dirname, './migrations'),
   });
   console.log(`Migrations complete`);
 }

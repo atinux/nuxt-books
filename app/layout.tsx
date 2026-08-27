@@ -14,7 +14,8 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 
-const description = 'Browse two million Goodreads books with instant navigations, streaming search, and URL-driven filters.';
+const description =
+  'Browse two million Goodreads books with instant navigations, streaming search, and URL-driven filters.';
 
 export const viewport: Viewport = {
   themeColor: [

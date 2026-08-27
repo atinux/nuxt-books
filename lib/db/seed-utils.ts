@@ -1,22 +1,15 @@
-import fs from "fs";
-import readline from "readline";
-import { createGunzip } from "zlib";
-import { NeonQueryFunction } from "@neondatabase/serverless";
+import fs from 'fs';
+import readline from 'readline';
+import { createGunzip } from 'zlib';
+import { NeonQueryFunction } from '@neondatabase/serverless';
 
-export async function saveCheckpoint(
-  checkpointFile: string,
-  processedLines: number,
-) {
-  await fs.promises.writeFile(
-    checkpointFile,
-    JSON.stringify({ processedLines }),
-    "utf8",
-  );
+export async function saveCheckpoint(checkpointFile: string, processedLines: number) {
+  await fs.promises.writeFile(checkpointFile, JSON.stringify({ processedLines }), 'utf8');
 }
 
 export async function loadCheckpoint(checkpointFile: string): Promise<number> {
   try {
-    const data = await fs.promises.readFile(checkpointFile, "utf8");
+    const data = await fs.promises.readFile(checkpointFile, 'utf8');
     return JSON.parse(data).processedLines;
   } catch {
     return 0;
@@ -27,10 +20,7 @@ export async function processEntities<T>(
   filePath: string,
   checkpointFile: string,
   batchSize: number,
-  batchInsertFunction: (
-    batch: T[],
-    sqlQuery: NeonQueryFunction<false, false>,
-  ) => Promise<unknown>,
+  batchInsertFunction: (batch: T[], sqlQuery: NeonQueryFunction<false, false>) => Promise<unknown>,
   sqlQuery: NeonQueryFunction<false, false>,
   totalEntities: number,
 ): Promise<number> {
@@ -41,9 +31,7 @@ export async function processEntities<T>(
   const startTime = Date.now();
 
   const fileStream = fs.createReadStream(filePath);
-  const input = filePath.endsWith(".gz")
-    ? fileStream.pipe(createGunzip())
-    : fileStream;
+  const input = filePath.endsWith('.gz') ? fileStream.pipe(createGunzip()) : fileStream;
   const rl = readline.createInterface({
     input,
     crlfDelay: Infinity,
@@ -60,7 +48,7 @@ export async function processEntities<T>(
       entity = JSON.parse(line) as T;
     } catch (error) {
       processedLines++;
-      console.error("Error processing line:", error);
+      console.error('Error processing line:', error);
       continue;
     }
 
@@ -78,8 +66,7 @@ export async function processEntities<T>(
       const elapsedSeconds = (Date.now() - startTime) / 1000;
       const batchSeconds = (batchEndTime - batchStartTime) / 1000;
       const remainingEntities = totalEntities - processedLines;
-      const estimatedRemainingSeconds =
-        (elapsedSeconds / processedLines) * remainingEntities;
+      const estimatedRemainingSeconds = (elapsedSeconds / processedLines) * remainingEntities;
       const progressPercentage = (processedLines / totalEntities) * 100;
       console.log(
         `Processed ${processedLines.toLocaleString()} / ${totalEntities.toLocaleString()} entities (${progressPercentage.toFixed(2)}%). ` +
@@ -97,9 +84,7 @@ export async function processEntities<T>(
   }
 
   const totalSeconds = (Date.now() - startTime) / 1000;
-  console.log(
-    `Total processing time: ${(totalSeconds / 60).toFixed(2)} minutes`,
-  );
+  console.log(`Total processing time: ${(totalSeconds / 60).toFixed(2)} minutes`);
 
   return processedLines;
 }

@@ -9,7 +9,10 @@ import type { RawSearchParams } from '@/lib/url-state';
 
 export default function Page({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
   return (
-    <ErrorBoundary body="The catalog query failed. Check your database connection and try again." title="Can't load books">
+    <ErrorBoundary
+      body="The catalog query failed. Check your database connection and try again."
+      title="Can't load books"
+    >
       <Suspense fallback={<CatalogSkeleton />}>
         <Crossfade>
           <BookResults searchParams={searchParams} />

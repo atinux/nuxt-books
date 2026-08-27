@@ -24,10 +24,7 @@ export function BookCover({ bookId, className, priority, sizes, src, thumbhash, 
   return (
     <ViewTransition default="none" name={`book-cover-${bookId}`} share="book-cover">
       <div
-        className={cn(
-          'bg-card dark:bg-card-dark relative aspect-[2/3] w-full overflow-hidden rounded-md',
-          className,
-        )}
+        className={cn('bg-card dark:bg-card-dark relative aspect-[2/3] w-full overflow-hidden rounded-md', className)}
       >
         <Image
           alt={title}

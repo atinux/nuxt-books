@@ -42,9 +42,7 @@ export function BookDetail({ book }: { book: BookDetails }) {
           </div>
         ) : null}
 
-        {book.description ? (
-          <p className="text-muted mt-6 max-w-prose text-sm leading-7">{book.description}</p>
-        ) : null}
+        {book.description ? <p className="text-muted mt-6 max-w-prose text-sm leading-7">{book.description}</p> : null}
 
         <dl className="border-divider dark:border-divider-dark mt-8 grid grid-cols-1 gap-x-8 gap-y-4 border-t pt-6 sm:grid-cols-2">
           <Fact icon={<BookOpen aria-hidden className="size-4" />} label="Pages">

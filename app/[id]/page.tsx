@@ -55,7 +55,9 @@ function DetailLayout({ children, searchParams }: { children: ReactNode; searchP
   return (
     <div className="flex flex-1 flex-col px-4 py-5 sm:px-6">
       <Suspense fallback={<PageHeader className="mb-6" />}>
-        {searchParams.then(raw => <PageHeader backHref={buildHref(parseSearchParams(raw))} className="mb-6" />)}
+        {searchParams.then(raw => (
+          <PageHeader backHref={buildHref(parseSearchParams(raw))} className="mb-6" />
+        ))}
       </Suspense>
       <DirectionalSlide name="book-detail">{children}</DirectionalSlide>
     </div>
