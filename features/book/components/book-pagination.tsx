@@ -32,7 +32,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
           aria-label="Previous page"
           className={stepClass}
           href={buildHref(withPage(searchParams, currentPage - 1))}
-          scroll={false}
+          prefetch={true}
         >
           <LinkStatus>
             <ChevronLeft aria-hidden className="size-4" />
@@ -57,7 +57,6 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
           className={stepClass}
           href={buildHref(withPage(searchParams, currentPage + 1))}
           prefetch={true}
-          scroll={false}
         >
           <LinkStatus>
             Next
