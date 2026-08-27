@@ -9,15 +9,15 @@ export const ITEMS_PER_PAGE = 28;
 
 export const MIN_YEAR = 1950;
 export const MAX_YEAR = 2023;
-export const YEAR_STEP = 10;
+export const YEAR_FILTER_VALUES = [1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020, 2023] as const;
 
 export const MIN_RATING = 0;
 export const MAX_RATING = 5;
-export const RATING_STEP = 0.5;
+export const RATING_FILTER_VALUES = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5] as const;
 
 export const MIN_PAGES = 1;
 export const MAX_PAGES = 1000;
-export const PAGES_STEP = 100;
+export const PAGE_FILTER_VALUES = [1, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000] as const;
 
 export const LANGUAGES = [
   { label: 'English', value: 'en' },

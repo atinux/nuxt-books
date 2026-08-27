@@ -15,9 +15,9 @@ import {
   MIN_PAGES,
   MIN_RATING,
   MIN_YEAR,
-  PAGES_STEP,
-  RATING_STEP,
-  YEAR_STEP,
+  PAGE_FILTER_VALUES,
+  RATING_FILTER_VALUES,
+  YEAR_FILTER_VALUES,
 } from '@/features/book/book-constants';
 import { buildHref, parseSearchParams, withFilters } from '@/lib/url-state';
 import type { SearchParams } from '@/lib/url-state';
@@ -60,12 +60,10 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
             }
             id="filter-year"
             label="Published before"
-            max={MAX_YEAR}
-            min={MIN_YEAR}
-            onChange={event => commit({ year: event.target.value })}
+            onValueChange={value => commit({ year: value === MAX_YEAR ? undefined : String(value) })}
             readout={filters.year ? filters.year : 'Any year'}
-            step={YEAR_STEP}
-            value={filters.year ?? String(MAX_YEAR)}
+            value={Number(filters.year ?? MAX_YEAR)}
+            values={YEAR_FILTER_VALUES}
           />
 
           <Range
@@ -77,12 +75,10 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
             }
             id="filter-rating"
             label="Minimum rating"
-            max={MAX_RATING}
-            min={MIN_RATING}
-            onChange={event => commit({ rating: event.target.value })}
+            onValueChange={value => commit({ rating: value === MIN_RATING ? undefined : String(value) })}
             readout={Number(filters.rating) > 0 ? `${filters.rating}+ stars` : 'Any rating'}
-            step={RATING_STEP}
-            value={filters.rating ?? String(MIN_RATING)}
+            value={Number(filters.rating ?? MIN_RATING)}
+            values={RATING_FILTER_VALUES}
           />
 
           <Range
@@ -94,12 +90,10 @@ function BookFiltersForm({ initialParams }: { initialParams: SearchParams }) {
             }
             id="filter-pages"
             label="Max pages"
-            max={MAX_PAGES}
-            min={MIN_PAGES}
-            onChange={event => commit({ pages: event.target.value })}
+            onValueChange={value => commit({ pages: value === MAX_PAGES ? undefined : String(value) })}
             readout={filters.pages ? `${Number(filters.pages).toLocaleString()} pages` : 'Any length'}
-            step={PAGES_STEP}
-            value={filters.pages ?? String(MAX_PAGES)}
+            value={Number(filters.pages ?? MAX_PAGES)}
+            values={PAGE_FILTER_VALUES}
           />
 
           <div className="flex flex-col gap-2">
