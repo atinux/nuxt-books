@@ -2,7 +2,7 @@
 
 import { Search as SearchIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useId, useRef, useTransition } from 'react';
+import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { SeedFromSearchParam } from '@/components/scripts/seed-from-search-param';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
@@ -17,9 +17,11 @@ function SearchBase({ initialParams }: { initialParams: SearchParams }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputId = useId();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useSyncSearchParamToInput(inputRef, 'search');
+  useEffect(() => setIsHydrated(true), []);
 
   useEffect(
     () => () => {
@@ -39,6 +41,7 @@ function SearchBase({ initialParams }: { initialParams: SearchParams }) {
     <form
       className="relative flex-1"
       data-filtering={isPending ? '' : undefined}
+      data-search-ready={isHydrated ? '' : undefined}
       onSubmit={event => {
         event.preventDefault();
         if (timerRef.current) clearTimeout(timerRef.current);
