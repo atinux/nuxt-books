@@ -2,6 +2,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { LinkStatus } from '@/components/ui/link-status';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getBooksCount } from '@/features/book/book-queries';
+import { toBookQuery } from '@/features/book/book-utils';
 import { buildHref, getCurrentPage, getTotalPages, withPage } from '@/lib/url-state';
 import type { SearchParams } from '@/lib/url-state';
 import { cn } from '@/lib/utils';
@@ -9,14 +11,16 @@ import { cn } from '@/lib/utils';
 const stepClass =
   'text-muted hover:bg-card dark:hover:bg-card-dark focus-visible:ring-action/40 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors hover:text-black focus-visible:ring-2 focus-visible:outline-none dark:hover:text-white';
 
-export async function BookPagination({
-  searchParams,
-  totalResultsPromise,
-}: {
-  searchParams: SearchParams;
-  totalResultsPromise: Promise<number>;
-}) {
-  const totalResults = await totalResultsPromise;
+export async function BookPagination({ searchParams }: { searchParams: SearchParams }) {
+  const query = toBookQuery(searchParams);
+  const totalResults = await getBooksCount(
+    query.search,
+    query.year,
+    query.rating,
+    query.language,
+    query.maxPages,
+    query.isbns,
+  );
   const totalPages = getTotalPages(totalResults);
   const currentPage = getCurrentPage(searchParams, totalPages);
   const hasPrevious = currentPage > 1;
@@ -43,9 +47,14 @@ export async function BookPagination({
         </span>
       )}
 
-      <p className="text-muted text-xs tabular-nums sm:text-sm">
-        <span className="font-medium text-black dark:text-white">{totalResults.toLocaleString()}</span> books · page{' '}
-        {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
+      <p className="text-muted flex items-center gap-2 text-xs tabular-nums sm:text-sm">
+        <span>
+          <span className="font-medium text-black dark:text-white">{totalResults.toLocaleString()}</span> books
+        </span>
+        <span aria-hidden className="bg-divider dark:bg-divider-dark h-3 w-px" />
+        <span>
+          Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
+        </span>
       </p>
 
       {hasNext ? (
@@ -77,7 +86,11 @@ export function BookPaginationSkeleton() {
         <ChevronLeft className="size-4" />
         Previous
       </span>
-      <Skeleton className="skeleton-subtle h-4 w-36" />
+      <div className="flex items-center gap-2">
+        <Skeleton className="skeleton-subtle h-4 w-20" />
+        <span className="bg-divider dark:bg-divider-dark h-3 w-px" />
+        <Skeleton className="skeleton-subtle h-4 w-20" />
+      </div>
       <span className={cn(stepClass, 'pointer-events-none opacity-40')}>
         Next
         <ChevronRight className="size-4" />
