@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { ViewTransition } from 'react';
 import { createPngDataUri } from 'unlazy/thumbhash';
-import { EMPTY_IMAGE_URL } from '@/features/book/book-constants';
+import { EMPTY_IMAGE_URL, getLargeBookImageUrl } from '@/features/book/book-constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ export function BookCover({ bookId, className, priority, sizes, src, thumbhash, 
           placeholder={thumbhash ? 'blur' : 'empty'}
           priority={priority}
           sizes={sizes}
-          src={src ?? EMPTY_IMAGE_URL}
+          src={getLargeBookImageUrl(src ?? EMPTY_IMAGE_URL)}
         />
       </div>
     </ViewTransition>

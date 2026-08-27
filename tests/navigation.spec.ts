@@ -37,7 +37,7 @@ test('the next page is resolved by per-link prefetching', async ({ page }) => {
   await instant(page, async () => {
     await next.click();
     await page.waitForURL(url => url.searchParams.get('page') === '2');
-    await expect(page.getByText(/\(2 of [\d,]+\)/)).toBeVisible();
+    await expect(page.getByText(/page 2 of [\d,]+/)).toBeVisible();
   });
 });
 

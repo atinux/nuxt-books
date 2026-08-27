@@ -1,6 +1,13 @@
 export const EMPTY_IMAGE_URL =
   'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
 
+export function getLargeBookImageUrl(url: string): string {
+  return url.replace(
+    /^(https:\/\/images\.gr-assets\.com\/books\/\d+)m(\/\d+\.jpg)$/,
+    '$1l$2',
+  );
+}
+
 export const ITEMS_PER_PAGE = 28;
 
 export const MIN_YEAR = 1950;

@@ -22,7 +22,12 @@ export function BookPagination({ currentPage, searchParams, totalPages, totalRes
   return (
     <nav aria-label="Pagination" className="flex items-center justify-between gap-4">
       {hasPrevious ? (
-        <Link className={stepClass} href={buildHref(withPage(searchParams, currentPage - 1))} scroll={false}>
+        <Link
+          aria-label="Previous page"
+          className={stepClass}
+          href={buildHref(withPage(searchParams, currentPage - 1))}
+          scroll={false}
+        >
           <LinkStatus>
             <ChevronLeft aria-hidden className="size-4" />
             Previous
@@ -41,7 +46,13 @@ export function BookPagination({ currentPage, searchParams, totalPages, totalRes
       </p>
 
       {hasNext ? (
-        <Link className={stepClass} href={buildHref(withPage(searchParams, currentPage + 1))} scroll={false}>
+        <Link
+          aria-label="Next page"
+          className={stepClass}
+          href={buildHref(withPage(searchParams, currentPage + 1))}
+          prefetch={true}
+          scroll={false}
+        >
           <LinkStatus>
             Next
             <ChevronRight aria-hidden className="size-4" />
