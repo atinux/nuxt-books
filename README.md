@@ -4,9 +4,9 @@ Demo: https://book-inventory-16.labs.vercel.dev
 
 Book inventory app built with Next.js, Drizzle, and PostgreSQL. Over 2,000,000 books from Goodreads, [full dataset here](https://mengtingwan.github.io/data/goodreads.html).
 
-Rebuild of [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory), now archived, on [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations) for [Instant Navigations](https://nextjs.org/docs/app/guides/instant-navigation).
+Rebuild of [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory)(now archived), on [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations) with [Instant Navigations](https://nextjs.org/docs/app/guides/instant-navigation).
 
-## Instant navigations
+## Instant Navigations
 
 - **[Cache Components](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents)** cache each query with `'use cache'` and `cacheLife`. See [Migrating to Cache Components](https://nextjs.org/docs/app/guides/migrating-to-cache-components).
 - **[Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching)** prefetches the shared App Shell of links entering the viewport.
