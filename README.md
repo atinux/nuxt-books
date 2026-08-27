@@ -4,16 +4,13 @@ Demo: https://book-inventory-16.labs.vercel.dev
 
 This is a book inventory app built with Next.js, Drizzle, and PostgreSQL. The database contains over 2,000,000 books from Goodreads. [Full dataset here](https://mengtingwan.github.io/data/goodreads.html).
 
-It rebuilds [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory), now archived, on [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations).
+It rebuilds [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory), now archived, on [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations) to show [Instant Navigations](https://nextjs.org/docs/app/guides/instant-navigation) at this scale.
 
 ## Instant navigations
 
-Clicking a cover in a catalog this large doesn't wait on Postgres. Two config flags do the work:
-
-- `cacheComponents` splits a route into a cached shell and the dynamic parts inside it. See [Cache Components](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents).
-- `partialPrefetching` prefetches that shell for the links in the viewport. See [Adopting Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching).
-
-Each cover then upgrades to a [runtime prefetch](https://nextjs.org/docs/app/guides/runtime-prefetching) on hover or focus, so a page of 28 covers doesn't wake the server 28 times.
+- **[Cache Components](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents)** cache each query with `'use cache'` and set its lifetime with `cacheLife`, so a filtered page of books comes from the cache instead of querying Postgres again. See [Migrating to Cache Components](https://nextjs.org/docs/app/guides/migrating-to-cache-components).
+- **[Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching)** prefetches the shared App Shell of links as they enter the viewport, so navigation commits instantly and the data streams in behind it.
+- **[Hover-triggered prefetch](https://nextjs.org/docs/app/guides/prefetching#hover-triggered-prefetch)** defers a link's [runtime prefetch](https://nextjs.org/docs/app/guides/runtime-prefetching) until the pointer or focus reaches it, so a page of 28 covers does not prefetch every destination on render.
 
 ## Run locally
 

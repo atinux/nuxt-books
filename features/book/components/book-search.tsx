@@ -69,7 +69,11 @@ function SearchBase({ initialParams }: { initialParams: SearchParams }) {
         variant="search"
       />
       <SeedFromSearchParam param="search" targetId={inputId} />
-      {isPending ? <Spinner className="text-muted absolute top-1/2 right-3.5 size-4 -translate-y-1/2" /> : null}
+      {isPending ? (
+        <span aria-hidden className="absolute top-1/2 right-3.5 -translate-y-1/2">
+          <Spinner className="text-muted size-4" />
+        </span>
+      ) : null}
     </form>
   );
 }
