@@ -244,8 +244,9 @@ export async function getCatalogSize(): Promise<number> {
   const database = db;
   if (!database) return getPreviewCatalog().length;
 
-  const [{ total }] = await database.select({ total: count() }).from(books).where(imageFilter());
-  return total;
+  const explained = await database.execute(sql`EXPLAIN (FORMAT JSON) SELECT id FROM books WHERE ${imageFilter()}`);
+  const plan = explained.rows[0]?.['QUERY PLAN'] as { Plan?: { 'Plan Rows'?: number } }[] | undefined;
+  return Number(plan?.[0]?.Plan?.['Plan Rows'] ?? 0);
 }
 
 export async function getBookById(id: string): Promise<BookDetails | undefined> {
