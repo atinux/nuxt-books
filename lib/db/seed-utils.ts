@@ -1,7 +1,7 @@
 import fs from 'fs';
 import readline from 'readline';
 import { createGunzip } from 'zlib';
-import { NeonQueryFunction } from '@neondatabase/serverless';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 
 export async function saveCheckpoint(checkpointFile: string, processedLines: number) {
   await fs.promises.writeFile(checkpointFile, JSON.stringify({ processedLines }), 'utf8');
@@ -33,8 +33,8 @@ export async function processEntities<T>(
   const fileStream = fs.createReadStream(filePath);
   const input = filePath.endsWith('.gz') ? fileStream.pipe(createGunzip()) : fileStream;
   const rl = readline.createInterface({
-    input,
     crlfDelay: Infinity,
+    input,
   });
 
   for await (const line of rl) {

@@ -2,9 +2,6 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
-  partialPrefetching: true,
-  reactCompiler: true,
-  typedRoutes: true,
   experimental: {
     inlineCss: true,
     useOffline: true,
@@ -12,12 +9,15 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
         hostname: '*.gr-assets.com',
         port: '',
+        protocol: 'https',
       },
     ],
   },
+  partialPrefetching: true,
+  reactCompiler: true,
+  typedRoutes: true,
 };
 
 export default nextConfig;

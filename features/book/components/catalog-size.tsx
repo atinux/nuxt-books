@@ -1,25 +1,10 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { getCatalogSize } from '@/features/book/book-queries';
-
-export async function CatalogSize() {
-  const total = await getCatalogSize();
-
+export function CatalogSize() {
   return (
     <div>
-      <p className="text-2xl font-semibold tracking-tight tabular-nums">{total.toLocaleString()}</p>
+      <p className="text-2xl font-semibold tracking-tight tabular-nums">2M+</p>
       <p className="text-muted mt-1 text-xs leading-5">
         books from Goodreads. Built on Next.js 16.3 Instant Navigations.
       </p>
-    </div>
-  );
-}
-
-export function CatalogSizeSkeleton() {
-  return (
-    <div aria-hidden>
-      <Skeleton className="skeleton-subtle h-8 w-28" />
-      <Skeleton className="skeleton-subtle mt-2 h-3 w-full" />
-      <Skeleton className="skeleton-subtle mt-1.5 h-3 w-4/5" />
     </div>
   );
 }

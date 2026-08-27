@@ -1,7 +1,7 @@
 import { EmptyState } from '@/components/ui/empty-state';
 import { ITEMS_PER_PAGE } from '@/features/book/book-constants';
-import { BookCard, BookCardSkeleton } from '@/features/book/components/book-card';
 import type { BookSummary } from '@/features/book/book-queries';
+import { BookCard, BookCardSkeleton } from '@/features/book/components/book-card';
 import { getCurrentPage, type SearchParams } from '@/lib/url-state';
 
 const gridClass = 'grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7';

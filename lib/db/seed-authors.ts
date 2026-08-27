@@ -1,8 +1,8 @@
 import './load-env';
 import path from 'path';
 import { requireSql } from './drizzle';
-import { NeonQueryFunction } from '@neondatabase/serverless';
 import { processEntities } from './seed-utils';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 
 const BATCH_SIZE = 2000;
 const DATA_FILE = path.resolve(process.env.AUTHORS_DATA_PATH ?? './lib/db/authors.json');

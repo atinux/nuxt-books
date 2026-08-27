@@ -1,7 +1,7 @@
-import { BookCover, BookCoverSkeleton } from '@/features/book/components/book-cover';
 import { HoverPrefetchLink } from '@/components/ui/hover-prefetch-link';
-import { buildHref } from '@/lib/url-state';
 import type { BookSummary } from '@/features/book/book-queries';
+import { BookCover, BookCoverSkeleton } from '@/features/book/components/book-cover';
+import { buildHref } from '@/lib/url-state';
 import type { SearchParams } from '@/lib/url-state';
 import type { Route } from 'next';
 

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { createPngDataUri } from 'unlazy/thumbhash';
-import { EMPTY_IMAGE_URL, getLargeBookImageUrl } from '@/features/book/book-constants';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EMPTY_IMAGE_URL, getLargeBookImageUrl } from '@/features/book/book-constants';
 import { cn } from '@/lib/utils';
 
 type Props = {

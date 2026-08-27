@@ -8,7 +8,7 @@ async function main() {
   await migrate(requireDb(), {
     migrationsFolder: path.join(__dirname, './migrations'),
   });
-  console.log(`Migrations complete`);
+  console.log('Migrations complete');
 }
 
 main();

@@ -1,8 +1,8 @@
 import './load-env';
 import path from 'path';
 import { requireSql } from './drizzle';
-import { NeonQueryFunction } from '@neondatabase/serverless';
 import { processEntities } from './seed-utils';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 
 const BATCH_SIZE = 900;
 const DATA_FILE = path.resolve(process.env.BOOKS_DATA_PATH ?? './lib/db/books.json');
@@ -45,8 +45,7 @@ async function batchInsertBooks(batch: BookData[], sqlQuery: NeonQueryFunction<f
     ON CONFLICT DO NOTHING
   `;
 
-  return sqlQuery.transaction(tx => {
-    return batch.map(book =>
+  return sqlQuery.transaction(tx => batch.map(book =>
       tx.query(insertBookAndAuthorsQuery, [
         parseInt(book.book_id),
         book.isbn || null,
@@ -65,8 +64,7 @@ async function batchInsertBooks(batch: BookData[], sqlQuery: NeonQueryFunction<f
         JSON.stringify(book.popular_shelves),
         book.authors.map(author => author.author_id),
       ]),
-    );
-  });
+    ));
 }
 
 async function main() {

@@ -1,12 +1,12 @@
 import './load-env';
 import path from 'path';
-import { requireSql } from './drizzle';
-import { NeonQueryFunction } from '@neondatabase/serverless';
-import { processEntities } from './seed-utils';
+import pLimit from 'p-limit';
 import sharp from 'sharp';
 import * as ThumbHash from 'thumbhash';
 import { EMPTY_IMAGE_URL } from '@/features/book/book-constants';
-import pLimit from 'p-limit';
+import { requireSql } from './drizzle';
+import { processEntities } from './seed-utils';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 
 const BATCH_SIZE = 900;
 const CHECKPOINT_FILE = 'thumbhash_update_checkpoint.json';

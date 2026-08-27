@@ -1,9 +1,7 @@
 import 'server-only';
 
-import { cacheLife } from 'next/cache';
 import { and, count, eq, gte, isNull, lte, not, sql } from 'drizzle-orm';
-import { db } from '@/lib/db/drizzle';
-import { authors, books, bookToAuthor } from '@/lib/db/schema';
+import { cacheLife } from 'next/cache';
 import {
   EMPTY_IMAGE_URL,
   ITEMS_PER_PAGE,
@@ -13,6 +11,8 @@ import {
   MIN_YEAR,
 } from '@/features/book/book-constants';
 import { GENERATED_PREVIEW_BOOKS } from '@/features/book/book-preview-catalog';
+import { db } from '@/lib/db/drizzle';
+import { authors, books, bookToAuthor } from '@/lib/db/schema';
 
 export type BookSummary = {
   id: number;
@@ -35,73 +35,69 @@ export type BookDetails = BookSummary & {
 
 const sampleBooks: BookDetails[] = [
   {
-    id: 5333265,
-    title: 'W.C. Fields: A Life on Film',
-    image_url: 'https://images.gr-assets.com/books/1310220028m/5333265.jpg',
-    thumbhash: null,
-    publication_year: 1984,
-    average_rating: '4.00',
-    isbn: '0312853122',
-    publisher: "St. Martin's Press",
-    description: 'A portrait of the legendary performer and the life behind his unmistakable screen persona.',
-    num_pages: 256,
-    language_code: 'eng',
-    ratings_count: 3,
     authors: ['Ronald J. Fields'],
+    average_rating: '4.00',
+    description: 'A portrait of the legendary performer and the life behind his unmistakable screen persona.',
+    id: 5333265,
+    image_url: 'https://images.gr-assets.com/books/1310220028m/5333265.jpg',
+    isbn: '0312853122',
+    language_code: 'eng',
+    num_pages: 256,
+    publication_year: 1984,
+    publisher: "St. Martin's Press",
+    ratings_count: 3,
+    thumbhash: null,
+    title: 'W.C. Fields: A Life on Film',
   },
   {
-    id: 1333909,
-    title: 'Good Harbor',
-    image_url: EMPTY_IMAGE_URL,
-    thumbhash: null,
-    publication_year: 2001,
+    authors: ['Anita Diamant'],
     average_rating: '3.23',
-    isbn: '0743509986',
-    publisher: 'Simon & Schuster Audio',
     description:
       'A story about the strength and necessity of adult friendship, set against the rocky coast of Gloucester, Massachusetts.',
-    num_pages: null,
-    language_code: 'eng',
-    ratings_count: 10,
-    authors: ['Anita Diamant'],
-  },
-  {
-    id: 7327624,
-    title: 'The Unschooled Wizard',
-    image_url: 'https://images.gr-assets.com/books/1304100136m/7327624.jpg',
-    thumbhash: null,
-    publication_year: 1987,
-    average_rating: '4.03',
-    isbn: null,
-    publisher: 'Nelson Doubleday, Inc.',
-    description: 'An omnibus edition containing The Ladies of Mandrigyn and The Witches of Wenshar.',
-    num_pages: 600,
-    language_code: 'eng',
-    ratings_count: 140,
-    authors: ['Barbara Hambly'],
-  },
-  {
-    id: 6066819,
-    title: 'Best Friends Forever',
+    id: 1333909,
     image_url: EMPTY_IMAGE_URL,
-    thumbhash: null,
-    publication_year: 2009,
-    average_rating: '3.49',
-    isbn: '0743294297',
-    publisher: 'Atria Books',
-    description: 'Two childhood friends reunite twenty-five years later and begin an unexpected adventure together.',
-    num_pages: 368,
+    isbn: '0743509986',
     language_code: 'eng',
-    ratings_count: 89_000,
+    num_pages: null,
+    publication_year: 2001,
+    publisher: 'Simon & Schuster Audio',
+    ratings_count: 10,
+    thumbhash: null,
+    title: 'Good Harbor',
+  },
+  {
+    authors: ['Barbara Hambly'],
+    average_rating: '4.03',
+    description: 'An omnibus edition containing The Ladies of Mandrigyn and The Witches of Wenshar.',
+    id: 7327624,
+    image_url: 'https://images.gr-assets.com/books/1304100136m/7327624.jpg',
+    isbn: null,
+    language_code: 'eng',
+    num_pages: 600,
+    publication_year: 1987,
+    publisher: 'Nelson Doubleday, Inc.',
+    ratings_count: 140,
+    thumbhash: null,
+    title: 'The Unschooled Wizard',
+  },
+  {
     authors: ['Jennifer Weiner'],
+    average_rating: '3.49',
+    description: 'Two childhood friends reunite twenty-five years later and begin an unexpected adventure together.',
+    id: 6066819,
+    image_url: EMPTY_IMAGE_URL,
+    isbn: '0743294297',
+    language_code: 'eng',
+    num_pages: 368,
+    publication_year: 2009,
+    publisher: 'Atria Books',
+    ratings_count: 89_000,
+    thumbhash: null,
+    title: 'Best Friends Forever',
   },
 ];
 
 const previewBooks: BookDetails[] = [...sampleBooks, ...GENERATED_PREVIEW_BOOKS];
-
-function getPreviewCatalog(): BookDetails[] {
-  return previewBooks.filter(book => book.image_url !== EMPTY_IMAGE_URL);
-}
 
 const yearFilter = (year: number) => and(gte(books.publication_year, MIN_YEAR), lte(books.publication_year, year));
 
@@ -226,9 +222,9 @@ export async function getBooksPage(
   return database
     .select({
       id: books.id,
-      title: books.title,
       image_url: books.image_url,
       thumbhash: books.thumbhash,
+      title: books.title,
     })
     .from(books)
     .where(getWhereClause(search, year, rating, language, maxPages, isbns))
@@ -258,18 +254,6 @@ export async function getBooksCount(
   return total;
 }
 
-export async function getCatalogSize(): Promise<number> {
-  'use cache';
-  cacheLife('days');
-
-  const database = db;
-  if (!database) return getPreviewCatalog().length;
-
-  const explained = await database.execute(sql`EXPLAIN (FORMAT JSON) SELECT id FROM books WHERE ${imageFilter()}`);
-  const plan = explained.rows[0]?.['QUERY PLAN'] as { Plan?: { 'Plan Rows'?: number } }[] | undefined;
-  return Number(plan?.[0]?.Plan?.['Plan Rows'] ?? 0);
-}
-
 export async function getBookById(id: string): Promise<BookDetails | undefined> {
   'use cache';
   cacheLife('hours');
@@ -282,19 +266,19 @@ export async function getBookById(id: string): Promise<BookDetails | undefined> 
 
   const result = await database
     .select({
+      authors: sql<string[]>`array_remove(array_agg(${authors.name}), NULL)`,
+      average_rating: books.average_rating,
+      description: books.description,
       id: books.id,
+      image_url: books.image_url,
       isbn: books.isbn,
-      title: books.title,
+      language_code: books.language_code,
+      num_pages: books.num_pages,
       publication_year: books.publication_year,
       publisher: books.publisher,
-      image_url: books.image_url,
-      description: books.description,
-      num_pages: books.num_pages,
-      language_code: books.language_code,
       ratings_count: books.ratings_count,
-      average_rating: books.average_rating,
-      authors: sql<string[]>`array_remove(array_agg(${authors.name}), NULL)`,
       thumbhash: books.thumbhash,
+      title: books.title,
     })
     .from(books)
     .leftJoin(bookToAuthor, eq(books.id, bookToAuthor.bookId))

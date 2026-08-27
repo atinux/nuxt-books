@@ -1,15 +1,14 @@
-import Link from 'next/link';
 import { Geist, Geist_Mono } from 'next/font/google';
+import Link from 'next/link';
 import { Suspense } from 'react';
 import { BookMark } from '@/components/book-mark';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
-import { Crossfade } from '@/components/ui/crossfade';
-import { GitHubIcon } from '@/components/ui/github-icon';
 import ErrorBoundary from '@/components/ui/error-boundary';
+import { GitHubIcon } from '@/components/ui/github-icon';
 import { BookFilters, BookFiltersFallback } from '@/features/book/components/book-filters';
 import { BookSearch } from '@/features/book/components/book-search';
-import { CatalogSize, CatalogSizeSkeleton } from '@/features/book/components/catalog-size';
+import { CatalogSize } from '@/features/book/components/catalog-size';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
@@ -75,13 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 </Link>
               </div>
               <div className="border-divider dark:border-divider-dark mt-6 border-b pb-5">
-                <ErrorBoundary compact title="Catalog size unavailable">
-                  <Suspense fallback={<CatalogSizeSkeleton />}>
-                    <Crossfade>
-                      <CatalogSize />
-                    </Crossfade>
-                  </Suspense>
-                </ErrorBoundary>
+                <CatalogSize />
               </div>
               <p className="text-muted mt-5 mb-4 text-xs font-semibold tracking-wide uppercase">Filters</p>
               <ErrorBoundary compact title="Filters unavailable">

@@ -2,9 +2,9 @@ import { BookOpen, Building2, CalendarDays, Globe, Hash } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StarRating } from '@/components/ui/star-rating';
-import { BookCover, BookCoverSkeleton } from '@/features/book/components/book-cover';
 import { getBookById } from '@/features/book/book-queries';
 import { formatCount, getLanguageLabel } from '@/features/book/book-utils';
+import { BookCover, BookCoverSkeleton } from '@/features/book/components/book-cover';
 import type { ReactNode } from 'react';
 
 const DETAIL_SIZES = '(min-width: 768px) 18rem, 60vw';
