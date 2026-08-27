@@ -1,14 +1,14 @@
+import { Suspense } from 'react';
 import { getBooksPage } from '@/features/book/book-queries';
 import { toBookQuery } from '@/features/book/book-utils';
 import { BookGrid, BookGridSkeleton } from '@/features/book/components/book-grid';
 import { BookPagination, BookPaginationSkeleton } from '@/features/book/components/book-pagination';
-import { getCurrentPage, getTotalPages } from '@/lib/url-state';
 import type { SearchParams } from '@/lib/url-state';
 import type { ReactNode } from 'react';
 
 export async function BookCatalog({ searchParams }: { searchParams: SearchParams }) {
   const query = toBookQuery(searchParams);
-  const { books, total } = await getBooksPage(
+  const books = await getBooksPage(
     query.page,
     query.search,
     query.year,
@@ -17,17 +17,13 @@ export async function BookCatalog({ searchParams }: { searchParams: SearchParams
     query.maxPages,
     query.isbns,
   );
-  const totalPages = getTotalPages(total);
 
   return (
     <Frame
       footer={
-        <BookPagination
-          currentPage={getCurrentPage(searchParams, totalPages)}
-          searchParams={searchParams}
-          totalPages={totalPages}
-          totalResults={total}
-        />
+        <Suspense fallback={<BookPaginationSkeleton />}>
+          <BookPagination searchParams={searchParams} />
+        </Suspense>
       }
     >
       <BookGrid books={books} searchParams={searchParams} />
