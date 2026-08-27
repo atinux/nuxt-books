@@ -4,7 +4,7 @@
 
 # NextBooks
 
-A catalog of over 2,000,000 Goodreads books, built with [Next.js 16.3](https://nextjs.org/blog/next-16-3), Drizzle, and PostgreSQL, showcasing [Instant Navigations](https://nextjs.org/blog/next-16-3-instant-navigations).
+NextBooks is built from a Goodreads dataset of over 2,000,000 books. The live catalog includes books with usable cover images and uses [Next.js 16.3](https://nextjs.org/blog/next-16-3), Drizzle, PostgreSQL, and [Instant Navigations](https://nextjs.org/blog/next-16-3-instant-navigations).
 
 [**Live demo →**](https://www.next-books.dev)
 
