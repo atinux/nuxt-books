@@ -1,36 +1,20 @@
-'use client';
-
-import Form from 'next/form';
-import { useFormStatus } from 'react-dom';
-import { Button } from '@/components/ui/button';
+import type { Route } from "next";
+import Link from "next/link";
+import { PendingArrow } from "@/components/pending-arrow";
+import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from '@/components/ui/pagination';
-import { SearchParams } from '@/lib/url-state';
+} from "@/components/ui/pagination";
+import { SearchParams, stringifySearchParams } from "@/lib/url-state";
 
-function FormValues({
-  searchParams,
-  pageNumber,
-}: {
-  searchParams: SearchParams;
-  pageNumber: number;
-}) {
-  const { pending } = useFormStatus();
-
-  return (
-    <div data-pending={pending ? '' : undefined}>
-      {/* Keep the existing search params */}
-      {Object.entries(searchParams).map(
-        ([key, value]) =>
-          key !== 'page' && (
-            <input key={key} type="hidden" name={key} value={value as string} />
-          )
-      )}
-      <input type="hidden" name="page" value={pageNumber.toString()} />
-    </div>
-  );
+function getPageHref(searchParams: SearchParams, page: number): Route {
+  const query = stringifySearchParams({
+    ...searchParams,
+    page: page.toString(),
+  });
+  return `/?${query}` as Route;
 }
 
 export function BookPagination({
@@ -52,20 +36,27 @@ export function BookPagination({
     <Pagination>
       <PaginationContent className="flex items-center justify-between">
         <PaginationItem>
-          <Form action="/">
-            <FormValues
-              searchParams={searchParams}
-              pageNumber={Math.max(1, currentPage - 1)}
-            />
+          {currentPage <= 1 ? (
             <Button
               variant="ghost"
-              type="submit"
               size="icon"
-              disabled={currentPage <= 1}
+              disabled
+              aria-label="Previous page"
             >
               ←
             </Button>
-          </Form>
+          ) : (
+            <Button variant="ghost" size="icon" asChild>
+              <Link
+                href={getPageHref(searchParams, currentPage - 1)}
+                prefetch={true}
+                scroll={false}
+                aria-label="Previous page"
+              >
+                <PendingArrow>←</PendingArrow>
+              </Link>
+            </Button>
+          )}
         </PaginationItem>
 
         <div className="text-sm text-muted-foreground">
@@ -74,20 +65,22 @@ export function BookPagination({
         </div>
 
         <PaginationItem>
-          <Form action="/">
-            <FormValues
-              searchParams={searchParams}
-              pageNumber={Math.min(totalPages, currentPage + 1)}
-            />
-            <Button
-              variant="ghost"
-              type="submit"
-              size="icon"
-              disabled={currentPage >= totalPages}
-            >
+          {currentPage >= totalPages ? (
+            <Button variant="ghost" size="icon" disabled aria-label="Next page">
               →
             </Button>
-          </Form>
+          ) : (
+            <Button variant="ghost" size="icon" asChild>
+              <Link
+                href={getPageHref(searchParams, currentPage + 1)}
+                prefetch={true}
+                scroll={false}
+                aria-label="Next page"
+              >
+                <PendingArrow>→</PendingArrow>
+              </Link>
+            </Button>
+          )}
         </PaginationItem>
       </PaginationContent>
     </Pagination>

@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "vector";
---> statement-breakpoint
 CREATE EXTENSION IF NOT EXISTS "unaccent";
 --> statement-breakpoint
 CREATE TABLE "authors" (
@@ -33,8 +31,6 @@ CREATE TABLE "books" (
 	"series" text[],
 	"popular_shelves" json,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"metadata" json,
-	"embedding" vector(1536),
 	"title_tsv" text NOT NULL,
 	"thumbhash" text,
 	CONSTRAINT "books_isbn_unique" UNIQUE("isbn")

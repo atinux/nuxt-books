@@ -197,18 +197,6 @@
           "notNull": true,
           "default": "now()"
         },
-        "metadata": {
-          "name": "metadata",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "embedding": {
-          "name": "embedding",
-          "type": "vector(1536)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "title_tsv": {
           "name": "title_tsv",
           "type": "text",

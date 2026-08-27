@@ -9,11 +9,6 @@ const nextConfig: NextConfig = {
     inlineCss: true,
     exposeTestingApiInProductionBuild: true,
   },
-  logging: {
-    fetches: {
-      fullUrl: true,
-    },
-  },
   images: {
     remotePatterns: [
       {

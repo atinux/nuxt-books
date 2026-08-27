@@ -1,14 +1,10 @@
-'use client';
-
-import Link from 'next/link';
-import { useState } from 'react';
+import type { Route } from 'next';
+import { IntentPrefetchLink } from '@/components/intent-prefetch-link';
 import { Photo } from '@/components/photo';
+import { EMPTY_IMAGE_URL } from '@/lib/book';
 import type { BookSummary } from '@/lib/db/queries';
 import type { SearchParams } from '@/lib/url-state';
 import { stringifySearchParams } from '@/lib/url-state';
-
-const EMPTY_IMAGE_URL =
-  'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
 
 export function BookLink({
   book,
@@ -19,16 +15,12 @@ export function BookLink({
   priority: boolean;
   searchParams: SearchParams;
 }) {
-  const [intent, setIntent] = useState(false);
   const query = stringifySearchParams(searchParams);
-  const href = `/${book.id}${query ? `?${query}` : ''}` as const;
+  const href = `/${book.id}${query ? `?${query}` : ''}` as Route;
 
   return (
-    <Link
+    <IntentPrefetchLink
       href={href}
-      prefetch={intent ? true : undefined}
-      onPointerEnter={() => setIntent(true)}
-      onFocus={() => setIntent(true)}
       className="block transition ease-in-out md:hover:scale-105"
     >
       <Photo
@@ -37,6 +29,6 @@ export function BookLink({
         thumbhash={book.thumbhash}
         priority={priority}
       />
-    </Link>
+    </IntentPrefetchLink>
   );
 }

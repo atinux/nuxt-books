@@ -1,5 +1,6 @@
 import fs from "fs";
 import readline from "readline";
+import { createGunzip } from "zlib";
 import { NeonQueryFunction } from "@neondatabase/serverless";
 
 export async function saveCheckpoint(
@@ -39,8 +40,12 @@ export async function processEntities<T>(
   let batch: T[] = [];
   const startTime = Date.now();
 
+  const fileStream = fs.createReadStream(filePath);
+  const input = filePath.endsWith(".gz")
+    ? fileStream.pipe(createGunzip())
+    : fileStream;
   const rl = readline.createInterface({
-    input: fs.createReadStream(filePath),
+    input,
     crlfDelay: Infinity,
   });
 

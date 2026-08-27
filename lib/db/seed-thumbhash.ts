@@ -1,10 +1,11 @@
+import "./load-env";
 import path from "path";
 import { requireSql } from "./drizzle";
 import { NeonQueryFunction } from "@neondatabase/serverless";
 import { processEntities } from "./seed-utils";
 import sharp from "sharp";
 import * as ThumbHash from "thumbhash";
-import { EMPTY_IMAGE_URL } from "./queries";
+import { EMPTY_IMAGE_URL } from "@/lib/book";
 import pLimit from "p-limit";
 
 const BATCH_SIZE = 900;

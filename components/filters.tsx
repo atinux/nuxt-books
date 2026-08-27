@@ -60,46 +60,49 @@ function FilterBase({ searchParams }: FilterProps) {
   const initialFilters = parseSearchParams(Object.fromEntries(searchParams));
   const [optimisticFilters, setOptimisticFilters] =
     useOptimistic<SearchParams>(initialFilters);
+  const hasActiveFilters = Object.values(optimisticFilters).some(
+    (value) => value !== undefined,
+  );
 
   const updateURL = (newFilters: SearchParams) => {
     const queryString = stringifySearchParams(newFilters);
-    router.push(queryString ? `/?${queryString}` : '/');
+    router.push(queryString ? `/?${queryString}` : '/', { scroll: false });
   };
 
-  const handleFilterChange = (
-    filterType: keyof SearchParams,
-    value: string | undefined
-  ) => {
+  const commitFilters = (newFilters: SearchParams) => {
     startTransition(() => {
-      const newFilters = { ...optimisticFilters, [filterType]: value };
       setOptimisticFilters(newFilters);
       updateURL(newFilters);
     });
   };
 
-  const handleListToggle = (isbns: string) => {
-    startTransition(() => {
-      const newIsbns = isbns.split(',');
-      const currentIsbns = optimisticFilters.isbn?.split(',') || [];
+  const handleFilterChange = (
+    filterType: keyof SearchParams,
+    value: string | undefined,
+  ) => {
+    const newFilters = { ...optimisticFilters };
+    delete newFilters.page;
+    if (value === undefined) delete newFilters[filterType];
+    else newFilters[filterType] = value;
+    commitFilters(newFilters);
+  };
 
-      // If the first ISBN of the list is already in the filter, remove all ISBNs of this list
-      if (currentIsbns.includes(newIsbns[0])) {
-        const updatedIsbns = currentIsbns.filter(
-          (isbn) => !newIsbns.includes(isbn)
-        );
-        handleFilterChange('isbn', updatedIsbns.join(',') || undefined);
-      } else {
-        // Otherwise, replace all current ISBNs with the new list
-        handleFilterChange('isbn', isbns);
-      }
-    });
+  const handleListToggle = (isbns: string) => {
+    const listIsbns = isbns.split(',');
+    const currentIsbns = optimisticFilters.isbn?.split(',') || [];
+
+    if (currentIsbns.includes(listIsbns[0])) {
+      const remainingIsbns = currentIsbns.filter(
+        (isbn) => !listIsbns.includes(isbn),
+      );
+      handleFilterChange('isbn', remainingIsbns.join(',') || undefined);
+    } else {
+      handleFilterChange('isbn', isbns);
+    }
   };
 
   const handleClearFilters = () => {
-    startTransition(() => {
-      setOptimisticFilters({});
-      router.push('/');
-    });
+    commitFilters({});
   };
 
   return (
@@ -212,7 +215,7 @@ function FilterBase({ searchParams }: FilterProps) {
         </div>
       </ScrollArea>
 
-      {Object.keys(optimisticFilters).length > 0 && (
+      {hasActiveFilters && (
         <div className="p-4 border-t">
           <Button
             variant="outline"

@@ -16,8 +16,8 @@ export function WelcomeToast() {
         },
         description: (
           <>
-            This is a demo of searching, filtering, and paginating 50,000 books
-            from Postgres.{' '}
+            This is a demo of searching, filtering, and paginating a Goodreads
+            catalog from Postgres.{' '}
             <a
               href="https://vercel.com/templates/next.js/next-book-inventory"
               className="text-blue-600 hover:underline"

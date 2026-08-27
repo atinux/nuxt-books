@@ -1,13 +1,19 @@
+import "./load-env";
 import path from "path";
 import { requireSql } from "./drizzle";
 import { NeonQueryFunction } from "@neondatabase/serverless";
 import { processEntities } from "./seed-utils";
 
 const BATCH_SIZE = 2000;
-const CHECKPOINT_FILE = "author_import_checkpoint.json";
+const DATA_FILE = path.resolve(
+  process.env.AUTHORS_DATA_PATH ?? "./lib/db/authors.json",
+);
+const CHECKPOINT_FILE = path.resolve(
+  process.env.AUTHORS_CHECKPOINT_PATH ?? "author_import_checkpoint.json",
+);
 
-// https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_book_authors.json.gz
-const TOTAL_AUTHORS = 4; // 829529 in full dataset, 4 in sample data
+// https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_book_authors.json.gz
+const TOTAL_AUTHORS = Number(process.env.TOTAL_AUTHORS ?? 4);
 
 interface AuthorData {
   average_rating: string;
@@ -44,7 +50,7 @@ async function main() {
   try {
     const sql = requireSql();
     const authorCount = await processEntities<AuthorData>(
-      path.resolve("./lib/db/authors.json"),
+      DATA_FILE,
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchInsertAuthors,

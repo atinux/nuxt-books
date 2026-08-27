@@ -36,6 +36,7 @@ yarn-error.log*
 
 # Database import checkpoints
 *_import_checkpoint.json
+/data/
 
 # typescript
 *.tsbuildinfo

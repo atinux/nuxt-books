@@ -1,38 +1,36 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
-import { and, eq, gte, isNull, lte, not, sql } from "drizzle-orm";
+import { cacheLife } from "next/cache";
+import { and, count, eq, gte, isNull, lte, not, sql } from "drizzle-orm";
 import { db } from "./drizzle";
 import { authors, books, bookToAuthor } from "./schema";
+import { EMPTY_IMAGE_URL } from "@/lib/book";
 import type { SearchParams } from "@/lib/url-state";
 
 export const ITEMS_PER_PAGE = 28;
-export const EMPTY_IMAGE_URL =
-  "https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png";
 
 export type BookSummary = {
   id: number;
   title: string;
   image_url: string | null;
   thumbhash: string | null;
-  publication_year: number | null;
-  average_rating: string | null;
 };
 
-export type BookDetails = BookSummary & {
+type BookDetails = BookSummary & {
   isbn: string | null;
   publisher: string | null;
   description: string | null;
   num_pages: number | null;
   language_code: string | null;
   ratings_count: number | null;
+  publication_year: number | null;
+  average_rating: string | null;
   authors: string[];
 };
 
-export type BooksPage = {
+type BooksPage = {
   books: BookSummary[];
   total: number;
-  preview: boolean;
 };
 
 const previewBooks: BookDetails[] = [
@@ -131,7 +129,7 @@ const imageFilter = () =>
 
 const searchFilter = (query?: string) =>
   query?.trim()
-    ? sql`${books.title_tsv} @@ plainto_tsquery('english', ${query.trim()})`
+    ? sql`to_tsvector('english', ${books.title_tsv}) @@ plainto_tsquery('english', unaccent(${query.trim()}))`
     : undefined;
 
 const isbnFilter = (isbn?: string) => {
@@ -166,9 +164,7 @@ function getPreviewBooks(searchParams: SearchParams): BooksPage {
 
   const filtered = previewBooks.filter((book) => {
     const matchesQuery =
-      !query ||
-      book.title.toLocaleLowerCase().includes(query) ||
-      book.authors.some((author) => author.toLocaleLowerCase().includes(query));
+      !query || book.title.toLocaleLowerCase().includes(query);
     const matchesLanguage =
       !searchParams.lng ||
       (searchParams.lng === "en"
@@ -193,7 +189,6 @@ function getPreviewBooks(searchParams: SearchParams): BooksPage {
   return {
     books: filtered.slice(start, start + ITEMS_PER_PAGE),
     total: filtered.length,
-    preview: true,
   };
 }
 
@@ -202,7 +197,6 @@ export async function getBooksPage(
 ): Promise<BooksPage> {
   "use cache";
   cacheLife("hours");
-  cacheTag("books");
 
   const database = db;
   if (!database) return getPreviewBooks(searchParams);
@@ -211,36 +205,25 @@ export async function getBooksPage(
   const page = Math.max(1, Number(searchParams.page) || 1);
   const offset = (page - 1) * ITEMS_PER_PAGE;
 
-  const [result, explainResult] = await Promise.all([
+  const [result, [{ total }]] = await Promise.all([
     database
       .select({
         id: books.id,
         title: books.title,
         image_url: books.image_url,
         thumbhash: books.thumbhash,
-        publication_year: books.publication_year,
-        average_rating: books.average_rating,
       })
       .from(books)
       .where(whereClause)
       .orderBy(books.id)
       .limit(ITEMS_PER_PAGE)
       .offset(offset),
-    database.execute(sql`
-      EXPLAIN (FORMAT JSON)
-      SELECT id FROM books
-      ${whereClause ? sql`WHERE ${whereClause}` : sql``}
-    `),
+    database.select({ total: count() }).from(books).where(whereClause),
   ]);
-
-  const queryPlan = explainResult.rows[0]?.["QUERY PLAN"] as
-    Array<{ Plan?: { "Plan Rows"?: number } }> | undefined;
-  const estimate = Number(queryPlan?.[0]?.Plan?.["Plan Rows"] ?? result.length);
 
   return {
     books: result,
-    total: Math.max(result.length, estimate),
-    preview: false,
+    total,
   };
 }
 
@@ -249,10 +232,12 @@ export async function getBookById(
 ): Promise<BookDetails | undefined> {
   "use cache";
   cacheLife("hours");
-  cacheTag("books", `book-${id}`);
+
+  const bookId = Number(id);
+  if (!Number.isInteger(bookId)) return undefined;
 
   const database = db;
-  if (!database) return previewBooks.find((book) => book.id === Number(id));
+  if (!database) return previewBooks.find((book) => book.id === bookId);
 
   const result = await database
     .select({
@@ -273,7 +258,7 @@ export async function getBookById(
     .from(books)
     .leftJoin(bookToAuthor, eq(books.id, bookToAuthor.bookId))
     .leftJoin(authors, eq(bookToAuthor.authorId, authors.id))
-    .where(eq(books.id, Number(id)))
+    .where(eq(books.id, bookId))
     .groupBy(books.id)
     .limit(1);
 

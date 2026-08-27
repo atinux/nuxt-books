@@ -8,7 +8,8 @@ import {
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { EMPTY_IMAGE_URL, getBookById } from '@/lib/db/queries';
+import { EMPTY_IMAGE_URL } from '@/lib/book';
+import { getBookById } from '@/lib/db/queries';
 import { Photo } from '@/components/photo';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
@@ -52,14 +53,12 @@ async function BookDetails({ params, searchParams }: BookPageProps) {
   ]);
   const book = await getBookById(id);
   if (!book) notFound();
+  const query = stringifySearchParams(resolvedSearchParams);
 
   return (
     <ScrollArea className="px-4 h-full">
       <Button variant="ghost" className="mb-4" asChild>
-        <Link
-          href={`/?${stringifySearchParams(resolvedSearchParams)}`}
-          prefetch={true}
-        >
+        <Link href={query ? `/?${query}` : '/'} prefetch={true}>
           <ArrowLeftIcon className="mr-2 h-4 w-4" /> Back to Books
         </Link>
       </Button>

@@ -109,6 +109,10 @@ export function Search() {
   const searchParams = useSearchParams();
   const query = searchParams.get('search') ?? '';
   return (
-    <SearchBase initialQuery={query} initialParams={searchParams.toString()} />
+    <SearchBase
+      key={query}
+      initialQuery={query}
+      initialParams={searchParams.toString()}
+    />
   );
 }

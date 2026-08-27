@@ -26,9 +26,7 @@ test("a book opens instantly after hover intent", async ({ page }) => {
       page.getByRole("heading", { name: "W.C. Fields: A Life on Film" }),
     ).toBeVisible();
   });
-  await expect(
-    page.getByRole("link", { name: "Back to Books" }),
-  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to Books" })).toBeVisible();
 });
 
 test("search streams matching results", async ({ page }) => {
@@ -43,4 +41,46 @@ test("search streams matching results", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: /Unschooled Wizard/ }),
   ).toBeVisible();
+});
+
+test("book details preserve search state on the instant back navigation", async ({
+  page,
+}) => {
+  await page.goto("/?search=wizard");
+  const book = page.getByRole("link", { name: /Unschooled Wizard/ });
+
+  await book.hover();
+  await book.click();
+  await expect(
+    page.getByRole("heading", { name: "The Unschooled Wizard" }),
+  ).toBeVisible();
+
+  const back = page.getByRole("link", { name: "Back to Books" });
+  await expect(back).toHaveAttribute("href", "/?search=wizard");
+  await back.click();
+
+  await expect(page).toHaveURL("/?search=wizard");
+  await expect(page.getByRole("textbox", { name: "Search" })).toHaveValue(
+    "wizard",
+  );
+  await expect(
+    page.getByRole("link", { name: /Unschooled Wizard/ }),
+  ).toBeVisible();
+});
+
+test("changing a filter resets pagination and clear restores the defaults", async ({
+  page,
+}) => {
+  await page.goto("/?page=2");
+
+  await page.getByRole("slider").nth(1).press("ArrowRight");
+  await expect(page).toHaveURL(/rtg=0.5/);
+  await expect(page).not.toHaveURL(/page=/);
+
+  const clear = page.getByRole("button", { name: "Clear all filters" });
+  await expect(clear).toBeVisible();
+  await clear.click();
+
+  await expect(page).toHaveURL("/");
+  await expect(clear).toHaveCount(0);
 });
