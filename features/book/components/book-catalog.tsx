@@ -39,8 +39,6 @@ export function BookCatalogSkeleton() {
   );
 }
 
-// `data-filtering`, not `data-pending`: the latter would also match every
-// `useLinkStatus` in the tree and grey the grid out on plain navigation.
 function Frame({ children, footer }: { children: ReactNode; footer: ReactNode }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
