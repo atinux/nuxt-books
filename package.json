@@ -45,7 +45,7 @@
     "@typescript/native": "npm:typescript@^7.0.2",
     "babel-plugin-react-compiler": "^1.0.0",
     "drizzle-kit": "^0.31.10",
-    "eslint": "^10.9.1",
+    "eslint": "^9.39.5",
     "eslint-config-next": "16.4.0-canary.8",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-autofix": "^2.2.0",
