@@ -24,7 +24,6 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
   const currentPage = getCurrentPage(searchParams, totalPages);
   const hasPrevious = currentPage > 1;
   const hasNext = currentPage < totalPages;
-  const shouldPrefetchPagination = currentPage === 1;
 
   return (
     <nav aria-label="Pagination" className="flex items-center justify-between gap-4">
@@ -33,7 +32,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
           aria-label="Previous page"
           className={stepClass}
           href={buildHref(withPage(searchParams, currentPage - 1))}
-          prefetch={shouldPrefetchPagination}
+          prefetch={true}
         >
           <LinkStatus>
             <ChevronLeft aria-hidden className="size-4" />
@@ -57,7 +56,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
           aria-label="Next page"
           className={stepClass}
           href={buildHref(withPage(searchParams, currentPage + 1))}
-          prefetch={shouldPrefetchPagination}
+          prefetch={true}
         >
           <LinkStatus hint="start">
             Next

@@ -2,7 +2,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ITEMS_PER_PAGE } from '@/features/book/book-constants';
 import { BookCard, BookCardSkeleton } from '@/features/book/components/book-card';
 import type { BookSummary } from '@/features/book/book-queries';
-import type { SearchParams } from '@/lib/url-state';
+import { getCurrentPage, type SearchParams } from '@/lib/url-state';
 
 const gridClass = 'grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7';
 
@@ -16,10 +16,18 @@ export function BookGrid({ books, searchParams }: { books: BookSummary[]; search
     );
   }
 
+  const eagerPrefetch = getCurrentPage(searchParams) === 1;
+
   return (
     <div className={gridClass}>
       {books.map((book, index) => (
-        <BookCard book={book} key={book.id} priority={index < 10} searchParams={searchParams} />
+        <BookCard
+          book={book}
+          eagerPrefetch={eagerPrefetch}
+          key={book.id}
+          priority={index < 10}
+          searchParams={searchParams}
+        />
       ))}
     </div>
   );
