@@ -89,21 +89,21 @@ export function BookDetailSkeleton() {
         <BookCoverSkeleton />
       </div>
       <div className="min-w-0 flex-1">
-        <Skeleton className="h-8 w-3/4 max-w-md" />
-        <Skeleton className="mt-3 h-5 w-40" />
-        <Skeleton className="mt-5 h-4 w-56" />
+        <Skeleton className="skeleton-subtle h-8 w-3/4 max-w-md" />
+        <Skeleton className="skeleton-subtle mt-3 h-5 w-40" />
+        <Skeleton className="skeleton-subtle mt-5 h-4 w-56" />
         <div className="mt-6 flex flex-col gap-2.5">
-          <Skeleton className="h-3.5 w-full max-w-prose" />
-          <Skeleton className="h-3.5 w-full max-w-prose" />
-          <Skeleton className="h-3.5 w-4/5 max-w-prose" />
+          <Skeleton className="skeleton-subtle h-3.5 w-full max-w-prose" />
+          <Skeleton className="skeleton-subtle h-3.5 w-full max-w-prose" />
+          <Skeleton className="skeleton-subtle h-3.5 w-4/5 max-w-prose" />
         </div>
         <div className="border-divider dark:border-divider-dark mt-8 grid grid-cols-1 gap-x-8 gap-y-4 border-t pt-6 sm:grid-cols-2">
           {Array.from({ length: 5 }).map((_, index) => (
             <div className="flex items-start gap-3" key={index}>
-              <Skeleton className="mt-0.5 size-4 rounded" />
+              <Skeleton className="skeleton-subtle mt-0.5 size-4 rounded" />
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="skeleton-subtle h-3 w-16" />
+                <Skeleton className="skeleton-subtle h-4 w-24" />
               </div>
             </div>
           ))}

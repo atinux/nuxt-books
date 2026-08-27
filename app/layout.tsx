@@ -6,6 +6,7 @@ import { BookMark } from '@/components/book-mark';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Crossfade } from '@/components/ui/crossfade';
+import { GitHubIcon } from '@/components/ui/github-icon';
 import ErrorBoundary from '@/components/ui/error-boundary';
 import { BookFilters, BookFiltersFallback } from '@/features/book/components/book-filters';
 import { BookSearch, BookSearchFallback } from '@/features/book/components/book-search';
@@ -78,12 +79,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <div className="border-divider dark:border-divider-dark mt-4 flex items-center justify-between gap-2 border-t pt-4">
                   <ThemeToggle variant="inline" />
                   <a
-                    className="text-muted text-xs font-medium transition-colors hover:text-black dark:hover:text-white"
+                    aria-label="View source on GitHub"
+                    className="text-muted rounded-full p-1.5 transition-colors hover:text-black dark:hover:text-white"
                     href="https://github.com/vercel-labs/next-books"
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    Source
+                    <GitHubIcon className="size-4" />
                   </a>
                 </div>
               </aside>

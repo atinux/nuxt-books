@@ -19,7 +19,7 @@ type Props = {
 // pair to the geometry-only recipe in globals.css.
 export function BookCover({ bookId, className, priority, sizes, src, thumbhash, title }: Props) {
   return (
-    <ViewTransition default="none" name={`book-cover-${bookId}`} share="book-cover">
+    <ViewTransition default="none" enter="cover-fade" name={`book-cover-${bookId}`} share="book-cover">
       <div
         className={cn('bg-card dark:bg-card-dark relative aspect-[2/3] w-full overflow-hidden rounded-md', className)}
       >
@@ -39,5 +39,5 @@ export function BookCover({ bookId, className, priority, sizes, src, thumbhash, 
 }
 
 export function BookCoverSkeleton({ className }: { className?: string }) {
-  return <Skeleton className={cn('aspect-[2/3] w-full rounded-md', className)} />;
+  return <Skeleton className={cn('skeleton-subtle aspect-[2/3] w-full rounded-md', className)} />;
 }

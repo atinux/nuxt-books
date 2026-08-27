@@ -17,9 +17,9 @@ export async function CatalogSize() {
 export function CatalogSizeSkeleton() {
   return (
     <div aria-hidden>
-      <Skeleton className="h-8 w-28" />
-      <Skeleton className="mt-2 h-3 w-full" />
-      <Skeleton className="mt-1.5 h-3 w-4/5" />
+      <Skeleton className="skeleton-subtle h-8 w-28" />
+      <Skeleton className="skeleton-subtle mt-2 h-3 w-full" />
+      <Skeleton className="skeleton-subtle mt-1.5 h-3 w-4/5" />
     </div>
   );
 }
