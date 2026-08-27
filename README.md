@@ -1,10 +1,18 @@
-# Book Inventory 16
+<div align="center">
 
-Demo: https://book-inventory-16.labs.vercel.dev
+<img src="public/logo.svg" alt="NextBooks" width="72" height="72" />
 
-Book inventory app built with Next.js, Drizzle, and PostgreSQL. Over 2,000,000 books from Goodreads, [full dataset here](https://mengtingwan.github.io/data/goodreads.html).
+# NextBooks
 
-Rebuild of [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory)(now archived), on [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations) with [Instant Navigations](https://nextjs.org/docs/app/guides/instant-navigation).
+A catalog of over 2,000,000 Goodreads books, built with [Next.js 16.3](https://nextjs.org/blog/next-16-3-instant-navigations), Drizzle, and PostgreSQL, showcasing [Instant Navigations](https://nextjs.org/docs/app/guides/instant-navigation).
+
+[**Live demo →**](https://book-inventory-16.labs.vercel.dev)
+
+</div>
+
+---
+
+Rebuild of [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory), now archived. [Full dataset here](https://mengtingwan.github.io/data/goodreads.html).
 
 ## Instant Navigations
 

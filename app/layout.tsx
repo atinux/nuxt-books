@@ -35,11 +35,11 @@ export const metadata: Metadata = {
   ),
   openGraph: {
     description,
-    siteName: 'Book Inventory',
-    title: 'Book Inventory',
+    siteName: 'NextBooks',
+    title: 'NextBooks',
     type: 'website',
   },
-  title: { default: 'Book Inventory', template: '%s · Book Inventory' },
+  title: { default: 'NextBooks', template: '%s · NextBooks' },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -52,12 +52,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <aside className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark sticky top-0 hidden h-dvh w-72 shrink-0 flex-col border-r px-5 py-5 md:flex">
                 <div className="flex items-center justify-between gap-2">
                   <Link
-                    aria-label="Book Inventory home"
+                    aria-label="NextBooks home"
                     className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
                     href="/"
                   >
                     <BookMark className="size-5" />
-                    Book Inventory
+                    NextBooks
                   </Link>
                 </div>
                 <div className="border-divider dark:border-divider-dark mt-6 border-b pb-5">
@@ -79,7 +79,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <ThemeToggle variant="inline" />
                   <a
                     className="text-muted text-xs font-medium transition-colors hover:text-black dark:hover:text-white"
-                    href="https://github.com/vercel-labs/book-inventory-16"
+                    href="https://github.com/vercel-labs/next-books"
                     rel="noopener noreferrer"
                     target="_blank"
                   >
@@ -92,7 +92,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <div className="flex min-w-0 flex-1 flex-col">
               <ViewTransition default="none" name="search-bar">
                 <header className="border-divider bg-surface/80 dark:border-divider-dark dark:bg-surface-dark/80 sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-md backdrop-saturate-150 sm:px-6">
-                  <Link aria-label="Book Inventory home" className="md:hidden" href="/">
+                  <Link aria-label="NextBooks home" className="md:hidden" href="/">
                     <BookMark className="size-5" />
                   </Link>
                   <Suspense fallback={<BookSearchFallback />}>
