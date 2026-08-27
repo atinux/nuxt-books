@@ -1,4 +1,13 @@
-import { LANGUAGES } from '@/features/book/book-constants';
+import {
+  LANGUAGES,
+  MAX_PAGES,
+  MAX_RATING,
+  MAX_YEAR,
+  MIN_PAGES,
+  MIN_RATING,
+  MIN_YEAR,
+} from '@/features/book/book-constants';
+import type { SearchParams } from '@/lib/url-state';
 
 export function getLanguageLabel(code: string | null): string {
   if (!code) return 'Unknown';
@@ -21,4 +30,22 @@ export function getActiveList(isbn: string | undefined, lists: { name: string; i
   if (!isbn) return undefined;
   const first = isbn.split(',')[0];
   return lists.find(list => list.isbns.split(',')[0] === first)?.name;
+}
+
+export function toBookQuery(params: SearchParams) {
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+  const num = (raw: string | undefined, fallback: number) => {
+    const parsed = Number(raw);
+    return raw !== undefined && !Number.isNaN(parsed) ? parsed : fallback;
+  };
+
+  return {
+    isbns: params.isbn ?? '',
+    language: params.lng ?? '',
+    maxPages: clamp(num(params.pgs, MAX_PAGES), MIN_PAGES, MAX_PAGES),
+    page: Math.max(1, Math.trunc(num(params.page, 1))),
+    rating: clamp(num(params.rtg, MIN_RATING), MIN_RATING, MAX_RATING),
+    search: params.search?.trim() ?? '',
+    year: clamp(num(params.yr, MAX_YEAR), MIN_YEAR, MAX_YEAR),
+  };
 }

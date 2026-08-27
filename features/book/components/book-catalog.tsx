@@ -1,4 +1,5 @@
 import { getBooksPage } from '@/features/book/book-queries';
+import { toBookQuery } from '@/features/book/book-utils';
 import { BookGrid, BookGridSkeleton } from '@/features/book/components/book-grid';
 import { BookPagination, BookPaginationSkeleton } from '@/features/book/components/book-pagination';
 import { getCurrentPage, getTotalPages } from '@/lib/url-state';
@@ -6,7 +7,16 @@ import type { SearchParams } from '@/lib/url-state';
 import type { ReactNode } from 'react';
 
 export async function BookCatalog({ searchParams }: { searchParams: SearchParams }) {
-  const { books, total } = await getBooksPage(searchParams);
+  const query = toBookQuery(searchParams);
+  const { books, total } = await getBooksPage(
+    query.page,
+    query.search,
+    query.year,
+    query.rating,
+    query.language,
+    query.maxPages,
+    query.isbns,
+  );
   const totalPages = getTotalPages(total);
 
   return (

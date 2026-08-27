@@ -4,9 +4,15 @@ import { cacheLife } from 'next/cache';
 import { and, count, eq, gte, isNull, lte, not, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { authors, books, bookToAuthor } from '@/lib/db/schema';
-import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MAX_PAGES, MAX_YEAR, MIN_YEAR } from '@/features/book/book-constants';
+import {
+  EMPTY_IMAGE_URL,
+  ITEMS_PER_PAGE,
+  MAX_PAGES,
+  MAX_YEAR,
+  MIN_RATING,
+  MIN_YEAR,
+} from '@/features/book/book-constants';
 import { GENERATED_PREVIEW_BOOKS } from '@/features/book/book-preview-catalog';
-import type { SearchParams } from '@/lib/url-state';
 
 export type BookSummary = {
   id: number;
@@ -102,80 +108,87 @@ function getPreviewCatalog(): BookDetails[] {
   return previewBooks.filter(book => book.image_url !== EMPTY_IMAGE_URL);
 }
 
-const yearFilter = (year?: string) => {
-  const maxYear = year ? Math.max(MIN_YEAR, Math.min(MAX_YEAR, Number(year))) : MAX_YEAR;
-  return and(gte(books.publication_year, MIN_YEAR), lte(books.publication_year, maxYear));
+const yearFilter = (year: number) => and(gte(books.publication_year, MIN_YEAR), lte(books.publication_year, year));
+
+const ratingFilter = (rating: number) => (rating > MIN_RATING ? sql`${books.average_rating} >= ${rating}` : undefined);
+
+const languageFilter = (language: string) => {
+  if (!language) return undefined;
+  if (language === 'en') return sql`${books.language_code} IN ('eng', 'en-US', 'en-GB')`;
+  return eq(books.language_code, language);
 };
 
-const ratingFilter = (rating?: string) => (rating ? sql`${books.average_rating} >= ${Number(rating)}` : undefined);
-
-const languageFilter = (language?: string) => {
-  if (language === 'en') {
-    return sql`${books.language_code} IN ('eng', 'en-US', 'en-GB')`;
-  }
-  return language ? eq(books.language_code, language) : undefined;
-};
-
-const pageFilter = (pages?: string) => lte(books.num_pages, pages ? Math.min(MAX_PAGES, Number(pages)) : MAX_PAGES);
+const pageCountFilter = (maxPages: number) => lte(books.num_pages, maxPages);
 
 const imageFilter = () => and(not(isNull(books.image_url)), sql`${books.image_url} != ${EMPTY_IMAGE_URL}`);
 
-const searchFilter = (query?: string) =>
-  query?.trim()
-    ? sql`to_tsvector('english', ${books.title_tsv}) @@ plainto_tsquery('english', unaccent(${query.trim()}))`
+const searchFilter = (search: string) =>
+  search
+    ? sql`to_tsvector('english', ${books.title_tsv}) @@ plainto_tsquery('english', unaccent(${search}))`
     : undefined;
 
-const isbnFilter = (isbn?: string) => {
-  if (!isbn) return undefined;
-  const values = isbn.split(',').map(value => value.trim());
+const isbnFilter = (isbns: string) => {
+  if (!isbns) return undefined;
+  const values = isbns.split(',').map(value => value.trim());
   return sql`${books.isbn} IN (${sql.join(
     values.map(value => sql`${value}`),
     sql`, `,
   )})`;
 };
 
-function getWhereClause(searchParams: SearchParams) {
+function getWhereClause(
+  search: string,
+  year: number,
+  rating: number,
+  language: string,
+  maxPages: number,
+  isbns: string,
+) {
   const filters = [
-    yearFilter(searchParams.yr),
-    ratingFilter(searchParams.rtg),
-    languageFilter(searchParams.lng),
-    pageFilter(searchParams.pgs),
+    yearFilter(year),
+    ratingFilter(rating),
+    languageFilter(language),
+    pageCountFilter(maxPages),
     imageFilter(),
-    searchFilter(searchParams.search),
-    isbnFilter(searchParams.isbn),
+    searchFilter(search),
+    isbnFilter(isbns),
   ].filter(filter => filter !== undefined);
 
   return filters.length ? and(...filters) : undefined;
 }
 
-function getPreviewBooks(searchParams: SearchParams): BooksPage {
-  const query = searchParams.search?.trim().toLocaleLowerCase();
-  const isbns = searchParams.isbn?.split(',');
-  const maxYear = searchParams.yr ? Number(searchParams.yr) : MAX_YEAR;
-  const minRating = searchParams.rtg ? Number(searchParams.rtg) : 0;
-  const maxPages = searchParams.pgs ? Number(searchParams.pgs) : MAX_PAGES;
+function getPreviewBooks(
+  page: number,
+  search: string,
+  year: number,
+  rating: number,
+  language: string,
+  maxPages: number,
+  isbns: string,
+): BooksPage {
+  const query = search.toLocaleLowerCase();
+  const isbnList = isbns ? isbns.split(',') : undefined;
 
   const filtered = previewBooks.filter(book => {
     const matchesQuery = !query || book.title.toLocaleLowerCase().includes(query);
     const matchesLanguage =
-      !searchParams.lng ||
-      (searchParams.lng === 'en'
+      !language ||
+      (language === 'en'
         ? ['eng', 'en-US', 'en-GB'].includes(book.language_code ?? '')
-        : book.language_code === searchParams.lng);
+        : book.language_code === language);
 
     return (
       matchesQuery &&
       matchesLanguage &&
       book.image_url !== EMPTY_IMAGE_URL &&
-      (!isbns || (!!book.isbn && isbns.includes(book.isbn))) &&
+      (!isbnList || (!!book.isbn && isbnList.includes(book.isbn))) &&
       (book.publication_year ?? 0) >= MIN_YEAR &&
-      (book.publication_year ?? Infinity) <= maxYear &&
-      Number(book.average_rating ?? 0) >= minRating &&
+      (book.publication_year ?? Infinity) <= year &&
+      Number(book.average_rating ?? 0) >= rating &&
       (book.num_pages ?? 0) <= maxPages
     );
   });
 
-  const page = Math.max(1, Number(searchParams.page) || 1);
   const start = (page - 1) * ITEMS_PER_PAGE;
 
   return {
@@ -184,15 +197,22 @@ function getPreviewBooks(searchParams: SearchParams): BooksPage {
   };
 }
 
-export async function getBooksPage(searchParams: SearchParams): Promise<BooksPage> {
+export async function getBooksPage(
+  page: number = 1,
+  search: string = '',
+  year: number = MAX_YEAR,
+  rating: number = MIN_RATING,
+  language: string = '',
+  maxPages: number = MAX_PAGES,
+  isbns: string = '',
+): Promise<BooksPage> {
   'use cache';
   cacheLife('hours');
 
   const database = db;
-  if (!database) return getPreviewBooks(searchParams);
+  if (!database) return getPreviewBooks(page, search, year, rating, language, maxPages, isbns);
 
-  const whereClause = getWhereClause(searchParams);
-  const page = Math.max(1, Number(searchParams.page) || 1);
+  const whereClause = getWhereClause(search, year, rating, language, maxPages, isbns);
   const offset = (page - 1) * ITEMS_PER_PAGE;
 
   const [result, [{ total }]] = await Promise.all([
