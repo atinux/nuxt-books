@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Suspense, ViewTransition } from 'react';
+import { Suspense } from 'react';
 import { BookMark } from '@/components/book-mark';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
@@ -60,62 +60,58 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="bg-surface dark:bg-surface-dark text-black antialiased dark:text-white">
         <ThemeProvider>
           <div className="group flex min-h-dvh">
-            <ViewTransition default="none" name="sidebar">
-              <aside className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark sticky top-0 hidden h-dvh w-72 shrink-0 flex-col border-r px-5 py-5 md:flex">
-                <div className="flex items-center justify-between gap-2">
-                  <Link
-                    aria-label="NextBooks home"
-                    className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
-                    href="/"
-                  >
-                    <BookMark className="text-action size-5" />
-                    NextBooks
-                  </Link>
-                </div>
-                <div className="border-divider dark:border-divider-dark mt-6 border-b pb-5">
-                  <ErrorBoundary compact title="Catalog size unavailable">
-                    <Suspense fallback={<CatalogSizeSkeleton />}>
-                      <Crossfade>
-                        <CatalogSize />
-                      </Crossfade>
-                    </Suspense>
-                  </ErrorBoundary>
-                </div>
-                <p className="text-muted mt-5 mb-4 text-xs font-semibold tracking-wide uppercase">Filters</p>
-                <ErrorBoundary compact title="Filters unavailable">
-                  <Suspense fallback={<BookFiltersFallback />}>
-                    <BookFilters />
+            <aside className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark sticky top-0 hidden h-dvh w-72 shrink-0 flex-col border-r px-5 py-5 md:flex">
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  aria-label="NextBooks home"
+                  className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
+                  href="/"
+                >
+                  <BookMark className="text-action size-5" />
+                  NextBooks
+                </Link>
+              </div>
+              <div className="border-divider dark:border-divider-dark mt-6 border-b pb-5">
+                <ErrorBoundary compact title="Catalog size unavailable">
+                  <Suspense fallback={<CatalogSizeSkeleton />}>
+                    <Crossfade>
+                      <CatalogSize />
+                    </Crossfade>
                   </Suspense>
                 </ErrorBoundary>
-                <div className="border-divider dark:border-divider-dark mt-4 flex items-center justify-between gap-2 border-t pt-4">
-                  <ThemeToggle variant="inline" />
-                  <a
-                    aria-label="View source on GitHub"
-                    className="text-muted rounded-full p-1.5 transition-colors hover:text-black dark:hover:text-white"
-                    href="https://github.com/vercel-labs/next-books"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <GitHubIcon className="size-4" />
-                  </a>
-                </div>
-              </aside>
-            </ViewTransition>
+              </div>
+              <p className="text-muted mt-5 mb-4 text-xs font-semibold tracking-wide uppercase">Filters</p>
+              <ErrorBoundary compact title="Filters unavailable">
+                <Suspense fallback={<BookFiltersFallback />}>
+                  <BookFilters />
+                </Suspense>
+              </ErrorBoundary>
+              <div className="border-divider dark:border-divider-dark mt-4 flex items-center justify-between gap-2 border-t pt-4">
+                <ThemeToggle variant="inline" />
+                <a
+                  aria-label="View source on GitHub"
+                  className="text-muted rounded-full p-1.5 transition-colors hover:text-black dark:hover:text-white"
+                  href="https://github.com/vercel-labs/next-books"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <GitHubIcon className="size-4" />
+                </a>
+              </div>
+            </aside>
 
             <div className="flex min-w-0 flex-1 flex-col">
-              <ViewTransition default="none" name="search-bar">
-                <header className="border-divider bg-surface/80 dark:border-divider-dark dark:bg-surface-dark/80 sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-md backdrop-saturate-150 sm:px-6">
-                  <Link aria-label="NextBooks home" className="md:hidden" href="/">
-                    <BookMark className="text-action size-5" />
-                  </Link>
-                  <Suspense fallback={<BookSearchFallback />}>
-                    <BookSearch />
-                  </Suspense>
-                  <div className="md:hidden">
-                    <ThemeToggle variant="inline" />
-                  </div>
-                </header>
-              </ViewTransition>
+              <header className="border-divider bg-surface/80 dark:border-divider-dark dark:bg-surface-dark/80 sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-md backdrop-saturate-150 sm:px-6">
+                <Link aria-label="NextBooks home" className="md:hidden" href="/">
+                  <BookMark className="text-action size-5" />
+                </Link>
+                <Suspense fallback={<BookSearchFallback />}>
+                  <BookSearch />
+                </Suspense>
+                <div className="md:hidden">
+                  <ThemeToggle variant="inline" />
+                </div>
+              </header>
 
               <main className="flex min-w-0 flex-1 flex-col">{children}</main>
             </div>

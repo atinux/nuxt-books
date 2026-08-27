@@ -28,7 +28,6 @@ export function ThemeToggle({ variant = 'pill' }: { variant?: 'inline' | 'pill' 
           ? 'inline-flex items-center gap-0.5'
           : 'border-divider dark:border-divider-dark inline-flex items-center rounded-full border p-0.5'
       }
-      style={{ viewTransitionName: 'theme-toggle' }}
     >
       <ToggleButton active={active === 'light'} label="Light mode" onClick={() => setTheme('light')}>
         <Sun className="size-4" />
