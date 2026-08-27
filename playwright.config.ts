@@ -21,11 +21,9 @@ export default defineConfig({
   },
   webServer: {
     command: `pnpm exec next dev --hostname 127.0.0.1 --port ${port}`,
-    // Blanking POSTGRES_URL drops the app onto the generated preview catalog, so the
-    // suite runs on a fixed dataset with no database.
+    // Blanking POSTGRES_URL runs the suite on the generated preview catalog.
     env: { POSTGRES_URL: '' },
-    // Next allows one dev server per directory. If you already have one running,
-    // point the suite at it with PLAYWRIGHT_BASE_URL instead of starting a second.
+    // One dev server per directory: if you have one, set PLAYWRIGHT_BASE_URL to it.
     reuseExistingServer: true,
     stdout: 'pipe',
     url: baseURL,

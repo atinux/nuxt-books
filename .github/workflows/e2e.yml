@@ -13,7 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Reads the pnpm version from package.json's `packageManager` field.
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -24,8 +23,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # PageProps and other route-aware globals live in generated .next/types.
-      # A fresh CI checkout does not have them until Next generates them.
+      # PageProps lives in generated .next/types, absent on a fresh checkout.
       - name: Generate Next.js types
         run: pnpm exec next typegen
 
@@ -35,9 +33,6 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
-      # No database needed: playwright.config.ts blanks POSTGRES_URL, so the app serves
-      # the generated preview catalog. GitHub sets CI=true, so the config uses retries
-      # and starts the production server itself on the isolated test port.
       - name: Run instant navigation tests
         run: pnpm test:e2e
 

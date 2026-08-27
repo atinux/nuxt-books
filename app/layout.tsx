@@ -60,7 +60,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="bg-surface dark:bg-surface-dark text-black antialiased dark:text-white">
         <ThemeProvider>
           <div className="group flex min-h-dvh">
-            <aside className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark sticky top-0 hidden h-dvh w-72 shrink-0 flex-col border-r px-5 py-5 md:flex">
+            <aside
+              style={{ viewTransitionName: 'sidebar' }}
+              className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark sticky top-0 hidden h-dvh w-72 shrink-0 flex-col border-r px-5 py-5 md:flex"
+            >
               <div className="flex items-center justify-between gap-2">
                 <Link
                   aria-label="NextBooks home"
@@ -101,7 +104,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </aside>
 
             <div className="flex min-w-0 flex-1 flex-col">
-              <header className="border-divider bg-surface/80 dark:border-divider-dark dark:bg-surface-dark/80 sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-md backdrop-saturate-150 sm:px-6">
+              <header
+                style={{ viewTransitionName: 'site-header' }}
+                className="border-divider bg-surface/80 dark:border-divider-dark dark:bg-surface-dark/80 sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-3 backdrop-blur-md backdrop-saturate-150 sm:px-6"
+              >
                 <Link aria-label="NextBooks home" className="md:hidden" href="/">
                   <BookMark className="text-action size-5" />
                 </Link>

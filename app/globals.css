@@ -230,6 +230,25 @@ input[type='range']::-moz-range-thumb {
   animation: none;
 }
 
+::view-transition-group(sidebar),
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(sidebar),
+::view-transition-new(sidebar) {
+  animation: none;
+}
+
+/* The header has backdrop-filter, so its old snapshot is hidden to avoid a flash. */
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+
 .link-hint {
   opacity: 0;
   visibility: hidden;
