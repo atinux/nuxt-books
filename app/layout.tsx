@@ -59,7 +59,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html className={`${geistSans.variable} ${geistMono.variable}`} lang="en" suppressHydrationWarning>
       <body className="bg-surface dark:bg-surface-dark text-black antialiased dark:text-white">
         <ThemeProvider>
-          <MobileBookSidebar sidebar={<BookSidebarContent idPrefix="mobile" />}>
+          <MobileBookSidebar sidebar={<BookSidebarContent idPrefix="mobile" mobile />}>
             <div className="group flex min-h-dvh">
               <aside
                 className="border-divider bg-surface dark:border-divider-dark dark:bg-surface-dark sticky top-0 hidden h-dvh w-72 shrink-0 flex-col border-r px-5 py-5 md:flex"
@@ -87,7 +87,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   );
 }
 
-function BookSidebarContent({ idPrefix }: { idPrefix: string }) {
+function BookSidebarContent({ idPrefix, mobile = false }: { idPrefix: string; mobile?: boolean }) {
   return (
     <>
       <div className="flex items-center justify-between gap-2">
@@ -109,18 +109,20 @@ function BookSidebarContent({ idPrefix }: { idPrefix: string }) {
           <BookFilters idPrefix={idPrefix} />
         </Suspense>
       </ErrorBoundary>
-      <div className="border-divider dark:border-divider-dark mt-4 flex items-center justify-between gap-2 border-t pt-4">
-        <ThemeToggle variant="inline" />
-        <a
-          aria-label="View source on GitHub"
-          className="text-muted rounded-full p-1.5 transition-colors hover:text-black dark:hover:text-white"
-          href="https://github.com/vercel-labs/next-books"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <GitHubIcon className="size-4" />
-        </a>
-      </div>
+      {mobile ? null : (
+        <div className="border-divider dark:border-divider-dark mt-4 flex items-center justify-between gap-2 border-t pt-4">
+          <ThemeToggle variant="inline" />
+          <a
+            aria-label="View source on GitHub"
+            className="text-muted rounded-full p-1.5 transition-colors hover:text-black dark:hover:text-white"
+            href="https://github.com/vercel-labs/next-books"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <GitHubIcon className="size-4" />
+          </a>
+        </div>
+      )}
     </>
   );
 }
