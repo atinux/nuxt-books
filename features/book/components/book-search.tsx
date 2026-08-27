@@ -1,18 +1,17 @@
 'use client';
 
 import { Search as SearchIcon } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { SeedFromSearchParam } from '@/components/scripts/seed-from-search-param';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { useSyncSearchParamToInput } from '@/hooks/use-sync-search-param-to-input';
 import { buildHref, parseSearchParams, withFilters } from '@/lib/url-state';
-import type { SearchParams } from '@/lib/url-state';
 
 const DEBOUNCE_MS = 220;
 
-function SearchBase({ initialParams }: { initialParams: SearchParams }) {
+export function BookSearch() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -32,8 +31,9 @@ function SearchBase({ initialParams }: { initialParams: SearchParams }) {
 
   function navigate(value: string) {
     const query = value.trim();
+    const current = parseSearchParams(Object.fromEntries(new URLSearchParams(window.location.search)));
     startTransition(() => {
-      router.replace(buildHref(withFilters(initialParams, { search: query || undefined })), { scroll: false });
+      router.replace(buildHref(withFilters(current, { search: query || undefined })), { scroll: false });
     });
   }
 
@@ -57,7 +57,7 @@ function SearchBase({ initialParams }: { initialParams: SearchParams }) {
         className="text-muted pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2"
       />
       <Input
-        defaultValue={initialParams.search ?? ''}
+        defaultValue=""
         id={inputId}
         name="search"
         onChange={event => {
@@ -79,13 +79,4 @@ function SearchBase({ initialParams }: { initialParams: SearchParams }) {
       ) : null}
     </form>
   );
-}
-
-export function BookSearchFallback() {
-  return <SearchBase initialParams={{}} />;
-}
-
-export function BookSearch() {
-  const searchParams = useSearchParams();
-  return <SearchBase initialParams={parseSearchParams(Object.fromEntries(searchParams))} />;
 }

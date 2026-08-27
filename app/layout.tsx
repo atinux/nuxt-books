@@ -8,7 +8,7 @@ import { Crossfade } from '@/components/ui/crossfade';
 import { GitHubIcon } from '@/components/ui/github-icon';
 import ErrorBoundary from '@/components/ui/error-boundary';
 import { BookFilters, BookFiltersFallback } from '@/features/book/components/book-filters';
-import { BookSearch, BookSearchFallback } from '@/features/book/components/book-search';
+import { BookSearch } from '@/features/book/components/book-search';
 import { CatalogSize, CatalogSizeSkeleton } from '@/features/book/components/catalog-size';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
@@ -105,9 +105,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <Link aria-label="NextBooks home" className="md:hidden" href="/">
                   <BookMark className="text-action size-5" />
                 </Link>
-                <Suspense fallback={<BookSearchFallback />}>
-                  <BookSearch />
-                </Suspense>
+                <BookSearch />
                 <div className="md:hidden">
                   <ThemeToggle variant="inline" />
                 </div>
