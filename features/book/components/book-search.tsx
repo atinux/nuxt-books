@@ -55,6 +55,7 @@ export function BookSearch() {
         className="text-muted pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2"
       />
       <Input
+        className={isPending ? '[&::-webkit-search-cancel-button]:appearance-none' : undefined}
         defaultValue=""
         id={inputId}
         name="search"
