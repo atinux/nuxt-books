@@ -49,7 +49,7 @@ function BookFiltersForm({ idPrefix, initialParams }: { idPrefix: string; initia
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-filtering={isPending ? '' : undefined}>
-      <div className="min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto overscroll-contain px-1 pb-6">
+      <div className="min-h-0 flex-1 touch-pan-y [scrollbar-gutter:stable] overflow-x-hidden overflow-y-auto overscroll-contain px-1 pb-6">
         <div className="flex flex-col gap-6">
           <Range
             hint={
