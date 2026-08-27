@@ -16,7 +16,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 const description =
-  'Browse two million Goodreads books with instant navigations, streaming search, and URL-driven filters.';
+  'Browse two million Goodreads books with Next.js 16.3 Instant Navigations, streaming search, and URL-driven filters.';
 
 export const viewport: Viewport = {
   themeColor: [

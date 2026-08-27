@@ -218,38 +218,6 @@ input[type='range']::-moz-range-thumb {
   border-color: var(--color-surface-dark);
 }
 
-/* View transition recipes */
-:root {
-  --duration-exit: 130ms;
-  --duration-enter: 190ms;
-  --duration-move: 260ms;
-}
-
-@keyframes opacity-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Book covers morph between the grid and the detail hero: geometry only, no crossfade. */
-::view-transition-group(.book-cover) {
-  animation-duration: var(--duration-move);
-  animation-timing-function: cubic-bezier(0.5, 0, 0.2, 1);
-  z-index: 50;
-}
-::view-transition-old(.book-cover),
-::view-transition-new(.book-cover) {
-  animation: none;
-  height: 100%;
-}
-
-::view-transition-new(.cover-fade) {
-  animation: var(--duration-enter) ease-out both opacity-fade;
-}
-
 /* let cursor/clicks pass through the snapshot overlay to unnamed live content */
 ::view-transition {
   pointer-events: none;
@@ -257,7 +225,7 @@ input[type='range']::-moz-range-thumb {
 
 /* No root cross-fade: `new(root)` is a live capture, so unnamed regions (sidebar, chrome)
    keep rendering hover/active styles during transitions instead of freezing behind a
-   stale snapshot. Content still animates via its classed ViewTransition groups. */
+   stale snapshot. Suspense reveals still crossfade via their own ViewTransition boundaries. */
 ::view-transition-old(root) {
   display: none;
 }
@@ -273,19 +241,12 @@ input[type='range']::-moz-range-thumb {
   z-index: 100;
 }
 
-::view-transition-group(toaster) {
-  animation: none;
-  z-index: 200;
-}
-
 ::view-transition-old(sidebar),
 ::view-transition-new(sidebar),
 ::view-transition-old(search-bar),
 ::view-transition-new(search-bar),
 ::view-transition-old(theme-toggle),
-::view-transition-new(theme-toggle),
-::view-transition-old(toaster),
-::view-transition-new(toaster) {
+::view-transition-new(theme-toggle) {
   animation: none;
 }
 
