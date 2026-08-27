@@ -5,7 +5,7 @@ import { NeonQueryFunction } from "@neondatabase/serverless";
 import { processEntities } from "./seed-utils";
 import sharp from "sharp";
 import * as ThumbHash from "thumbhash";
-import { EMPTY_IMAGE_URL } from "@/lib/book";
+import { EMPTY_IMAGE_URL } from '@/features/book/book-constants';
 import pLimit from "p-limit";
 
 const BATCH_SIZE = 900;

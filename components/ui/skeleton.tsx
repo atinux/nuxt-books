@@ -1,15 +1,6 @@
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
+import type { CSSProperties } from 'react';
 
-function Skeleton({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
-      {...props}
-    />
-  )
+export function Skeleton({ className, style }: { className?: string; style?: CSSProperties }) {
+  return <span aria-hidden className={cn('skeleton-animation block', className)} style={style} />;
 }
-
-export { Skeleton }

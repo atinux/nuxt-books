@@ -2,12 +2,10 @@ import "server-only";
 
 import { cacheLife } from "next/cache";
 import { and, count, eq, gte, isNull, lte, not, sql } from "drizzle-orm";
-import { db } from "./drizzle";
-import { authors, books, bookToAuthor } from "./schema";
-import { EMPTY_IMAGE_URL } from "@/lib/book";
+import { db } from '@/lib/db/drizzle';
+import { authors, books, bookToAuthor } from '@/lib/db/schema';
+import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MAX_PAGES, MAX_YEAR, MIN_YEAR } from '@/features/book/book-constants';
 import type { SearchParams } from "@/lib/url-state";
-
-export const ITEMS_PER_PAGE = 28;
 
 export type BookSummary = {
   id: number;
@@ -16,7 +14,7 @@ export type BookSummary = {
   thumbhash: string | null;
 };
 
-type BookDetails = BookSummary & {
+export type BookDetails = BookSummary & {
   isbn: string | null;
   publisher: string | null;
   description: string | null;
@@ -28,7 +26,7 @@ type BookDetails = BookSummary & {
   authors: string[];
 };
 
-type BooksPage = {
+export type BooksPage = {
   books: BookSummary[];
   total: number;
 };
@@ -101,9 +99,9 @@ const previewBooks: BookDetails[] = [
 ];
 
 const yearFilter = (year?: string) => {
-  const maxYear = year ? Math.max(1950, Math.min(2023, Number(year))) : 2023;
+  const maxYear = year ? Math.max(MIN_YEAR, Math.min(MAX_YEAR, Number(year))) : MAX_YEAR;
   return and(
-    gte(books.publication_year, 1950),
+    gte(books.publication_year, MIN_YEAR),
     lte(books.publication_year, maxYear),
   );
 };
@@ -119,7 +117,7 @@ const languageFilter = (language?: string) => {
 };
 
 const pageFilter = (pages?: string) =>
-  lte(books.num_pages, pages ? Math.min(1_000, Number(pages)) : 1_000);
+  lte(books.num_pages, pages ? Math.min(MAX_PAGES, Number(pages)) : MAX_PAGES);
 
 const imageFilter = () =>
   and(
@@ -158,9 +156,9 @@ function getWhereClause(searchParams: SearchParams) {
 function getPreviewBooks(searchParams: SearchParams): BooksPage {
   const query = searchParams.search?.trim().toLocaleLowerCase();
   const isbns = searchParams.isbn?.split(",");
-  const maxYear = searchParams.yr ? Number(searchParams.yr) : 2023;
+  const maxYear = searchParams.yr ? Number(searchParams.yr) : MAX_YEAR;
   const minRating = searchParams.rtg ? Number(searchParams.rtg) : 0;
-  const maxPages = searchParams.pgs ? Number(searchParams.pgs) : 1_000;
+  const maxPages = searchParams.pgs ? Number(searchParams.pgs) : MAX_PAGES;
 
   const filtered = previewBooks.filter((book) => {
     const matchesQuery =
@@ -176,7 +174,7 @@ function getPreviewBooks(searchParams: SearchParams): BooksPage {
       matchesLanguage &&
       book.image_url !== EMPTY_IMAGE_URL &&
       (!isbns || (!!book.isbn && isbns.includes(book.isbn))) &&
-      (book.publication_year ?? 0) >= 1950 &&
+      (book.publication_year ?? 0) >= MIN_YEAR &&
       (book.publication_year ?? Infinity) <= maxYear &&
       Number(book.average_rating ?? 0) >= minRating &&
       (book.num_pages ?? 0) <= maxPages

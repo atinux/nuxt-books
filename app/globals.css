@@ -1,66 +1,291 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
+@theme {
+  --color-gray: #a1a1aa;
+  --color-muted: #71717a;
+  --color-divider-dark: #282828;
+  --color-divider: #e4e4e7;
+  --color-card-dark: #181818;
+  --color-card: #f4f4f5;
+  --color-surface-dark: #121212;
+  --color-surface: #fafafa;
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-darker: #1e40af;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-fade: #2563eb22;
+  --color-action: #2563eb;
+  --color-action-hover: #1d4ed8;
+
+  --color-success: #0fa958;
+  --color-danger: #e54848;
+  --color-warning: #f5a524;
+
+  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans);
+
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.04em;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --shadow-soft: 0 2px 8px -2px rgb(24 24 27 / 0.12), 0 4px 16px -4px rgb(24 24 27 / 0.1);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-fade: #3b82f622;
+  --color-action: #3b82f6;
+  --color-action-hover: #2563eb;
 }
 
 @layer base {
-  * {
-    @apply border-border;
+  body {
+    @apply selection:bg-accent bg-surface dark:bg-surface-dark font-sans text-black antialiased selection:text-white dark:text-white;
+  }
+
+  h1 {
+    @apply font-sans text-2xl font-semibold tracking-tight text-black sm:text-3xl dark:text-white;
+  }
+
+  h2 {
+    @apply font-sans text-base font-semibold tracking-tight text-black dark:text-white;
+  }
+
+  h3 {
+    @apply font-sans text-sm font-semibold tracking-tight text-black dark:text-white;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  :where(a, button, summary, [role='button']) {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  :where(button, summary, [role='button']) {
+    user-select: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 1rem !important;
+  }
+
+  :where(a, button, summary, [role='button']):active {
+    opacity: 0.78;
+  }
+}
+
+.skeleton-animation {
+  --skeleton-base: rgb(0 0 0 / 0.055);
+  --skeleton-shine: rgb(0 0 0 / 0.1);
+  background-color: var(--skeleton-base);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--skeleton-shine) 45%,
+    var(--skeleton-shine) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-sweep 1.5s ease-in-out infinite;
+}
+
+.dark .skeleton-animation {
+  --skeleton-base: rgb(255 255 255 / 0.06);
+  --skeleton-shine: rgb(255 255 255 / 0.09);
+}
+
+.skeleton-animation:not([class*='rounded-']) {
+  border-radius: var(--radius-sm);
+}
+
+@keyframes book-mark-draw {
+  from {
+    stroke-dasharray: 0 64;
+    opacity: 0;
+  }
+  to {
+    stroke-dasharray: 64 0;
+    opacity: 1;
+  }
+}
+
+.book-mark-enter path {
+  animation: book-mark-draw 520ms ease-out both;
+}
+
+.book-mark-enter path:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.book-mark-enter path:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -150% 0;
+  }
+}
+
+/* View transition recipes */
+:root {
+  --duration-exit: 130ms;
+  --duration-enter: 190ms;
+  --duration-move: 260ms;
+}
+
+@keyframes fade {
+  from {
+    filter: blur(2px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+@keyframes opacity-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::view-transition-old(.nav-crossfade) {
+  animation: var(--duration-exit) ease-in both opacity-fade reverse;
+}
+::view-transition-new(.nav-crossfade) {
+  animation: var(--duration-enter) ease-out var(--duration-exit) both opacity-fade;
+}
+
+::view-transition-old(.nav-forward) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) ease-in-out both slide reverse;
+}
+::view-transition-new(.nav-forward) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) ease-in-out both slide;
+}
+::view-transition-old(.nav-back) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) ease-in-out both slide reverse;
+}
+::view-transition-new(.nav-back) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) ease-in-out both slide;
+}
+
+/* Book covers morph between the grid and the detail hero: geometry only, no crossfade. */
+::view-transition-group(.book-cover) {
+  animation-duration: var(--duration-move);
+  animation-timing-function: cubic-bezier(0.5, 0, 0.2, 1);
+  z-index: 50;
+}
+::view-transition-old(.book-cover),
+::view-transition-new(.book-cover) {
+  animation: none;
+  height: 100%;
+}
+
+/* let cursor/clicks pass through the snapshot overlay to unnamed live content */
+::view-transition {
+  pointer-events: none;
+}
+
+/* No root cross-fade: `new(root)` is a live capture, so unnamed regions (sidebar, chrome)
+   keep rendering hover/active styles during transitions instead of freezing behind a
+   stale snapshot. Content still animates via its classed ViewTransition groups. */
+::view-transition-old(root) {
+  display: none;
+}
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Exclude persistent chrome from view transition animations */
+::view-transition-group(sidebar),
+::view-transition-group(search-bar),
+::view-transition-group(theme-toggle) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-group(toaster) {
+  animation: none;
+  z-index: 200;
+}
+
+::view-transition-old(sidebar),
+::view-transition-new(sidebar),
+::view-transition-old(search-bar),
+::view-transition-new(search-bar),
+::view-transition-old(theme-toggle),
+::view-transition-new(theme-toggle),
+::view-transition-old(toaster),
+::view-transition-new(toaster) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
+  .skeleton-animation,
+  .book-mark-enter path {
+    animation: none !important;
   }
 }

@@ -5,31 +5,32 @@ import { toast } from 'sonner';
 
 export function WelcomeToast() {
   useEffect(() => {
-    // ignore if screen height is too small
+    // Skip on short viewports, where the toast would cover the grid.
     if (window.innerHeight < 650) return;
-    if (!document.cookie.includes('books-toast=2')) {
-      toast('📚 Welcome to Next.js Books!', {
-        id: 'books-toast',
-        duration: Infinity,
-        onDismiss: () => {
-          document.cookie = 'books-toast=2; max-age=31536000; path=/';
-        },
-        description: (
-          <>
-            This is a demo of searching, filtering, and paginating a Goodreads
-            catalog from Postgres.{' '}
-            <a
-              href="https://vercel.com/templates/next.js/next-book-inventory"
-              className="text-blue-600 hover:underline"
-              target="_blank"
-            >
-              Deploy your own
-            </a>
-            .
-          </>
-        ),
-      });
-    }
+    if (document.cookie.includes('books-toast=2')) return;
+
+    toast('Welcome to Book Inventory', {
+      description: (
+        <>
+          Search, filter, and page through two million Goodreads books — with instant navigations from Cache Components
+          and Partial Prefetching.{' '}
+          <a
+            className="text-accent font-medium hover:underline"
+            href="https://github.com/aurorascharff/book-inventory-16"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            View the source
+          </a>
+          .
+        </>
+      ),
+      duration: Infinity,
+      id: 'books-toast',
+      onDismiss: () => {
+        document.cookie = 'books-toast=2; max-age=31536000; path=/';
+      },
+    });
   }, []);
 
   return null;

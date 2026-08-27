@@ -1,49 +1,64 @@
 import { Suspense } from 'react';
-import { BooksGrid } from '@/components/grid';
-import { BookPagination } from '@/components/book-pagination';
-import { getBooksPage, ITEMS_PER_PAGE } from '@/lib/db/queries';
-import { parseSearchParams } from '@/lib/url-state';
-import Loading from './loading';
+import { Crossfade } from '@/components/ui/crossfade';
+import ErrorBoundary from '@/components/ui/error-boundary';
+import { getBooksPage } from '@/features/book/book-queries';
+import { BookGrid, BookGridSkeleton } from '@/features/book/components/book-grid';
+import { BookPagination, BookPaginationSkeleton } from '@/features/book/components/book-pagination';
+import { getCurrentPage, getTotalPages, parseSearchParams } from '@/lib/url-state';
+import type { RawSearchParams } from '@/lib/url-state';
 
-type RawSearchParams = Record<string, string | string[] | undefined>;
-
-export default function Page({
-  searchParams,
-}: {
-  searchParams: Promise<RawSearchParams>;
-}) {
+export default function Page({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
   return (
-    <Suspense fallback={<Loading />}>
-      <BookResults searchParams={searchParams} />
-    </Suspense>
+    <ErrorBoundary body="The catalog query failed. Check your database connection and try again." title="Can't load books">
+      <Suspense fallback={<CatalogSkeleton />}>
+        <Crossfade>
+          <BookResults searchParams={searchParams} />
+        </Crossfade>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
-async function BookResults({
-  searchParams,
-}: {
-  searchParams: Promise<RawSearchParams>;
-}) {
-  const parsedSearchParams = parseSearchParams(await searchParams);
-  const { books, total } = await getBooksPage(parsedSearchParams);
-  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
-  const currentPage = Math.max(1, Number(parsedSearchParams.page) || 1);
+async function BookResults({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
+  const parsed = parseSearchParams(await searchParams);
+  const { books, total } = await getBooksPage(parsed);
+  const totalPages = getTotalPages(total);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-auto min-h-[200px]">
-        <div className="group-has-[[data-pending]]:animate-pulse p-4">
-          <BooksGrid books={books} searchParams={parsedSearchParams} />
-        </div>
-      </div>
-      <div className="mt-auto p-4 border-t">
+    <CatalogLayout
+      footer={
         <BookPagination
-          currentPage={currentPage}
+          currentPage={getCurrentPage(parsed, totalPages)}
+          searchParams={parsed}
           totalPages={totalPages}
           totalResults={total}
-          searchParams={parsedSearchParams}
         />
+      }
+    >
+      <BookGrid books={books} searchParams={parsed} />
+    </CatalogLayout>
+  );
+}
+
+/**
+ * Shared frame so the streamed grid and its skeleton occupy identical geometry —
+ * the App Shell paints the skeleton, then swaps without a layout shift.
+ */
+function CatalogLayout({ children, footer }: { children: React.ReactNode; footer: React.ReactNode }) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex-1 px-4 py-5 transition-opacity duration-200 ease-out group-has-[[data-pending]]:opacity-60 sm:px-6">
+        {children}
       </div>
+      <div className="border-divider dark:border-divider-dark mt-auto border-t px-4 py-3 sm:px-6">{footer}</div>
     </div>
+  );
+}
+
+export function CatalogSkeleton() {
+  return (
+    <CatalogLayout footer={<BookPaginationSkeleton />}>
+      <BookGridSkeleton />
+    </CatalogLayout>
   );
 }
