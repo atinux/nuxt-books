@@ -55,7 +55,7 @@ export function BookSearch() {
         className="text-muted pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2"
       />
       <Input
-        className={isPending ? '[&::-webkit-search-cancel-button]:appearance-none' : undefined}
+        className="pr-16"
         defaultValue=""
         id={inputId}
         name="search"
@@ -71,14 +71,13 @@ export function BookSearch() {
         variant="search"
       />
       <SeedFromSearchParam param="search" targetId={inputId} />
-      {isPending ? (
-        <span
-          aria-hidden
-          className="absolute top-1/2 right-3.5 flex size-4 -translate-y-1/2 items-center justify-center"
-        >
-          <Spinner className="text-muted size-4" />
-        </span>
-      ) : null}
+      <span
+        aria-hidden
+        className="pending-hint absolute top-1/2 right-9 flex size-4 -translate-y-1/2 items-center justify-center"
+        data-pending={isPending ? '' : undefined}
+      >
+        {isPending ? <Spinner className="text-muted size-4" /> : null}
+      </span>
     </form>
   );
 }

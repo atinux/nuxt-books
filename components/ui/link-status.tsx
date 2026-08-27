@@ -17,7 +17,7 @@ export function LinkStatus({ children, className, hint = 'end' }: Props) {
   const slot = (
     <span
       aria-hidden
-      className="link-hint inline-flex size-3.5 shrink-0 items-center justify-center"
+      className="pending-hint inline-flex size-3.5 shrink-0 items-center justify-center"
       data-pending={pending ? '' : undefined}
     >
       {pending ? <Spinner className="size-3.5" /> : null}

@@ -249,17 +249,17 @@ input[type='range']::-moz-range-thumb {
   animation: none;
 }
 
-.link-hint {
+.pending-hint {
   opacity: 0;
   visibility: hidden;
 }
 
-.link-hint[data-pending] {
+.pending-hint[data-pending] {
   visibility: visible;
-  animation: link-hint-in 200ms ease 100ms forwards;
+  animation: pending-hint-in 200ms ease 100ms forwards;
 }
 
-@keyframes link-hint-in {
+@keyframes pending-hint-in {
   to {
     opacity: 1;
   }
@@ -278,7 +278,7 @@ input[type='range']::-moz-range-thumb {
     animation: none !important;
   }
 
-  .link-hint[data-pending] {
+  .pending-hint[data-pending] {
     animation: none;
     opacity: 1;
   }
