@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useTransition } from 'react';
 import { SeedFromSearchParam } from '@/components/scripts/seed-from-search-param';
 import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
 import { useSyncSearchParamToInput } from '@/hooks/use-sync-search-param-to-input';
 import { buildHref, parseSearchParams, withFilters } from '@/lib/url-state';
 
@@ -37,6 +36,7 @@ export function BookSearch() {
 
   return (
     <form
+      aria-busy={isPending}
       className="relative flex-1"
       data-filtering={isPending ? '' : undefined}
       onSubmit={event => {
@@ -69,11 +69,6 @@ export function BookSearch() {
         variant="search"
       />
       <SeedFromSearchParam param="search" targetId={inputId} />
-      {isPending ? (
-        <span aria-hidden className="absolute top-1/2 right-3.5 -translate-y-1/2">
-          <Spinner className="text-muted size-4" />
-        </span>
-      ) : null}
     </form>
   );
 }
