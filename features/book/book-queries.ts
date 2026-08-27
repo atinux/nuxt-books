@@ -33,11 +33,6 @@ export type BookDetails = BookSummary & {
   authors: string[];
 };
 
-export type BooksPage = {
-  books: BookSummary[];
-  total: number;
-};
-
 const sampleBooks: BookDetails[] = [
   {
     id: 5333265,
@@ -157,19 +152,18 @@ function getWhereClause(
   return filters.length ? and(...filters) : undefined;
 }
 
-function getPreviewBooks(
-  page: number,
+function filterPreview(
   search: string,
   year: number,
   rating: number,
   language: string,
   maxPages: number,
   isbns: string,
-): BooksPage {
+): BookDetails[] {
   const query = search.toLocaleLowerCase();
   const isbnList = isbns ? isbns.split(',') : undefined;
 
-  const filtered = previewBooks.filter(book => {
+  return previewBooks.filter(book => {
     const matchesQuery = !query || book.title.toLocaleLowerCase().includes(query);
     const matchesLanguage =
       !language ||
@@ -188,13 +182,30 @@ function getPreviewBooks(
       (book.num_pages ?? 0) <= maxPages
     );
   });
+}
 
+function getPreviewBooks(
+  page: number,
+  search: string,
+  year: number,
+  rating: number,
+  language: string,
+  maxPages: number,
+  isbns: string,
+): BookSummary[] {
   const start = (page - 1) * ITEMS_PER_PAGE;
+  return filterPreview(search, year, rating, language, maxPages, isbns).slice(start, start + ITEMS_PER_PAGE);
+}
 
-  return {
-    books: filtered.slice(start, start + ITEMS_PER_PAGE),
-    total: filtered.length,
-  };
+function getPreviewCount(
+  search: string,
+  year: number,
+  rating: number,
+  language: string,
+  maxPages: number,
+  isbns: string,
+): number {
+  return filterPreview(search, year, rating, language, maxPages, isbns).length;
 }
 
 export async function getBooksPage(
@@ -205,36 +216,46 @@ export async function getBooksPage(
   language: string = '',
   maxPages: number = MAX_PAGES,
   isbns: string = '',
-): Promise<BooksPage> {
+): Promise<BookSummary[]> {
   'use cache';
   cacheLife('hours');
 
   const database = db;
   if (!database) return getPreviewBooks(page, search, year, rating, language, maxPages, isbns);
 
-  const whereClause = getWhereClause(search, year, rating, language, maxPages, isbns);
-  const offset = (page - 1) * ITEMS_PER_PAGE;
+  return database
+    .select({
+      id: books.id,
+      title: books.title,
+      image_url: books.image_url,
+      thumbhash: books.thumbhash,
+    })
+    .from(books)
+    .where(getWhereClause(search, year, rating, language, maxPages, isbns))
+    .orderBy(books.id)
+    .limit(ITEMS_PER_PAGE)
+    .offset((page - 1) * ITEMS_PER_PAGE);
+}
 
-  const [result, [{ total }]] = await Promise.all([
-    database
-      .select({
-        id: books.id,
-        title: books.title,
-        image_url: books.image_url,
-        thumbhash: books.thumbhash,
-      })
-      .from(books)
-      .where(whereClause)
-      .orderBy(books.id)
-      .limit(ITEMS_PER_PAGE)
-      .offset(offset),
-    database.select({ total: count() }).from(books).where(whereClause),
-  ]);
+export async function getBooksCount(
+  search: string = '',
+  year: number = MAX_YEAR,
+  rating: number = MIN_RATING,
+  language: string = '',
+  maxPages: number = MAX_PAGES,
+  isbns: string = '',
+): Promise<number> {
+  'use cache';
+  cacheLife('hours');
 
-  return {
-    books: result,
-    total,
-  };
+  const database = db;
+  if (!database) return getPreviewCount(search, year, rating, language, maxPages, isbns);
+
+  const [{ total }] = await database
+    .select({ total: count() })
+    .from(books)
+    .where(getWhereClause(search, year, rating, language, maxPages, isbns));
+  return total;
 }
 
 export async function getCatalogSize(): Promise<number> {
