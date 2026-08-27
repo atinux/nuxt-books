@@ -25,7 +25,6 @@ export function formatCount(n: number): string {
   return `${(n / 1_000_000).toFixed(1)}M`;
 }
 
-// Which of the curated lists, if any, the current `isbn` filter represents.
 export function getActiveList(isbn: string | undefined, lists: { name: string; isbns: string }[]) {
   if (!isbn) return undefined;
   const first = isbn.split(',')[0];

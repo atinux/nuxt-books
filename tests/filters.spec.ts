@@ -42,7 +42,6 @@ test('the catalog only dims while a filter is in flight', async ({ page }) => {
   await page.goto('/');
   const grid = page.locator('[data-filtering]');
 
-  // Idle: nothing in the shell claims to be filtering, so the grid is at full opacity.
   await expect(grid).toHaveCount(0);
 
   await page.getByRole('link', { name: /W\.C\. Fields/ }).click();
@@ -50,7 +49,6 @@ test('the catalog only dims while a filter is in flight', async ({ page }) => {
   await page.getByRole('link', { name: 'Back to books' }).click();
   await page.waitForURL('/');
 
-  // A plain navigation must not leave the filtering signal set behind.
   await expect(grid).toHaveCount(0);
   await expect(page.getByRole('link', { name: /W\.C\. Fields/ })).toBeVisible();
 });

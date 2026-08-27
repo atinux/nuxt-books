@@ -1,7 +1,5 @@
 import type { BookDetails } from '@/features/book/book-queries';
 
-// Cover URLs that resolve on the Goodreads CDN, cycled so the preview grid renders
-// real images without a database.
 const COVERS = [
   'https://images.gr-assets.com/books/1310220028m/5333265.jpg',
   'https://images.gr-assets.com/books/1304100136m/7327624.jpg',
@@ -52,9 +50,7 @@ const AUTHOR_NAMES = [
 
 const PUBLISHERS = ['Northgate Press', 'Alder & Vine', 'Meridian House', 'Coldwater Books', 'Halcyon Editions'];
 
-// Padding so the preview catalog spans more than one page, which the pagination
-// tests need when there is no `POSTGRES_URL`. Avoids the words those tests search
-// for ("wizard", "Fields") so a query still matches one hand-written book.
+// Avoids the words the tests search for ("wizard", "Fields").
 export const GENERATED_PREVIEW_BOOKS: BookDetails[] = Array.from({ length: 44 }, (_, index) => {
   const prefix = TITLE_PREFIX[index % TITLE_PREFIX.length];
   const suffix = TITLE_SUFFIX[(index * 5 + 3) % TITLE_SUFFIX.length];

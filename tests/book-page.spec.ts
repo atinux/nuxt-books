@@ -8,7 +8,6 @@ test('a book navigation reveals its shell immediately', async ({ page }) => {
   await instant(page, async () => {
     await book.click();
     await page.waitForURL(url => url.pathname === '/5333265');
-    // The back link is outside the Suspense boundary, so it is part of the shell.
     await expect(page.getByText('Back to books')).toBeVisible();
   });
 

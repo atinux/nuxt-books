@@ -19,7 +19,6 @@ test('search keeps the field and the shell mounted while results resolve', async
   await search.click();
   await page.keyboard.type('wizard', { delay: 150 });
 
-  // The header lives in the layout, so it never unmounts across a query change.
   await expect(search).toHaveValue('wizard');
   await expect(page.getByRole('navigation', { name: 'Pagination' })).toBeVisible();
 });

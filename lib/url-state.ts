@@ -44,22 +44,17 @@ export function buildHref(params: SearchParams): Route {
   return (query ? `/?${query}` : '/') as Route;
 }
 
-/** Total pages for a result count, floored at 1 so the UI always has a valid page. */
 export function getTotalPages(total: number): number {
   return Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
 }
 
-/** The requested page, clamped to `[1, totalPages]` when the count is known. */
 export function getCurrentPage(params: SearchParams, totalPages?: number): number {
   const raw = Number(params.page);
   const page = Number.isInteger(raw) && raw > 0 ? raw : 1;
   return totalPages ? Math.min(page, totalPages) : page;
 }
 
-/**
- * Apply a filter change. Always drops `page` — a filter that shrinks the result set
- * would otherwise leave you stranded on a page that no longer exists.
- */
+// Drops `page`: a filter that shrinks the result set would strand you on a dead page.
 export function withFilters(current: SearchParams, patch: Partial<SearchParams>): SearchParams {
   const next: SearchParams = { ...current, ...patch };
   delete next.page;

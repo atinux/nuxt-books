@@ -4,7 +4,6 @@ import type { ComponentProps, ReactNode } from 'react';
 type Props = Omit<ComponentProps<'input'>, 'type' | 'value'> & {
   label: string;
   value: number | string;
-  /** What to show next to the label. Defaults to `value`. */
   readout?: ReactNode;
   hint?: ReactNode;
 };

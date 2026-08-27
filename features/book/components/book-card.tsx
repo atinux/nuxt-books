@@ -15,7 +15,6 @@ type Props = {
 };
 
 export function BookCard({ book, priority, searchParams }: Props) {
-  // Carry the current filters into the detail route so "back" restores the exact grid.
   const back = buildHref(searchParams);
   const href = (back === '/' ? `/${book.id}` : `/${book.id}?${back.slice(2)}`) as Route;
 
