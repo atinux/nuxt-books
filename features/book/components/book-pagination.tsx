@@ -58,7 +58,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
           href={buildHref(withPage(searchParams, currentPage + 1))}
           prefetch={true}
         >
-          <LinkStatus>
+          <LinkStatus hint="start">
             Next
             <ChevronRight aria-hidden className="size-4" />
           </LinkStatus>

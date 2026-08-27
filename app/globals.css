@@ -289,6 +289,22 @@ input[type='range']::-moz-range-thumb {
   animation: none;
 }
 
+.link-hint {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.link-hint[data-pending] {
+  visibility: visible;
+  animation: link-hint-in 200ms ease 100ms forwards;
+}
+
+@keyframes link-hint-in {
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
   ::view-transition-new(*),
@@ -300,5 +316,10 @@ input[type='range']::-moz-range-thumb {
   .skeleton-animation,
   .book-mark-enter path {
     animation: none !important;
+  }
+
+  .link-hint[data-pending] {
+    animation: none;
+    opacity: 1;
   }
 }
