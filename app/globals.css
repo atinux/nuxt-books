@@ -164,8 +164,9 @@
   }
 }
 
-/* Range inputs: the native unfilled track is a grey that clashes with the accent,
-   so the whole control is restyled. `--range-fill` comes from the Range component. */
+/* Range inputs: the native track grey clashes with the accent, so the control is
+   restyled. No filled portion: each of these filters treats a different end as
+   "unfiltered", so a proportional fill would read as backwards on some of them. */
 input[type='range'] {
   --range-track: var(--color-divider);
   appearance: none;
@@ -181,11 +182,7 @@ input[type='range'] {
 input[type='range']::-webkit-slider-runnable-track {
   height: 0.375rem;
   border-radius: 9999px;
-  background: linear-gradient(
-    to right,
-    var(--color-action) 0 var(--range-fill, 0%),
-    var(--range-track) var(--range-fill, 0%) 100%
-  );
+  background: var(--range-track);
 }
 
 input[type='range']::-webkit-slider-thumb {
@@ -207,12 +204,6 @@ input[type='range']::-moz-range-track {
   height: 0.375rem;
   border-radius: 9999px;
   background: var(--range-track);
-}
-
-input[type='range']::-moz-range-progress {
-  height: 0.375rem;
-  border-radius: 9999px;
-  background: var(--color-action);
 }
 
 input[type='range']::-moz-range-thumb {

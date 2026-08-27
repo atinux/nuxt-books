@@ -8,3 +8,6 @@ pnpm-lock.yaml
 lib/db/authors.json
 lib/db/books.json
 lib/db/migrations
+
+# Vendored agent skills, kept byte-identical to upstream
+.agents

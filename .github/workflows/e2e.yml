@@ -24,6 +24,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # PageProps and other route-aware globals live in generated .next/types.
+      # A fresh CI checkout does not have them until Next generates them.
+      - name: Generate Next.js types
+        run: pnpm exec next typegen
+
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
@@ -32,7 +37,7 @@ jobs:
 
       # No database needed: playwright.config.ts blanks POSTGRES_URL, so the app serves
       # the generated preview catalog. GitHub sets CI=true, so the config uses retries
-      # and starts the dev server itself on port 3002.
+      # and starts the production server itself on the isolated test port.
       - name: Run instant navigation tests
         run: pnpm test:e2e
 
