@@ -20,7 +20,6 @@ export async function BookDetail({ id }: { id: string }) {
     <article className="flex flex-col gap-8 md:flex-row md:gap-10">
       <div className="mx-auto w-40 shrink-0 sm:w-48 md:mx-0 md:w-72">
         <BookCover
-          bookId={book.id}
           className="shadow-soft ring-divider/70 dark:ring-divider-dark/70 ring-1"
           priority
           sizes={DETAIL_SIZES}

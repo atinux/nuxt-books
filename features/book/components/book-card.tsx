@@ -25,7 +25,6 @@ export function BookCard({ book, priority, searchParams }: Props) {
       href={href}
     >
       <BookCover
-        bookId={book.id}
         className="group-hover:shadow-soft transition-shadow"
         priority={priority}
         sizes={GRID_SIZES}

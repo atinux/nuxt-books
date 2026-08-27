@@ -5,7 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 type Props = {
-  bookId: number;
   title: string;
   src: string | null;
   thumbhash: string | null;
@@ -14,9 +13,7 @@ type Props = {
   className?: string;
 };
 
-// The shared `book-cover-<id>` name pairs grid and detail hero; `share` hands the
-// pair to the geometry-only recipe in globals.css.
-export function BookCover({ bookId, className, priority, sizes, src, thumbhash, title }: Props) {
+export function BookCover({ className, priority, sizes, src, thumbhash, title }: Props) {
   return (
     <div className={cn('bg-card dark:bg-card-dark relative aspect-[2/3] w-full overflow-hidden rounded-md', className)}>
       <Image
