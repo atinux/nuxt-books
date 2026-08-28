@@ -20,6 +20,7 @@ export function BookCover({ className, priority, sizes, src, thumbhash, title }:
         alt={title}
         blurDataURL={thumbhash ? createPngDataUri(thumbhash) : undefined}
         className="object-cover"
+        decoding="sync"
         fill
         placeholder={thumbhash ? 'blur' : 'empty'}
         priority={priority}
