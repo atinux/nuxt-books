@@ -18,13 +18,15 @@ export default function Page({ params }: PageProps<'/[id]'>) {
     <div className="flex flex-1 flex-col px-4 py-5 sm:px-6">
       <BackToBooksLink className="mb-6" />
       <ErrorBoundary body="We couldn't load this book's details." title="Can't load book">
-        <Suspense fallback={<BookDetailSkeleton />}>
-          <Crossfade>
-            {params.then(({ id }) => (
-              <BookDetail id={id} />
-            ))}
-          </Crossfade>
-        </Suspense>
+        <div>
+          <Suspense fallback={<BookDetailSkeleton />}>
+            <Crossfade>
+              {params.then(({ id }) => (
+                <BookDetail id={id} />
+              ))}
+            </Crossfade>
+          </Suspense>
+        </div>
       </ErrorBoundary>
     </div>
   );
