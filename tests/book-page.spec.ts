@@ -46,6 +46,24 @@ test('a book page keeps the catalog filters for the back navigation', async ({ p
   await expect(page.getByRole('searchbox', { name: 'Search books' })).toHaveValue('wizard');
 });
 
+test('a later catalog page is restored from the visited router cache', async ({ page }) => {
+  await page.goto('/?page=2');
+  const book = page
+    .locator('main a')
+    .filter({ has: page.locator('img') })
+    .first();
+  const bookName = await book.locator('img').getAttribute('alt');
+
+  await book.click();
+  await expect(page.getByRole('link', { name: 'Back to books' })).toHaveAttribute('href', '/?page=2');
+
+  await instant(page, async () => {
+    await page.getByRole('link', { name: 'Back to books' }).click();
+    await page.waitForURL('/?page=2');
+    await expect(page.getByRole('link', { name: bookName! })).toBeVisible();
+  });
+});
+
 test('an unknown book id renders the not-found state', async ({ page }) => {
   await page.goto('/99999999');
   await expect(page.getByRole('heading', { name: 'Book not found' })).toBeVisible();
