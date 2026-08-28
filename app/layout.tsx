@@ -1,11 +1,11 @@
 import { Geist, Geist_Mono } from 'next/font/google';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { BookMark } from '@/components/book-mark';
 import { MobileBookSidebar, MobileBookSidebarTrigger } from '@/components/mobile-book-sidebar';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import ErrorBoundary from '@/components/ui/error-boundary';
+import { FastLink } from '@/components/ui/fast-link';
 import { GitHubIcon } from '@/components/ui/github-icon';
 import { BookFilters, BookFiltersFallback } from '@/features/book/components/book-filters';
 import { BookSearch } from '@/features/book/components/book-search';
@@ -91,14 +91,14 @@ function BookSidebarContent({ idPrefix, mobile = false }: { idPrefix: string; mo
   return (
     <>
       <div className="flex items-center justify-between gap-2">
-        <Link
+        <FastLink
           aria-label="NextBooks home"
           className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
           href="/"
         >
           <BookMark className="text-action size-5" />
           NextBooks
-        </Link>
+        </FastLink>
       </div>
       <div className="border-divider dark:border-divider-dark mt-6 border-b pb-5">
         <CatalogSize />

@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import { FastLink } from '@/components/ui/fast-link';
 import type { ComponentProps } from 'react';
 
-type Props = Omit<ComponentProps<typeof Link>, 'prefetch'> & {
+type Props = Omit<ComponentProps<typeof FastLink>, 'prefetch'> & {
   eager: boolean;
 };
 
@@ -12,7 +12,7 @@ export function HoverPrefetchLink({ eager, onFocus, onMouseEnter, ...props }: Pr
   const [intent, setIntent] = useState(false);
 
   return (
-    <Link
+    <FastLink
       {...props}
       prefetch={eager || intent ? true : 'auto'}
       onFocus={event => {

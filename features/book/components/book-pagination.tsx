@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
+import { FastLink } from '@/components/ui/fast-link';
 import { LinkStatus } from '@/components/ui/link-status';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getBooksCount } from '@/features/book/book-queries';
@@ -29,7 +29,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
   return (
     <nav aria-label="Pagination" className="flex items-center justify-between gap-4">
       {hasPrevious ? (
-        <Link
+        <FastLink
           aria-label="Previous page"
           className={stepClass}
           href={buildHref(withPage(searchParams, currentPage - 1))}
@@ -39,7 +39,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
             <ChevronLeft aria-hidden className="size-4" />
             Previous
           </LinkStatus>
-        </Link>
+        </FastLink>
       ) : (
         <span aria-disabled className={cn(stepClass, 'pointer-events-none opacity-40')}>
           <ChevronLeft aria-hidden className="size-4" />
@@ -58,7 +58,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
       </p>
 
       {hasNext ? (
-        <Link
+        <FastLink
           aria-label="Next page"
           className={stepClass}
           href={buildHref(withPage(searchParams, currentPage + 1))}
@@ -68,7 +68,7 @@ export async function BookPagination({ searchParams }: { searchParams: SearchPar
             Next
             <ChevronRight aria-hidden className="size-4" />
           </LinkStatus>
-        </Link>
+        </FastLink>
       ) : (
         <span aria-disabled className={cn(stepClass, 'pointer-events-none opacity-40')}>
           Next

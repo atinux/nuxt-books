@@ -1,9 +1,9 @@
 'use client';
 
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { FastLink } from '@/components/ui/fast-link';
 import { LinkStatus } from '@/components/ui/link-status';
 import { buildHref, getCurrentPage, parseSearchParams } from '@/lib/url-state';
 import { cn } from '@/lib/utils';
@@ -30,11 +30,11 @@ function BackLinkWithFilters({ className }: { className?: string }) {
 
 function BackLink({ className, eager, href }: { className?: string; eager: boolean; href: Route }) {
   return (
-    <Link className={cn(linkClass, className)} href={href} prefetch={eager ? true : 'auto'}>
+    <FastLink className={cn(linkClass, className)} href={href} prefetch={eager ? true : 'auto'}>
       <LinkStatus>
         <ArrowLeft aria-hidden className="size-4" />
         Back to books
       </LinkStatus>
-    </Link>
+    </FastLink>
   );
 }

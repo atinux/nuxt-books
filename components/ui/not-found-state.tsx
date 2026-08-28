@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { BookMark } from '@/components/book-mark';
 import { Button } from '@/components/ui/button';
+import { FastLink } from '@/components/ui/fast-link';
 
 export function NotFoundState({ body, title }: { body: string; title: string }) {
   return (
@@ -10,7 +10,7 @@ export function NotFoundState({ body, title }: { body: string; title: string }) 
         <p className="text-muted text-sm tabular-nums">404</p>
         <h1 className="text-xl font-semibold tracking-tight sm:text-xl">{title}</h1>
         <p className="text-muted text-sm leading-6">{body}</p>
-        <Button className="mt-1" render={<Link href="/" />} variant="secondary">
+        <Button className="mt-1" render={<FastLink href="/" />} variant="secondary">
           Back to the shelf
         </Button>
       </div>
