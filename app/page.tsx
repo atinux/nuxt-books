@@ -1,4 +1,5 @@
-import { AnimatedSuspense } from '@/components/ui/animated-suspense';
+import { Suspense } from 'react';
+import { Crossfade } from '@/components/ui/crossfade';
 import ErrorBoundary from '@/components/ui/error-boundary';
 import { getBooksPage } from '@/features/book/book-queries';
 import { toBookQuery } from '@/features/book/book-utils';
@@ -15,18 +16,22 @@ export default function Page({ searchParams }: PageProps<'/'>) {
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex-1 px-4 py-5 transition-opacity duration-200 ease-out group-has-[[data-filtering]]:opacity-60 sm:px-6">
-          <AnimatedSuspense fallback={<BookGridSkeleton />} name="book-grid">
-            {searchParams.then(params => (
-              <BookResults searchParams={parseSearchParams(params)} />
-            ))}
-          </AnimatedSuspense>
+          <Suspense fallback={<BookGridSkeleton />}>
+            <Crossfade>
+              {searchParams.then(params => (
+                <BookResults searchParams={parseSearchParams(params)} />
+              ))}
+            </Crossfade>
+          </Suspense>
         </div>
         <footer className="border-divider dark:border-divider-dark mt-auto border-t px-4 py-3 sm:px-6">
-          <AnimatedSuspense fallback={<BookPaginationSkeleton />} name="book-pagination">
-            {searchParams.then(params => (
-              <BookPagination searchParams={parseSearchParams(params)} />
-            ))}
-          </AnimatedSuspense>
+          <Suspense fallback={<BookPaginationSkeleton />}>
+            <Crossfade>
+              {searchParams.then(params => (
+                <BookPagination searchParams={parseSearchParams(params)} />
+              ))}
+            </Crossfade>
+          </Suspense>
         </footer>
       </div>
     </ErrorBoundary>
