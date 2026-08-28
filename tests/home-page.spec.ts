@@ -22,16 +22,18 @@ test('the next page is resolved by per-link prefetching', async ({ page }) => {
   await instant(page, async () => {
     await next.click();
     await page.waitForURL(url => url.searchParams.get('page') === '2');
-    await expect(page.getByText(/page 2 of [\d,]+/)).toBeVisible();
+    await expect(page.getByText(/Page 2 of [\d,]+/)).toBeVisible();
   });
 });
 
-test('paging back to the first page removes the page query', async ({ page }) => {
+test('the first page is restored instantly without a page query', async ({ page }) => {
   await page.goto('/?page=2');
   const previous = page.getByRole('link', { name: 'Previous page' });
 
   await expect(previous).toBeVisible();
-  await previous.click();
-  await page.waitForURL(url => url.searchParams.get('page') === null);
-  await expect(page.getByText(/page 1 of [\d,]+/)).toBeVisible();
+  await instant(page, async () => {
+    await previous.click();
+    await page.waitForURL(url => url.searchParams.get('page') === null);
+    await expect(page.getByText(/Page 1 of [\d,]+/)).toBeVisible();
+  });
 });
