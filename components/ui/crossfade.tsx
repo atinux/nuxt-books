@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export function Crossfade({ children }: { children: ReactNode }) {
   return (
     <ViewTransition default="none" enter="auto">
-      {children}
+      <div>{children}</div>
     </ViewTransition>
   );
 }
