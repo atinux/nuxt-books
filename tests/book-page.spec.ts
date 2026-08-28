@@ -40,10 +40,10 @@ test('a book page keeps the catalog filters for the back navigation', async ({ p
   await instant(page, async () => {
     await back.click();
     await page.waitForURL('/?search=wizard');
+    await expect(page.getByRole('link', { name: /Unschooled Wizard/ })).toBeVisible();
   });
 
   await expect(page.getByRole('searchbox', { name: 'Search books' })).toHaveValue('wizard');
-  await expect(page.getByRole('link', { name: /Unschooled Wizard/ })).toBeVisible();
 });
 
 test('an unknown book id renders the not-found state', async ({ page }) => {
