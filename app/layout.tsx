@@ -95,6 +95,7 @@ function BookSidebarContent({ idPrefix, mobile = false }: { idPrefix: string; mo
           aria-label="NextBooks home"
           className="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
           href="/"
+          prefetch={true}
         >
           <BookMark className="text-action size-5" />
           NextBooks

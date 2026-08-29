@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { FastLink } from '@/components/ui/fast-link';
 import { LinkStatus } from '@/components/ui/link-status';
-import { buildHref, getCurrentPage, parseSearchParams } from '@/lib/url-state';
+import { buildHref, parseSearchParams } from '@/lib/url-state';
 import { cn } from '@/lib/utils';
 import type { Route } from 'next';
 
@@ -15,7 +15,7 @@ const linkClass =
 // The fallback is the same link pointing at `/`, so only the `href` upgrades.
 export function BackToBooksLink({ className }: { className?: string }) {
   return (
-    <Suspense fallback={<BackLink className={className} eager href="/" />}>
+    <Suspense fallback={<BackLink className={className} href="/" />}>
       <BackLinkWithFilters className={className} />
     </Suspense>
   );
@@ -25,12 +25,12 @@ function BackLinkWithFilters({ className }: { className?: string }) {
   const searchParams = useSearchParams();
   const params = parseSearchParams(Object.fromEntries(searchParams));
   const href = buildHref(params);
-  return <BackLink className={className} eager={getCurrentPage(params) === 1} href={href} />;
+  return <BackLink className={className} href={href} />;
 }
 
-function BackLink({ className, eager, href }: { className?: string; eager: boolean; href: Route }) {
+function BackLink({ className, href }: { className?: string; href: Route }) {
   return (
-    <FastLink className={cn(linkClass, className)} href={href} prefetch={eager ? true : 'auto'}>
+    <FastLink className={cn(linkClass, className)} href={href} prefetch="auto">
       <LinkStatus>
         <ArrowLeft aria-hidden className="size-4" />
         Back to books
