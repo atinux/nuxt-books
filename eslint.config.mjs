@@ -55,4 +55,9 @@ export default defineConfig([
       'spaced-comment': 'warn',
     },
   },
+  {
+    // Seed and migration scripts are CLIs: progress logging is the interface.
+    files: ['lib/db/**'],
+    rules: { 'no-console': 'off' },
+  },
 ]);

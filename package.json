@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "analyze": "next build && next experimental-analyze",
     "start": "next start",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
