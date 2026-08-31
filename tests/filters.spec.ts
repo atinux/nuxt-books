@@ -55,7 +55,7 @@ test('the catalog only dims while a filter is in flight', async ({ page }) => {
 
   await page.getByRole('link', { name: /W\.C\. Fields/ }).click();
   await page.waitForURL(url => url.pathname === '/5333265');
-  await page.getByRole('link', { name: 'Back to books' }).click();
+  await page.getByRole('button', { name: 'Back to books' }).click();
   await page.waitForURL('/');
 
   await expect(grid).toHaveCount(0);

@@ -9,7 +9,6 @@ import type { Metadata } from 'next';
 export async function generateMetadata({ params }: PageProps<'/[id]'>): Promise<Metadata> {
   const { id } = await params;
   const book = await getBookById(id);
-  if (!book) return { title: 'Book not found' };
   return { description: book.description ?? undefined, title: book.title };
 }
 

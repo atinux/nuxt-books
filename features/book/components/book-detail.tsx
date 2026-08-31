@@ -1,5 +1,4 @@
 import { BookOpen, Building2, CalendarDays, Globe, Hash } from 'lucide-react';
-import { notFound } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StarRating } from '@/components/ui/star-rating';
 import { getBookById } from '@/features/book/book-queries';
@@ -11,7 +10,6 @@ const DETAIL_SIZES = '(min-width: 768px) 18rem, 60vw';
 
 export async function BookDetail({ id }: { id: string }) {
   const book = await getBookById(id);
-  if (!book) notFound();
 
   const rating = Number(book.average_rating);
   const hasRating = book.average_rating !== null && !Number.isNaN(rating);

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { and, count, eq, gte, isNull, lte, not, sql } from 'drizzle-orm';
 import { cacheLife } from 'next/cache';
+import { notFound } from 'next/navigation';
 import {
   EMPTY_IMAGE_URL,
   ITEMS_PER_PAGE,
@@ -11,6 +12,7 @@ import {
   MIN_YEAR,
 } from '@/features/book/book-constants';
 import { GENERATED_PREVIEW_BOOKS } from '@/features/book/book-preview-catalog';
+import { SAMPLE_BOOKS } from '@/features/book/data/sample-books';
 import { db } from '@/lib/db/drizzle';
 import { authors, books, bookToAuthor } from '@/lib/db/schema';
 
@@ -33,71 +35,7 @@ export type BookDetails = BookSummary & {
   authors: string[];
 };
 
-const sampleBooks: BookDetails[] = [
-  {
-    authors: ['Ronald J. Fields'],
-    average_rating: '4.00',
-    description: 'A portrait of the legendary performer and the life behind his unmistakable screen persona.',
-    id: 5333265,
-    image_url: 'https://images.gr-assets.com/books/1310220028m/5333265.jpg',
-    isbn: '0312853122',
-    language_code: 'eng',
-    num_pages: 256,
-    publication_year: 1984,
-    publisher: "St. Martin's Press",
-    ratings_count: 3,
-    thumbhash: null,
-    title: 'W.C. Fields: A Life on Film',
-  },
-  {
-    authors: ['Anita Diamant'],
-    average_rating: '3.23',
-    description:
-      'A story about the strength and necessity of adult friendship, set against the rocky coast of Gloucester, Massachusetts.',
-    id: 1333909,
-    image_url: EMPTY_IMAGE_URL,
-    isbn: '0743509986',
-    language_code: 'eng',
-    num_pages: null,
-    publication_year: 2001,
-    publisher: 'Simon & Schuster Audio',
-    ratings_count: 10,
-    thumbhash: null,
-    title: 'Good Harbor',
-  },
-  {
-    authors: ['Barbara Hambly'],
-    average_rating: '4.03',
-    description: 'An omnibus edition containing The Ladies of Mandrigyn and The Witches of Wenshar.',
-    id: 7327624,
-    image_url: 'https://images.gr-assets.com/books/1304100136m/7327624.jpg',
-    isbn: null,
-    language_code: 'eng',
-    num_pages: 600,
-    publication_year: 1987,
-    publisher: 'Nelson Doubleday, Inc.',
-    ratings_count: 140,
-    thumbhash: null,
-    title: 'The Unschooled Wizard',
-  },
-  {
-    authors: ['Jennifer Weiner'],
-    average_rating: '3.49',
-    description: 'Two childhood friends reunite twenty-five years later and begin an unexpected adventure together.',
-    id: 6066819,
-    image_url: EMPTY_IMAGE_URL,
-    isbn: '0743294297',
-    language_code: 'eng',
-    num_pages: 368,
-    publication_year: 2009,
-    publisher: 'Atria Books',
-    ratings_count: 89_000,
-    thumbhash: null,
-    title: 'Best Friends Forever',
-  },
-];
-
-const previewBooks: BookDetails[] = [...sampleBooks, ...GENERATED_PREVIEW_BOOKS];
+const previewBooks: BookDetails[] = [...SAMPLE_BOOKS, ...GENERATED_PREVIEW_BOOKS];
 
 const yearFilter = (year: number) => and(gte(books.publication_year, MIN_YEAR), lte(books.publication_year, year));
 
@@ -254,15 +192,19 @@ export async function getBooksCount(
   return total;
 }
 
-export async function getBookById(id: string): Promise<BookDetails | undefined> {
+export async function getBookById(id: string): Promise<BookDetails> {
   'use cache';
   cacheLife('hours');
 
   const bookId = Number(id);
-  if (!Number.isInteger(bookId)) return undefined;
+  if (!Number.isInteger(bookId)) notFound();
 
   const database = db;
-  if (!database) return previewBooks.find(book => book.id === bookId);
+  if (!database) {
+    const book = previewBooks.find(book => book.id === bookId);
+    if (!book) notFound();
+    return book;
+  }
 
   const result = await database
     .select({
@@ -287,5 +229,7 @@ export async function getBookById(id: string): Promise<BookDetails | undefined> 
     .groupBy(books.id)
     .limit(1);
 
-  return result[0];
+  const book = result[0];
+  if (!book) notFound();
+  return book;
 }

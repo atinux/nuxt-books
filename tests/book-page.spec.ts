@@ -65,7 +65,7 @@ test('a later catalog page is restored from the visited router cache', async ({ 
   await instant(page, async () => {
     await back.click();
     await page.waitForURL('/?page=2');
-    await expect(page.getByRole('link', { name: bookName! })).toBeVisible();
+    await expect(page.getByRole('link', { name: bookName! }).first()).toBeVisible();
   });
 });
 
