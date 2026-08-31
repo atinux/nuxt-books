@@ -45,7 +45,8 @@ async function batchInsertBooks(batch: BookData[], sqlQuery: NeonQueryFunction<f
     ON CONFLICT DO NOTHING
   `;
 
-  return sqlQuery.transaction(tx => batch.map(book =>
+  return sqlQuery.transaction(tx =>
+    batch.map(book =>
       tx.query(insertBookAndAuthorsQuery, [
         parseInt(book.book_id),
         book.isbn || null,
@@ -64,7 +65,8 @@ async function batchInsertBooks(batch: BookData[], sqlQuery: NeonQueryFunction<f
         JSON.stringify(book.popular_shelves),
         book.authors.map(author => author.author_id),
       ]),
-    ));
+    ),
+  );
 }
 
 async function main() {
