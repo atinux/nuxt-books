@@ -2,8 +2,10 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { Suspense } from 'react';
 import { BookMark } from '@/components/book-mark';
 import { MobileBookSidebar, MobileBookSidebarTrigger } from '@/components/mobile-book-sidebar';
+import { OfflineIndicator } from '@/components/offline-indicator';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { Toaster } from '@/components/toaster';
 import ErrorBoundary from '@/components/ui/error-boundary';
 import { FastLink } from '@/components/ui/fast-link';
 import { GitHubIcon } from '@/components/ui/github-icon';
@@ -81,6 +83,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
           </MobileBookSidebar>
+          <OfflineIndicator />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

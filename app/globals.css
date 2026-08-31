@@ -243,6 +243,18 @@ input[type='range']::-moz-range-thumb {
   z-index: 100;
 }
 
+/* The `toaster` name lives on the always-mounted wrapper in components/toaster.tsx,
+   so a toast is never captured mid-flight by a navigation snapshot. */
+::view-transition-group(toaster) {
+  animation: none;
+  z-index: 200;
+}
+
+::view-transition-old(toaster),
+::view-transition-new(toaster) {
+  animation: none;
+}
+
 ::view-transition-old(sidebar),
 ::view-transition-new(sidebar),
 ::view-transition-old(theme-toggle),
