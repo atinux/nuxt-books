@@ -1,3 +1,4 @@
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Suspense } from 'react';
 import { BookMark } from '@/components/book-mark';
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <OfflineIndicator />
           <Toaster />
         </ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
