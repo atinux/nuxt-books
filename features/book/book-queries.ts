@@ -3,15 +3,9 @@ import 'server-only';
 import { and, count, eq, gte, isNull, lte, not, sql } from 'drizzle-orm';
 import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
-import {
-  EMPTY_IMAGE_URL,
-  ITEMS_PER_PAGE,
-  MAX_PAGES,
-  MAX_YEAR,
-  MIN_RATING,
-  MIN_YEAR,
-} from '@/features/book/book-constants';
+import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MIN_RATING, MIN_YEAR } from '@/features/book/book-constants';
 import { GENERATED_PREVIEW_BOOKS } from '@/features/book/book-preview-catalog';
+import type { BookFilters, BookQuery } from '@/features/book/book-utils';
 import { SAMPLE_BOOKS } from '@/features/book/data/sample-books';
 import { db } from '@/lib/db/drizzle';
 import { authors, books, bookToAuthor } from '@/lib/db/schema';
@@ -65,14 +59,7 @@ const isbnFilter = (isbns: string) => {
   )})`;
 };
 
-function getWhereClause(
-  search: string,
-  year: number,
-  rating: number,
-  language: string,
-  maxPages: number,
-  isbns: string,
-) {
+function getWhereClause({ isbns, language, maxPages, rating, search, year }: BookFilters) {
   const filters = [
     yearFilter(year),
     ratingFilter(rating),
@@ -86,14 +73,7 @@ function getWhereClause(
   return filters.length ? and(...filters) : undefined;
 }
 
-function filterPreview(
-  search: string,
-  year: number,
-  rating: number,
-  language: string,
-  maxPages: number,
-  isbns: string,
-): BookDetails[] {
+function filterPreview({ isbns, language, maxPages, rating, search, year }: BookFilters): BookDetails[] {
   const query = search.toLocaleLowerCase();
   const isbnList = isbns ? isbns.split(',') : undefined;
 
@@ -118,44 +98,21 @@ function filterPreview(
   });
 }
 
-function getPreviewBooks(
-  page: number,
-  search: string,
-  year: number,
-  rating: number,
-  language: string,
-  maxPages: number,
-  isbns: string,
-): BookSummary[] {
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  return filterPreview(search, year, rating, language, maxPages, isbns).slice(start, start + ITEMS_PER_PAGE);
+function getPreviewBooks(query: BookQuery): BookSummary[] {
+  const start = (query.page - 1) * ITEMS_PER_PAGE;
+  return filterPreview(query).slice(start, start + ITEMS_PER_PAGE);
 }
 
-function getPreviewCount(
-  search: string,
-  year: number,
-  rating: number,
-  language: string,
-  maxPages: number,
-  isbns: string,
-): number {
-  return filterPreview(search, year, rating, language, maxPages, isbns).length;
+function getPreviewCount(filters: BookFilters): number {
+  return filterPreview(filters).length;
 }
 
-export async function getBooksPage(
-  page: number = 1,
-  search: string = '',
-  year: number = MAX_YEAR,
-  rating: number = MIN_RATING,
-  language: string = '',
-  maxPages: number = MAX_PAGES,
-  isbns: string = '',
-): Promise<BookSummary[]> {
+export async function getBooksPage(query: BookQuery): Promise<BookSummary[]> {
   'use cache';
   cacheLife('hours');
 
   const database = db;
-  if (!database) return getPreviewBooks(page, search, year, rating, language, maxPages, isbns);
+  if (!database) return getPreviewBooks(query);
 
   return database
     .select({
@@ -165,30 +122,20 @@ export async function getBooksPage(
       title: books.title,
     })
     .from(books)
-    .where(getWhereClause(search, year, rating, language, maxPages, isbns))
+    .where(getWhereClause(query))
     .orderBy(books.id)
     .limit(ITEMS_PER_PAGE)
-    .offset((page - 1) * ITEMS_PER_PAGE);
+    .offset((query.page - 1) * ITEMS_PER_PAGE);
 }
 
-export async function getBooksCount(
-  search: string = '',
-  year: number = MAX_YEAR,
-  rating: number = MIN_RATING,
-  language: string = '',
-  maxPages: number = MAX_PAGES,
-  isbns: string = '',
-): Promise<number> {
+export async function getBooksCount(filters: BookFilters): Promise<number> {
   'use cache';
   cacheLife('hours');
 
   const database = db;
-  if (!database) return getPreviewCount(search, year, rating, language, maxPages, isbns);
+  if (!database) return getPreviewCount(filters);
 
-  const [{ total }] = await database
-    .select({ total: count() })
-    .from(books)
-    .where(getWhereClause(search, year, rating, language, maxPages, isbns));
+  const [{ total }] = await database.select({ total: count() }).from(books).where(getWhereClause(filters));
   return total;
 }
 

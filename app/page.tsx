@@ -37,16 +37,7 @@ export default function Page({ searchParams }: PageProps<'/'>) {
 }
 
 async function BookResults({ searchParams }: { searchParams: SearchParams }) {
-  const query = toBookQuery(searchParams);
-  const books = await getBooksPage(
-    query.page,
-    query.search,
-    query.year,
-    query.rating,
-    query.language,
-    query.maxPages,
-    query.isbns,
-  );
+  const books = await getBooksPage(toBookQuery(searchParams));
 
   return <BookGrid books={books} searchParams={searchParams} />;
 }

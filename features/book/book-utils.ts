@@ -26,7 +26,27 @@ export function formatCount(n: number): string {
   return `${(n / 1_000_000).toFixed(1)}M`;
 }
 
-export function toBookQuery(params: SearchParams) {
+// The catalog read is driven by these seven values. `BookFilters` is the subset that
+// decides *which* books match; `page` only decides which slice of them you get, so the
+// total-count query takes `BookFilters` alone and stays cached across pages.
+export type BookFilters = {
+  isbns: string;
+  language: string;
+  maxPages: number;
+  rating: number;
+  search: string;
+  year: number;
+};
+
+export type BookQuery = BookFilters & { page: number };
+
+// Drops `page` into a fresh object: passing a `BookQuery` straight through would keep
+// the property at runtime and split the count cache per page.
+export function toBookFilters({ isbns, language, maxPages, rating, search, year }: BookQuery): BookFilters {
+  return { isbns, language, maxPages, rating, search, year };
+}
+
+export function toBookQuery(params: SearchParams): BookQuery {
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
   const num = (raw: string | undefined, fallback: number) => {
     const parsed = Number(raw);

@@ -30,6 +30,8 @@ yarn-error.log*
 
 # local env files
 .env*
+# ...but the documented template is meant to be committed
+!.env.sample
 
 # vercel
 .vercel
