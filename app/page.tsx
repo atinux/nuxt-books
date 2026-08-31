@@ -26,11 +26,9 @@ export default function Page({ searchParams }: PageProps<'/'>) {
         </div>
         <footer className="border-divider dark:border-divider-dark mt-auto border-t px-4 py-3 sm:px-6">
           <Suspense fallback={<BookPaginationSkeleton />}>
-            <Crossfade>
-              {searchParams.then(params => (
-                <BookPagination searchParams={parseSearchParams(params)} />
-              ))}
-            </Crossfade>
+            {searchParams.then(params => (
+              <BookPagination searchParams={parseSearchParams(params)} />
+            ))}
           </Suspense>
         </footer>
       </div>

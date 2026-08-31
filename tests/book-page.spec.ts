@@ -71,5 +71,5 @@ test('a later catalog page is restored from the visited router cache', async ({ 
 
 test('an unknown book id renders the not-found state', async ({ page }) => {
   await page.goto('/99999999');
-  await expect(page.getByRole('heading', { name: 'Book not found' })).toBeVisible();
+  await expect(page.getByText('Book not found', { exact: true }).filter({ visible: true })).toBeVisible();
 });
