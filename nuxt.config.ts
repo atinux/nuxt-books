@@ -18,7 +18,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { isr: 3600 },
     '/**': { isr: 3600 },
-    '/api/**': { isr: false },
+    '/api/**': { isr: 3600 },
   },
   runtimeConfig: {
     public: {
