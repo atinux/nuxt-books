@@ -65,19 +65,16 @@ async function processBook(book: BookData): Promise<[string, string] | null> {
 async function batchUpdateThumbHash(batch: BookData[], sqlQuery: SqlClient) {
   const updateThumbhashQuery = `
     UPDATE books
-    SET thumbhash = $1
-    WHERE image_url = $2
+    SET thumbhash = ?
+    WHERE image_url = ?
   `;
 
   const processedBooks = await Promise.all(batch.map(book => limit(() => processBook(book))));
+  const statements = processedBooks
+    .filter((result): result is [string, string] => result !== null)
+    .map(([thumbHash, imageUrl]) => ({ args: [thumbHash, imageUrl], sql: updateThumbhashQuery }));
 
-  return sqlQuery.transaction(tx =>
-    Promise.all(
-      processedBooks
-        .filter((result): result is [string, string] => result !== null)
-        .map(([thumbHash, imageUrl]) => tx.query(updateThumbhashQuery, [thumbHash, imageUrl])),
-    ),
-  );
+  if (statements.length) await sqlQuery.batch(statements, 'write');
 }
 
 async function main() {

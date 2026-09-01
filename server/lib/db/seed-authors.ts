@@ -21,24 +21,25 @@ interface AuthorData {
 
 async function batchInsertAuthors(batch: AuthorData[], sqlQuery: SqlClient) {
   const insertQuery = `
-    INSERT INTO authors (id, name, average_rating, text_reviews_count, ratings_count)
-    VALUES ($1, $2, $3::numeric, $4::integer, $5::integer)
-    ON CONFLICT (id) DO NOTHING
+    INSERT OR IGNORE INTO authors (id, name, average_rating, text_reviews_count, ratings_count)
+    SELECT
+      CAST(json_extract(value, '$.id') AS TEXT),
+      json_extract(value, '$.name'),
+      CAST(json_extract(value, '$.average_rating') AS REAL),
+      CAST(json_extract(value, '$.text_reviews_count') AS INTEGER),
+      CAST(json_extract(value, '$.ratings_count') AS INTEGER)
+    FROM json_each(?)
   `;
 
-  await sqlQuery.transaction(tx =>
-    Promise.all(
-      batch.map(author =>
-        tx.query(insertQuery, [
-          author.author_id,
-          author.name,
-          author.average_rating,
-          author.text_reviews_count,
-          author.ratings_count,
-        ]),
-      ),
-    ),
-  );
+  const authors = batch.map(author => ({
+    average_rating: Number(author.average_rating),
+    id: author.author_id,
+    name: author.name,
+    ratings_count: Number(author.ratings_count),
+    text_reviews_count: Number(author.text_reviews_count),
+  }));
+
+  await sqlQuery.batch([{ args: [JSON.stringify(authors)], sql: insertQuery }], 'write');
 }
 
 async function main() {

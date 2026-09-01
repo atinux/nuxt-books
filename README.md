@@ -4,7 +4,7 @@
 
 # NuxtBooks
 
-NuxtBooks is built from a Goodreads dataset of more than 2,000,000 books. The catalog uses Nuxt 4, Vue, Nitro, Drizzle, PostgreSQL, and incremental static regeneration (ISR).
+NuxtBooks is built from a Goodreads dataset of more than 2,000,000 books. The catalog uses Nuxt 4, Vue, Nitro, Drizzle, Turso, and incremental static regeneration (ISR).
 
 [**View the source on GitHub →**](https://github.com/atinux/nuxt-books)
 
@@ -34,7 +34,7 @@ pnpm install
 pnpm dev
 ```
 
-`POSTGRES_URL` is optional. Without it, NuxtBooks serves a generated preview catalog.
+`TURSO_DATABASE_URL` is optional. Without it, NuxtBooks serves a generated preview catalog.
 
 Verify a change with these commands:
 
@@ -54,13 +54,16 @@ pnpm test:e2e
 
 ## Database
 
-The original dataset contains more than two million Goodreads books. The schema uses PostgreSQL's `unaccent` extension for accent-insensitive title search:
+Turso Cloud is compatible with libSQL and SQLite. NuxtBooks uses Drizzle's libSQL driver and an FTS5 index with Unicode diacritic removal for accent-insensitive title search.
 
-```sql
-CREATE EXTENSION IF NOT EXISTS unaccent;
+Local development doesn't require a Turso account. Create `.env` from `.env.example`; `file:local.db` uses an on-disk SQLite database, and the auth token remains empty:
+
+```dotenv
+TURSO_DATABASE_URL=file:local.db
+TURSO_AUTH_TOKEN=
 ```
 
-Set `POSTGRES_URL`, then create the schema and load the bundled sample:
+Create the schema and load the bundled four-book sample:
 
 ```bash
 pnpm db:setup
@@ -72,7 +75,16 @@ Optionally generate cover-image placeholders for the four bundled sample books:
 pnpm db:seed-thumbhash
 ```
 
-To import the complete UCSD Goodreads catalog, create the schema without loading the sample, then download the compressed book and author metadata files into the ignored `data/` directory. The seeders read gzip files directly, preserve Goodreads IDs, and checkpoint large imports:
+To use Turso Cloud, [create a database and token](https://docs.turso.tech/quickstart), then set the credentials locally and in your deployment:
+
+```dotenv
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-database-token
+```
+
+Run `pnpm db:migrate` against a new Turso database before starting the app. See the [Drizzle and Turso guide](https://orm.drizzle.team/docs/tutorials/drizzle-with-turso) for more connection details.
+
+To import the complete UCSD Goodreads catalog, download the compressed book and author metadata files into the ignored `data/` directory. The seeders work with local files and hosted Turso databases, read gzip files directly, preserve Goodreads IDs, and checkpoint large imports:
 
 ```bash
 pnpm db:migrate

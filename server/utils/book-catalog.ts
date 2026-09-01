@@ -1,4 +1,4 @@
-import { and, count, eq, gte, isNull, lte, not, sql } from 'drizzle-orm';
+import { and, count, eq, gte, inArray, isNull, lte, not, sql } from 'drizzle-orm';
 import { PREVIEW_BOOKS } from '../data/preview-books';
 import { db } from '../lib/db/drizzle';
 import { authors, books, bookToAuthor } from '../lib/db/schema';
@@ -20,18 +20,23 @@ const pageCountFilter = (maxPages: number) => lte(books.num_pages, maxPages);
 
 const imageFilter = () => and(not(isNull(books.image_url)), sql`${books.image_url} != ${EMPTY_IMAGE_URL}`);
 
-const searchFilter = (search: string) =>
+const toFtsQuery = (search: string) =>
   search
-    ? sql`to_tsvector('english', ${books.title_tsv}) @@ plainto_tsquery('english', unaccent(${search}))`
-    : undefined;
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(term => `"${term.replaceAll('"', '""')}"`)
+    .join(' AND ');
+
+const searchFilter = (search: string) => {
+  const query = toFtsQuery(search);
+  return query ? sql`${books.id} IN (SELECT rowid FROM books_fts WHERE books_fts MATCH ${query})` : undefined;
+};
 
 const isbnFilter = (isbns: string) => {
   if (!isbns) return undefined;
   const values = isbns.split(',').map(value => value.trim());
-  return sql`${books.isbn} IN (${sql.join(
-    values.map(value => sql`${value}`),
-    sql`, `,
-  )})`;
+  return inArray(books.isbn, values);
 };
 
 function getWhereClause({ isbns, language, maxPages, rating, search, year }: BookFilters) {
@@ -108,8 +113,8 @@ export async function getBookById(id: string): Promise<BookDetails | undefined> 
 
   const result = await db
     .select({
-      authors: sql<string[]>`array_remove(array_agg(${authors.name}), NULL)`,
-      average_rating: books.average_rating,
+      authorsJson: sql<string>`coalesce(json_group_array(${authors.name}) filter (where ${authors.name} is not null), '[]')`,
+      average_rating: sql<string | null>`cast(${books.average_rating} as text)`,
       description: books.description,
       id: books.id,
       image_url: books.image_url,
@@ -129,5 +134,9 @@ export async function getBookById(id: string): Promise<BookDetails | undefined> 
     .groupBy(books.id)
     .limit(1);
 
-  return result[0];
+  const book = result[0];
+  if (!book) return undefined;
+
+  const { authorsJson, ...details } = book;
+  return { ...details, authors: JSON.parse(authorsJson) as string[] };
 }

@@ -21,7 +21,6 @@ export default defineNuxtConfig({
     '/api/**': { isr: false },
   },
   runtimeConfig: {
-    postgresUrl: process.env.POSTGRES_URL,
     public: {
       baseUrl:
         process.env.NUXT_PUBLIC_BASE_URL ??

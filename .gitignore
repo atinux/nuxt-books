@@ -48,3 +48,6 @@ yarn-error.log*
 book_import_checkpoint.json
 author_import_checkpoint.json
 thumbhash_update_checkpoint.json
+/local.db
+/local.db-shm
+/local.db-wal
