@@ -1,45 +1,52 @@
 <div align="center">
 
-<img src="public/logo.svg" alt="NextBooks" width="72" height="72" />
+<img src="public/logo.svg" alt="NuxtBooks" width="72" height="72" />
 
-# NextBooks
+# NuxtBooks
 
-NextBooks is built from a Goodreads dataset of over 2,000,000 books. The live catalog includes books with usable cover images and uses [Next.js 16.3](https://nextjs.org/blog/next-16-3), Drizzle, PostgreSQL, and [Instant Navigations](https://nextjs.org/blog/next-16-3-instant-navigations).
+NuxtBooks is built from a Goodreads dataset of more than 2,000,000 books. The catalog uses Nuxt 4, Vue, Nitro, Drizzle, PostgreSQL, and incremental static regeneration (ISR).
 
-[**Live demo →**](https://www.next-books.dev)
+[**View the source on GitHub →**](https://github.com/atinux/nuxt-books)
 
 </div>
 
 ---
 
-Rebuild of [vercel-labs/book-inventory](https://github.com/vercel-labs/book-inventory), now archived. [Full dataset here](https://mengtingwan.github.io/data/goodreads.html).
+NuxtBooks is a Nuxt rebuild of the archived [Vercel book inventory example](https://github.com/vercel-labs/book-inventory). You can download the [full Goodreads dataset from the UCSD Book Graph project](https://mengtingwan.github.io/data/goodreads.html).
 
-## Instant Navigations
+## Navigation and caching
 
-See [Ensuring instant navigations](https://nextjs.org/docs/app/guides/instant-navigation).
+NuxtBooks uses [Nuxt route rules](https://nuxt.com/docs/4.x/guide/concepts/rendering#hybrid-rendering) to cache page routes with a one-hour ISR window. API routes remain dynamic.
 
-- **[Cache Components](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents)** cache each query with `'use cache'` and `cacheLife`. See [Migrating to Cache Components](https://nextjs.org/docs/app/guides/migrating-to-cache-components).
-- **[Partial Prefetching](https://nextjs.org/docs/app/guides/adopting-partial-prefetching)** prefetches the shared App Shell of links entering the viewport.
-- **[Per-link prefetching](https://nextjs.org/docs/app/guides/optimizing-prefetching#resolve-url-data-at-prefetch-time)** prioritizes the initial browsing path: book links on the first catalog page and pagination links use `prefetch={true}`, while book links on later pages wait for hover or keyboard focus before resolving their URL-dependent content.
+- **Extracted payloads:** `experimental.payloadExtraction: 'client'` keeps the payload inline on an initial request and exposes `_payload.json` for client navigation to cached routes.
+- **Book prefetching:** first-page book links prefetch when they enter the viewport. Books on later catalog pages wait for pointer or keyboard intent.
+- **Pagination prefetching:** the app explicitly warms the adjacent query route's `_payload.json`, because pagination changes the query string without changing the page component.
+- **Forward compatibility:** `future.compatibilityVersion: 5` opts into the documented Nuxt 5 defaults while the app remains on Nuxt 4.
+
+See [Nuxt payload extraction](https://nuxt.com/docs/4.x/getting-started/prerendering#payload-extraction) and [`<NuxtLink>` prefetching](https://nuxt.com/docs/4.x/api/components/nuxt-link#prefetch-links) for the underlying behavior.
 
 ## Run locally
+
+You need Node.js 22 or newer and pnpm.
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-`POSTGRES_URL` is optional. Without it the app serves a small preview catalog.
+`POSTGRES_URL` is optional. Without it, NuxtBooks serves a generated preview catalog.
+
+Verify a change with these commands:
 
 ```bash
+pnpm typecheck
 pnpm lint
-pnpm exec tsc --noEmit
 pnpm build
 ```
 
 ## Testing
 
-[`@next/playwright`](https://nextjs.org/docs/app/guides/testing/playwright) with [`instant()`](https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config/instant), asserting navigations stay instant. Runs in CI.
+The Playwright suite runs against a production Nitro build so it exercises ISR and extracted-payload prefetching, not only development-server behavior.
 
 ```bash
 pnpm test:e2e
@@ -53,25 +60,23 @@ The original dataset contains more than two million Goodreads books. The schema 
 CREATE EXTENSION IF NOT EXISTS unaccent;
 ```
 
-The source dataset is available from the [UCSD Book Graph project](https://mengtingwan.github.io/data/goodreads.html).
-
-Set `POSTGRES_URL`, then create the schema and load the bundled four-book sample:
+Set `POSTGRES_URL`, then create the schema and load the bundled sample:
 
 ```bash
 pnpm db:setup
 ```
 
-Optionally generate the cover-image placeholders after seeding:
+Optionally generate cover-image placeholders for the four bundled sample books:
 
 ```bash
 pnpm db:seed-thumbhash
 ```
 
-To import the complete UCSD Goodreads catalog, download the compressed book
-and author metadata files into the ignored `data/` directory. The seeders read
-gzip files directly, preserve Goodreads IDs, and checkpoint large imports:
+To import the complete UCSD Goodreads catalog, create the schema without loading the sample, then download the compressed book and author metadata files into the ignored `data/` directory. The seeders read gzip files directly, preserve Goodreads IDs, and checkpoint large imports:
 
 ```bash
+pnpm db:migrate
+
 mkdir -p data
 curl -L https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_book_authors.json.gz -o data/authors.json.gz
 curl -L https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_books.json.gz -o data/books.json.gz
@@ -79,3 +84,5 @@ curl -L https://mcauleylab.ucsd.edu/public_datasets/gdrive/goodreads/goodreads_b
 AUTHORS_DATA_PATH=./data/authors.json.gz TOTAL_AUTHORS=829529 pnpm db:seed-authors
 BOOKS_DATA_PATH=./data/books.json.gz TOTAL_BOOKS=2360655 pnpm db:seed-books
 ```
+
+`TOTAL_AUTHORS` and `TOTAL_BOOKS` are used for progress estimates and checkpoint reporting; the seeders process each input file to the end.

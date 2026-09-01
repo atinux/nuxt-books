@@ -20,9 +20,9 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: `pnpm exec next dev --hostname 127.0.0.1 --port ${port}`,
+    command: 'node .output/server/index.mjs',
     // Blanking POSTGRES_URL runs the suite on the generated preview catalog.
-    env: { POSTGRES_URL: '' },
+    env: { HOST: '127.0.0.1', PORT: port, POSTGRES_URL: '' },
     // One dev server per directory: if you have one, set PLAYWRIGHT_BASE_URL to it.
     reuseExistingServer: true,
     stdout: 'pipe',

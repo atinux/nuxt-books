@@ -6,15 +6,16 @@
 .pnp.js
 .yarn/install-state.gz
 .env
+.pnpm-store
 
 # testing
 /coverage
 /playwright-report/
 /test-results/
 
-# next.js
-/.next/
-/out/
+# Nuxt
+/.nuxt/
+/.output/
 
 # production
 /build
@@ -31,7 +32,7 @@ yarn-error.log*
 # local env files
 .env*
 # ...but the documented template is meant to be committed
-!.env.sample
+!.env.example
 
 # vercel
 .vercel
@@ -42,7 +43,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 # seed scripts
 book_import_checkpoint.json

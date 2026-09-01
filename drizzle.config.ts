@@ -1,4 +1,4 @@
-import './lib/db/load-env';
+import './server/lib/db/load-env';
 import type { Config } from 'drizzle-kit';
 
 export default {
@@ -6,6 +6,6 @@ export default {
     url: process.env.POSTGRES_URL!,
   },
   dialect: 'postgresql',
-  out: './lib/db/migrations',
-  schema: './lib/db/schema.ts',
+  out: './server/lib/db/migrations',
+  schema: './server/lib/db/schema.ts',
 } satisfies Config;

@@ -5,9 +5,9 @@ test-results
 pnpm-lock.yaml
 
 # Newline-delimited seed data, not valid single-expression JSON
-lib/db/authors.json
-lib/db/books.json
-lib/db/migrations
+server/lib/db/authors.json
+server/lib/db/books.json
+server/lib/db/migrations
 
 # Vendored agent skills, kept byte-identical to upstream
 .agents

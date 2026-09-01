@@ -23,17 +23,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # PageProps lives in generated .next/types, absent on a fresh checkout.
-      - name: Generate Next.js types
-        run: pnpm exec next typegen
-
       - name: Typecheck
-        run: pnpm exec tsc --noEmit
+        run: pnpm typecheck
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run instant navigation tests
+      - name: Run browser tests
         run: pnpm test:e2e
 
       - name: Upload Playwright report
