@@ -4,7 +4,7 @@ import type { CatalogResponse } from '#shared/types/book';
 
 const route = useRoute();
 const query = computed(() => parseSearchParams(route.query));
-const { data, error, status } = await useFetch<CatalogResponse>('/api/books', { query });
+const { data, error, status } = await useFetch<CatalogResponse>('/api/books', { query, server: false });
 </script>
 
 <template>
