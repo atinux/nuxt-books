@@ -1,7 +1,7 @@
 import './load-env';
 import path from 'path';
-import { requireSql } from './drizzle';
-import { processEntities } from './seed-utils';
+import { requireDatabaseUrl, requireSql } from './drizzle';
+import { createCheckpointScope, processEntities } from './seed-utils';
 import type { SqlClient } from './drizzle';
 
 const BATCH_SIZE = 2000;
@@ -39,21 +39,26 @@ async function batchInsertAuthors(batch: AuthorData[], sqlQuery: SqlClient) {
     text_reviews_count: Number(author.text_reviews_count),
   }));
 
-  await sqlQuery.batch([{ args: [JSON.stringify(authors)], sql: insertQuery }], 'write');
+  const results = await sqlQuery.batch([{ args: [JSON.stringify(authors)], sql: insertQuery }], 'write');
+  return results[0]?.rowsAffected ?? 0;
 }
 
 async function main() {
   try {
     const sql = requireSql();
-    const authorCount = await processEntities<AuthorData>(
+    const checkpointScope = createCheckpointScope(requireDatabaseUrl(), DATA_FILE);
+    const { affectedEntities, processedLines } = await processEntities<AuthorData>(
       DATA_FILE,
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchInsertAuthors,
       sql,
       TOTAL_AUTHORS,
+      checkpointScope,
     );
-    console.log(`Seeded ${authorCount.toLocaleString()} / ${TOTAL_AUTHORS.toLocaleString()} authors`);
+    console.log(
+      `Inserted ${affectedEntities.toLocaleString()} authors (${processedLines.toLocaleString()} / ${TOTAL_AUTHORS.toLocaleString()} lines processed)`,
+    );
   } catch (error) {
     console.error('Error seeding authors:', error);
     process.exitCode = 1;

@@ -10,6 +10,7 @@
     "preview": "nuxt preview",
     "start": "node .output/server/index.mjs",
     "postinstall": "nuxt prepare",
+    "test:seed": "node --import tsx --test server/lib/db/seed-utils.test.ts",
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

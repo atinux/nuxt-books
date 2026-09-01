@@ -1,16 +1,45 @@
+import { createHash } from 'crypto';
 import fs from 'fs';
+import path from 'path';
 import readline from 'readline';
 import { createGunzip } from 'zlib';
 import type { SqlClient } from './drizzle';
 
-export async function saveCheckpoint(checkpointFile: string, processedLines: number) {
-  await fs.promises.writeFile(checkpointFile, JSON.stringify({ processedLines }), 'utf8');
+interface ImportCheckpoint {
+  processedLines: number;
+  scope: string;
 }
 
-export async function loadCheckpoint(checkpointFile: string): Promise<number> {
+export interface ProcessEntitiesResult {
+  affectedEntities: number;
+  processedLines: number;
+}
+
+export function createCheckpointScope(databaseUrl: string, filePath: string) {
+  return createHash('sha256')
+    .update(`${databaseUrl}\0${path.resolve(filePath)}`)
+    .digest('hex');
+}
+
+export async function saveCheckpoint(checkpointFile: string, processedLines: number, scope: string) {
+  await fs.promises.writeFile(checkpointFile, JSON.stringify({ processedLines, scope }), 'utf8');
+}
+
+export async function loadCheckpoint(checkpointFile: string, scope: string): Promise<number> {
   try {
     const data = await fs.promises.readFile(checkpointFile, 'utf8');
-    return JSON.parse(data).processedLines;
+    const checkpoint = JSON.parse(data) as Partial<ImportCheckpoint>;
+
+    if (
+      checkpoint.scope !== scope ||
+      !Number.isInteger(checkpoint.processedLines) ||
+      Number(checkpoint.processedLines) < 0
+    ) {
+      console.log(`Ignoring checkpoint ${checkpointFile}: database or source file changed`);
+      return 0;
+    }
+
+    return Number(checkpoint.processedLines);
   } catch {
     return 0;
   }
@@ -20,12 +49,14 @@ export async function processEntities<T>(
   filePath: string,
   checkpointFile: string,
   batchSize: number,
-  batchInsertFunction: (batch: T[], sqlQuery: SqlClient) => Promise<unknown>,
+  batchInsertFunction: (batch: T[], sqlQuery: SqlClient) => Promise<number>,
   sqlQuery: SqlClient,
   totalEntities: number,
-): Promise<number> {
+  checkpointScope: string,
+): Promise<ProcessEntitiesResult> {
   const usesCheckpoints = totalEntities > batchSize;
-  const startLine = usesCheckpoints ? await loadCheckpoint(checkpointFile) : 0;
+  const startLine = usesCheckpoints ? await loadCheckpoint(checkpointFile, checkpointScope) : 0;
+  let affectedEntities = 0;
   let processedLines = 0;
   let batch: T[] = [];
   const startTime = Date.now();
@@ -57,11 +88,11 @@ export async function processEntities<T>(
 
     if (batch.length >= batchSize) {
       const batchStartTime = Date.now();
-      await batchInsertFunction(batch, sqlQuery);
+      affectedEntities += await batchInsertFunction(batch, sqlQuery);
       const batchEndTime = Date.now();
       batch = [];
       if (usesCheckpoints) {
-        await saveCheckpoint(checkpointFile, processedLines);
+        await saveCheckpoint(checkpointFile, processedLines, checkpointScope);
       }
       const elapsedSeconds = (Date.now() - startTime) / 1000;
       const batchSeconds = (batchEndTime - batchStartTime) / 1000;
@@ -77,14 +108,14 @@ export async function processEntities<T>(
   }
 
   if (batch.length > 0) {
-    await batchInsertFunction(batch, sqlQuery);
+    affectedEntities += await batchInsertFunction(batch, sqlQuery);
     if (usesCheckpoints) {
-      await saveCheckpoint(checkpointFile, processedLines);
+      await saveCheckpoint(checkpointFile, processedLines, checkpointScope);
     }
   }
 
   const totalSeconds = (Date.now() - startTime) / 1000;
   console.log(`Total processing time: ${(totalSeconds / 60).toFixed(2)} minutes`);
 
-  return processedLines;
+  return { affectedEntities, processedLines };
 }
