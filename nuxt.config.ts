@@ -18,7 +18,14 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { isr: 3600 },
     '/**': { isr: 3600 },
-    '/api/**': { isr: 3600 },
+    '/api/books': {
+      isr: {
+        expiration: 3600,
+        allowQuery: ['language', 'list', 'page', 'pages', 'rating', 'search', 'year'],
+        passQuery: true
+      }
+    },
+    '/api/books/**': { isr: true },
   },
   runtimeConfig: {
     public: {
