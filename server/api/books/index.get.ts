@@ -5,6 +5,7 @@ import type { CatalogResponse } from '#shared/types/book';
 
 export default defineEventHandler(async event => {
   const params = parseSearchParams(getQuery(event));
+  console.log('params', params)
   const query = toBookQuery(params);
   const [books, total] = await Promise.all([getBooksPage(query), getBooksCount(toBookFilters(query))]);
 
