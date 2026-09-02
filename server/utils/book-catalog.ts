@@ -1,56 +1,20 @@
-import { and, count, eq, gte, inArray, isNull, lte, not, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { PREVIEW_BOOKS } from '../data/preview-books';
-import { db } from '../lib/db/drizzle';
+import { buildCatalogCountStatement, buildCatalogPageStatement } from '../lib/db/catalog-query';
+import { db, requireSql } from '../lib/db/drizzle';
 import { authors, books, bookToAuthor } from '../lib/db/schema';
-import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MIN_RATING, MIN_YEAR } from '#shared/utils/book-constants';
+import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MIN_YEAR } from '#shared/utils/book-constants';
+import type { Row } from '@libsql/client';
 import type { BookDetails, BookSummary } from '#shared/types/book';
 import type { BookFilters, BookQuery } from '#shared/utils/book-utils';
 
-const yearFilter = (year: number) => and(gte(books.publication_year, MIN_YEAR), lte(books.publication_year, year));
-
-const ratingFilter = (rating: number) => (rating > MIN_RATING ? sql`${books.average_rating} >= ${rating}` : undefined);
-
-const languageFilter = (language: string) => {
-  if (!language) return undefined;
-  if (language === 'en') return sql`${books.language_code} IN ('eng', 'en-US', 'en-GB')`;
-  return eq(books.language_code, language);
-};
-
-const pageCountFilter = (maxPages: number) => lte(books.num_pages, maxPages);
-
-const imageFilter = () => and(not(isNull(books.image_url)), sql`${books.image_url} != ${EMPTY_IMAGE_URL}`);
-
-const toFtsQuery = (search: string) =>
-  search
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(term => `"${term.replaceAll('"', '""')}"`)
-    .join(' AND ');
-
-const searchFilter = (search: string) => {
-  const query = toFtsQuery(search);
-  return query ? sql`${books.id} IN (SELECT rowid FROM books_fts WHERE books_fts MATCH ${query})` : undefined;
-};
-
-const isbnFilter = (isbns: string) => {
-  if (!isbns) return undefined;
-  const values = isbns.split(',').map(value => value.trim());
-  return inArray(books.isbn, values);
-};
-
-function getWhereClause({ isbns, language, maxPages, rating, search, year }: BookFilters) {
-  const filters = [
-    yearFilter(year),
-    ratingFilter(rating),
-    languageFilter(language),
-    pageCountFilter(maxPages),
-    imageFilter(),
-    searchFilter(search),
-    isbnFilter(isbns),
-  ].filter(filter => filter !== undefined);
-
-  return filters.length ? and(...filters) : undefined;
+function toBookSummary(row: Row): BookSummary {
+  return {
+    id: Number(row.id),
+    image_url: typeof row.image_url === 'string' ? row.image_url : null,
+    thumbhash: typeof row.thumbhash === 'string' ? row.thumbhash : null,
+    title: String(row.title),
+  };
 }
 
 function filterPreview({ isbns, language, maxPages, rating, search, year }: BookFilters): BookDetails[] {
@@ -84,25 +48,15 @@ export async function getBooksPage(query: BookQuery): Promise<BookSummary[]> {
     return filterPreview(query).slice(start, start + ITEMS_PER_PAGE);
   }
 
-  return db
-    .select({
-      id: books.id,
-      image_url: books.image_url,
-      thumbhash: books.thumbhash,
-      title: books.title,
-    })
-    .from(books)
-    .where(getWhereClause(query))
-    .orderBy(books.id)
-    .limit(ITEMS_PER_PAGE)
-    .offset((query.page - 1) * ITEMS_PER_PAGE);
+  const result = await requireSql().execute(buildCatalogPageStatement(query));
+  return result.rows.map(toBookSummary);
 }
 
 export async function getBooksCount(filters: BookFilters): Promise<number> {
   if (!db) return filterPreview(filters).length;
 
-  const result = await db.select({ total: count() }).from(books).where(getWhereClause(filters));
-  return result[0]?.total ?? 0;
+  const result = await requireSql().execute(buildCatalogCountStatement(filters));
+  return Number(result.rows[0]?.total ?? 0);
 }
 
 export async function getBookById(id: string): Promise<BookDetails | undefined> {

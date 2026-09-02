@@ -34,6 +34,11 @@ export const books = sqliteTable(
   },
   table => [
     index('idx_books_average_rating').on(table.average_rating),
+    index('idx_books_catalog')
+      .on(table.id, table.publication_year, table.num_pages, table.average_rating, table.language_code, table.isbn)
+      .where(
+        sql`${table.publication_year} >= 1950 AND ${table.publication_year} <= 2023 AND ${table.num_pages} <= 1000 AND ${table.image_url} IS NOT NULL AND ${table.image_url} != 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png'`,
+      ),
     index('idx_books_id_title_image_url_thumbhash').on(table.id, table.title, table.image_url, table.thumbhash),
     index('idx_books_created_at').on(table.createdAt),
     index('idx_books_isbn').on(table.isbn),
