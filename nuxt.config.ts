@@ -27,12 +27,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { isr: 3600 },
     '/**': { isr: 3600 },
-    '/_payload.json': {
-      headers: { 'cache-control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=60' },
-    },
-    '/**/_payload.json': {
-      headers: { 'cache-control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=60' },
-    },
     '/api/books': {
       isr: {
         expiration: 3600,
