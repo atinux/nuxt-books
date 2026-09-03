@@ -16,14 +16,16 @@ NuxtBooks is a Nuxt rebuild of the archived [Vercel book inventory example](http
 
 ## Navigation and caching
 
-NuxtBooks uses [Nuxt route rules](https://nuxt.com/docs/4.x/guide/concepts/rendering#hybrid-rendering) to cache page and book API routes with a one-hour ISR window.
+Catalog and book pages render dynamically rather than using ISR. On Vercel, Nitro mounts its `cache` storage on [Vercel Runtime Cache](https://vercel.com/docs/caching/runtime-cache); local and test builds use Nitro's in-memory fallback.
 
-- **Extracted payloads:** `experimental.payloadExtraction: 'client'` keeps the payload inline on an initial request and exposes `_payload.json` for client navigation to cached routes.
+- **Cached API data:** `/api/books`, `/api/books/count`, and `/api/books/:id` use `defineCachedEventHandler` with a one-hour stale-while-revalidate window. Stable hashed keys are derived from normalized filters, pagination, or the book ID so equivalent requests share an entry.
+- **Runtime Cache namespace:** Vercel entries use the versioned `nuxt-books:v1` namespace. Bumping the version intentionally starts a fresh cache.
+- **Dynamic page payloads:** the header-only `routeRules` cache marker keeps page rendering dynamic while allowing Nuxt to expose and browser-cache runtime `_payload.json` responses for client navigation. `/api/**` is excluded because the handlers own their cache policy.
 - **Book prefetching:** first-page book links prefetch when they enter the viewport. Books on later catalog pages wait for pointer or keyboard intent.
-- **Pagination prefetching:** the app explicitly warms the adjacent query route's `_payload.json`, because pagination changes the query string without changing the page component.
+- **Pagination warming:** when the pagination controls enter the viewport, the app requests adjacent `/api/books` query variants so their Runtime Cache entries are warm before navigation. The navigation itself still fetches the extracted `_payload.json` route.
 - **Forward compatibility:** `future.compatibilityVersion: 5` opts into the documented Nuxt 5 defaults while the app remains on Nuxt 4.
 
-See [Nuxt payload extraction](https://nuxt.com/docs/4.x/getting-started/prerendering#payload-extraction) and [`<NuxtLink>` prefetching](https://nuxt.com/docs/4.x/api/components/nuxt-link#prefetch-links) for the underlying behavior.
+See [Nitro caching](https://nitro.build/docs/cache), [Nuxt payload extraction](https://nuxt.com/docs/4.x/getting-started/prerendering#payload-extraction), and [`<NuxtLink>` prefetching](https://nuxt.com/docs/4.x/api/components/nuxt-link#prefetch-links) for the underlying behavior.
 
 ## Run locally
 
@@ -46,11 +48,13 @@ pnpm build
 
 ## Testing
 
-The Playwright suite runs against a production Nitro build so it exercises ISR and extracted-payload prefetching, not only development-server behavior.
+The Playwright suite runs against a production Nitro build. It exercises the in-memory version of the cached handlers plus extracted-payload navigation and prefetching, not only development-server behavior.
 
 ```bash
 pnpm test:e2e
 ```
+
+Only a Vercel preview deployment uses the actual Runtime Cache backend. Use the Runtime Cache section of Vercel Observability to verify reads, writes, and hit rates after changing cache storage or keys.
 
 ## Database
 
