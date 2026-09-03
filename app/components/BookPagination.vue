@@ -2,14 +2,42 @@
 import { buildHref, getCurrentPage, getTotalPages, withPage } from '#shared/utils/url-state';
 import type { SearchParams } from '#shared/utils/url-state';
 
-const props = defineProps<{ hasNext: boolean; searchParams: SearchParams; total?: number }>();
+const props = defineProps<{ hasNext: boolean; pending: boolean; searchParams: SearchParams; total?: number }>();
 const route = useRoute();
+const pagination = ref<HTMLElement>();
 const pendingDirection = ref<'next' | 'previous'>();
+const visible = ref(false);
+const warmedPages = new Set<string>();
+let observer: IntersectionObserver | undefined;
 
 const totalPages = computed(() => (props.total === undefined ? undefined : getTotalPages(props.total)));
 const currentPage = computed(() => getCurrentPage(props.searchParams, totalPages.value));
-const previousHref = computed(() => buildHref(withPage(props.searchParams, currentPage.value - 1)));
-const nextHref = computed(() => buildHref(withPage(props.searchParams, currentPage.value + 1)));
+const currentHref = computed(() => buildHref(props.searchParams));
+const previousSearchParams = computed(() => withPage(props.searchParams, currentPage.value - 1));
+const nextSearchParams = computed(() => withPage(props.searchParams, currentPage.value + 1));
+const previousHref = computed(() => buildHref(previousSearchParams.value));
+const nextHref = computed(() => buildHref(nextSearchParams.value));
+
+function warmPage(searchParams: SearchParams) {
+  const href = buildHref(searchParams);
+  if (warmedPages.has(href)) return;
+
+  warmedPages.add(href);
+  void $fetch('/api/books', { query: searchParams }).catch(() => warmedPages.delete(href));
+}
+
+function warmAdjacentPages() {
+  if (!visible.value || props.pending) return;
+  if (currentPage.value > 1) warmPage(previousSearchParams.value);
+  if (props.hasNext) warmPage(nextSearchParams.value);
+}
+
+function startPageNavigation(event: MouseEvent, direction: 'next' | 'previous') {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+  pendingDirection.value = direction;
+  window.scrollTo({ left: 0, top: 0 });
+}
 
 watch(
   () => route.fullPath,
@@ -17,25 +45,40 @@ watch(
     pendingDirection.value = undefined;
   },
 );
+watch(currentHref, href => warmedPages.add(href), { immediate: true });
+watch([visible, previousHref, nextHref, () => props.hasNext, () => props.pending], warmAdjacentPages);
+
+onMounted(() => {
+  if (!pagination.value || !('IntersectionObserver' in window)) {
+    visible.value = true;
+    return;
+  }
+
+  observer = new IntersectionObserver(entries => {
+    visible.value = entries.some(entry => entry.isIntersecting);
+  });
+  observer.observe(pagination.value);
+});
+onBeforeUnmount(() => observer?.disconnect());
 
 const stepClass =
   'text-muted hover:bg-card dark:hover:bg-card-dark focus-visible:ring-action/40 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors hover:text-black focus-visible:ring-2 focus-visible:outline-none dark:hover:text-white';
 </script>
 
 <template>
-  <nav aria-label="Pagination" class="flex items-center justify-between gap-4">
-    <NuxtLink
+  <nav ref="pagination" aria-label="Pagination" class="flex items-center justify-between gap-4">
+    <AppFastLink
       v-if="currentPage > 1"
       aria-label="Previous page"
       :class="stepClass"
       prefetch-on="visibility"
       :to="previousHref"
-      @click="pendingDirection = 'previous'"
+      @click="startPageNavigation($event, 'previous')"
     >
       <AppIcon v-if="pendingDirection === 'previous'" name="loader" class="size-3.5 animate-spin" />
       <AppIcon v-else name="chevron-left" class="size-4" />
       Previous
-    </NuxtLink>
+    </AppFastLink>
     <span v-else aria-disabled="true" :class="[stepClass, 'pointer-events-none opacity-40']">
       <AppIcon name="chevron-left" class="size-4" />
       Previous
@@ -53,18 +96,18 @@ const stepClass =
       </span>
     </p>
 
-    <NuxtLink
+    <AppFastLink
       v-if="hasNext"
       aria-label="Next page"
       :class="stepClass"
       prefetch-on="visibility"
       :to="nextHref"
-      @click="pendingDirection = 'next'"
+      @click="startPageNavigation($event, 'next')"
     >
       Next
       <AppIcon v-if="pendingDirection === 'next'" name="loader" class="size-3.5 animate-spin" />
       <AppIcon v-else name="chevron-right" class="size-4" />
-    </NuxtLink>
+    </AppFastLink>
     <span v-else aria-disabled="true" :class="[stepClass, 'pointer-events-none opacity-40']">
       Next
       <AppIcon name="chevron-right" class="size-4" />

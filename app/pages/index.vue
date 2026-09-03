@@ -12,11 +12,17 @@ const countQuery = reactive({
   search: computed(() => query.value.search),
   year: computed(() => query.value.year),
 });
-const booksRequest = useFetch<CatalogPageResponse>('/api/books', { query, server: false, lazy: true });
+const booksRequest = useFetch<CatalogPageResponse>('/api/books', {
+  dedupe: 'cancel',
+  lazy: true,
+  query,
+  server: false,
+});
 const countRequest = useFetch<CatalogCountResponse>('/api/books/count', {
+  dedupe: 'cancel',
+  lazy: true,
   query: countQuery,
   server: false,
-  lazy: true,
 });
 const [{ data, error, status }, { data: countData }] = await Promise.all([booksRequest, countRequest]);
 </script>
@@ -49,7 +55,13 @@ const [{ data, error, status }, { data: countData }] = await Promise.all([booksR
     </div>
 
     <footer class="border-divider dark:border-divider-dark mt-auto border-t px-4 py-3 sm:px-6">
-      <BookPagination v-if="data" :has-next="data.hasNext" :search-params="query" :total="countData?.total" />
+      <BookPagination
+        v-if="data"
+        :has-next="data.hasNext"
+        :pending="status === 'pending'"
+        :search-params="query"
+        :total="countData?.total"
+      />
       <div v-else aria-hidden="true" class="flex items-center justify-between gap-4">
         <span class="text-muted inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm opacity-40">
           <AppIcon name="chevron-left" class="size-4" /> Previous

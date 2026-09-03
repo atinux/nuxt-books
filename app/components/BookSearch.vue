@@ -6,33 +6,60 @@ const value = ref('');
 const mounted = ref(false);
 const { commit, filters, pending, preview } = useCatalogFilters();
 let timer: ReturnType<typeof setTimeout> | undefined;
+let draftSearch: string | undefined;
+let navigating = false;
 
 async function navigate(search: string) {
   await commit({ search: search.trim() || undefined });
 }
 
-function scheduleNavigate() {
-  preview({ search: value.value.trim() || undefined });
+async function flushNavigate() {
   clearTimeout(timer);
-  timer = setTimeout(() => navigate(value.value), DEBOUNCE_MS);
+  timer = undefined;
+
+  if (draftSearch === undefined || navigating || pending.value) return;
+
+  const search = draftSearch;
+  navigating = true;
+
+  try {
+    await navigate(search);
+  } finally {
+    if (draftSearch === search) draftSearch = undefined;
+    navigating = false;
+
+    if (draftSearch !== undefined) void flushNavigate();
+  }
+}
+
+function scheduleNavigate(event: Event) {
+  const search = (event.currentTarget as HTMLInputElement).value;
+  value.value = search;
+  draftSearch = search;
+  preview({ search: search.trim() || undefined });
+  clearTimeout(timer);
+
+  if (pending.value || navigating) return;
+
+  timer = setTimeout(() => void flushNavigate(), DEBOUNCE_MS);
 }
 
 function submit() {
-  clearTimeout(timer);
-  void navigate(value.value);
+  draftSearch = value.value;
+  void flushNavigate();
 }
 
 function clear() {
-  clearTimeout(timer);
   value.value = '';
-  void navigate('');
+  draftSearch = '';
+  void flushNavigate();
   input.value?.focus();
 }
 
 watch(
   () => filters.value.search,
   search => {
-    if (mounted.value) value.value = search ?? '';
+    if (mounted.value && draftSearch === undefined) value.value = search ?? '';
   },
 );
 onMounted(() => {

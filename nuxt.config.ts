@@ -24,31 +24,43 @@ export default defineNuxtConfig({
     quality: 82,
   },
   modules: ['@nuxt/image', '@nuxtjs/color-mode', '@nuxt/eslint', '@vercel/analytics', '@vercel/speed-insights'],
-  routeRules: {
-    '/': { isr: 3600 },
-    '/**': { isr: 3600 },
-    '/_payload.json': {
-      headers: { 'cache-control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=60' },
+  nitro: {
+    future: {
+      nativeSWR: true,
     },
-    '/**/_payload.json': {
-      headers: { 'cache-control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=60' },
-    },
-    '/api/books': {
-      isr: {
-        expiration: 3600,
-        allowQuery: ['language', 'list', 'page', 'pages', 'rating', 'search', 'year'],
-        passQuery: true,
-      },
-    },
-    '/api/books/count': {
-      isr: {
-        expiration: 3600,
-        allowQuery: ['language', 'list', 'pages', 'rating', 'search', 'year'],
-        passQuery: true,
-      },
-    },
-    '/api/books/**': { isr: true },
+    storage: process.env.VERCEL
+      ? {
+          cache: {
+            base: 'nuxt-books:v1',
+            driver: 'vercel-runtime-cache',
+          },
+        }
+      : {},
   },
+  // Nuxt requires a cache route rule to generate runtime _payload.json routes.
+  routeRules: {
+    '/**': { cache: { headersOnly: true, maxAge: 300 } },
+    '/api/**': { cache: false },
+  },
+  // routeRules: {
+  //   '/': { isr: 3600 },
+  //   '/**': { isr: 3600 },
+  //   '/api/books': {
+  //     isr: {
+  //       expiration: 3600,
+  //       allowQuery: ['language', 'list', 'page', 'pages', 'rating', 'search', 'year'],
+  //       passQuery: true,
+  //     },
+  //   },
+  //   '/api/books/count': {
+  //     isr: {
+  //       expiration: 3600,
+  //       allowQuery: ['language', 'list', 'pages', 'rating', 'search', 'year'],
+  //       passQuery: true,
+  //     },
+  //   },
+  //   '/api/books/**': { isr: true },
+  // },
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
     public: {

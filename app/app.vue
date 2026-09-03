@@ -2,7 +2,7 @@
 const runtimeConfig = useRuntimeConfig();
 const colorMode = useColorMode();
 const description =
-  'Browse two million Goodreads books with Nuxt 4 ISR, extracted payloads, and smart route prefetching.';
+  'Browse 100,000 Goodreads books with Nuxt 4, Vercel Runtime Cache, and smart route prefetching.';
 const themeColor = computed(() => (colorMode.value === 'dark' ? '#121212' : '#fafafa'));
 
 useHead({
@@ -30,7 +30,6 @@ useSeoMeta({
 
 <template>
   <div>
-    <NuxtLoadingIndicator color="var(--color-action)" />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
