@@ -16,7 +16,7 @@ defineProps<{ idPrefix: string; mobile?: boolean }>();
   </div>
 
   <div class="border-divider dark:border-divider-dark mt-6 border-b pb-5">
-    <p class="text-2xl font-semibold tracking-tight tabular-nums">2M+</p>
+    <p class="text-2xl font-semibold tracking-tight tabular-nums">100K</p>
     <p class="text-muted mt-1 text-xs leading-5">
       books from Goodreads. Built with Nuxt 4 ISR and payload prefetching.
     </p>

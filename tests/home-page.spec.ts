@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 test('the app shell and catalog render on first load', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('searchbox', { name: 'Search books' })).toBeVisible();
+  await expect(page.getByText('100K', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: /W\.C\. Fields/ })).toBeVisible();
 });
 

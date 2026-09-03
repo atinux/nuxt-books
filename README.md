@@ -4,7 +4,7 @@
 
 # NuxtBooks
 
-NuxtBooks is built from a Goodreads dataset of more than 2,000,000 books. The catalog uses Nuxt 4, Vue, Nitro, Drizzle, PostgreSQL, and incremental static regeneration (ISR).
+NuxtBooks serves a curated catalog of 100,000 Goodreads books that fits within the free Neon database tier. The catalog uses Nuxt 4, Vue, Nitro, Drizzle, and PostgreSQL.
 
 [**View the source on GitHub →**](https://github.com/atinux/nuxt-books)
 
