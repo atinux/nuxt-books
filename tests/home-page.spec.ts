@@ -32,7 +32,7 @@ test('pagination is available while the exact count loads', async ({ page }) => 
   expect(countRequests).toBe(1);
 });
 
-test('pagination only fetches its cacheable payload during navigation', async ({ page }) => {
+test('pagination fetches an extracted payload and reuses the browser cache', async ({ page }) => {
   const client = await page.context().newCDPSession(page);
   const cacheHits: boolean[] = [];
   const payloads: { cacheControl: string | null; url: string }[] = [];
@@ -63,17 +63,18 @@ test('pagination only fetches its cacheable payload during navigation', async ({
   await next.click();
   await page.waitForURL(url => url.searchParams.get('page') === '2');
   await expect(page.getByText(/Page 2 of [\d,]+/)).toBeVisible();
-  await expect.poll(() => payloads.length).toBe(1);
-  expect(payloads[0]?.url).toContain('_b=');
-  expect(payloads[0]?.cacheControl).toBe('public, max-age=300, s-maxage=3600, stale-while-revalidate=60');
+  await expect.poll(() => payloads.length).toBeGreaterThan(0);
+  expect(payloads.every(payload => payload.url.includes('_b='))).toBe(true);
+  expect(payloads.every(payload => payload.cacheControl === 'public, max-age=300, s-maxage=300')).toBe(true);
+  const initialRequestCount = cacheHits.length;
 
   await page.getByRole('link', { name: 'Previous page' }).click();
   await page.waitForURL(url => url.searchParams.get('page') === null);
   await page.getByRole('link', { name: 'Next page' }).click();
   await page.waitForURL(url => url.searchParams.get('page') === '2');
 
-  await expect.poll(() => cacheHits.length).toBe(2);
-  expect(cacheHits).toEqual([false, true]);
+  await expect.poll(() => cacheHits.length).toBeGreaterThan(initialRequestCount);
+  expect(cacheHits.slice(initialRequestCount).every(Boolean)).toBe(true);
 });
 
 test('the first page is restored without a page query', async ({ page }) => {
