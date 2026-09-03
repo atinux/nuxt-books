@@ -10,41 +10,13 @@ const totalPages = computed(() => (props.total === undefined ? undefined : getTo
 const currentPage = computed(() => getCurrentPage(props.searchParams, totalPages.value));
 const previousHref = computed(() => buildHref(withPage(props.searchParams, currentPage.value - 1)));
 const nextHref = computed(() => buildHref(withPage(props.searchParams, currentPage.value + 1)));
-const prefetchedPayloads = new Set<string>();
-
-function payloadHref(href: string) {
-  const url = new URL(href, window.location.origin);
-  const pathname = url.pathname === '/' ? '' : url.pathname.replace(/\/$/, '');
-  return `${pathname}/_payload.json${url.search}`;
-}
-
-async function prefetchPayload(href: string) {
-  const payload = payloadHref(href);
-  if (prefetchedPayloads.has(payload)) return;
-  prefetchedPayloads.add(payload);
-
-  try {
-    const response = await fetch(payload, { cache: 'force-cache', credentials: 'same-origin' });
-    await response.arrayBuffer();
-  } catch {
-    prefetchedPayloads.delete(payload);
-  }
-}
-
-function prefetchAdjacentPages() {
-  if (currentPage.value > 1) void prefetchPayload(previousHref.value);
-  if (props.hasNext) void prefetchPayload(nextHref.value);
-}
 
 watch(
   () => route.fullPath,
   () => {
     pendingDirection.value = undefined;
-    prefetchAdjacentPages();
   },
 );
-
-onMounted(prefetchAdjacentPages);
 
 const stepClass =
   'text-muted hover:bg-card dark:hover:bg-card-dark focus-visible:ring-action/40 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors hover:text-black focus-visible:ring-2 focus-visible:outline-none dark:hover:text-white';

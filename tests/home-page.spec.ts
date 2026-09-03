@@ -32,23 +32,48 @@ test('pagination is available while the exact count loads', async ({ page }) => 
   expect(countRequests).toBe(1);
 });
 
-test('the next page payload is prefetched when its link becomes visible', async ({ page }) => {
-  const payloads: string[] = [];
-  page.on('response', response => {
-    if (response.url().includes('_payload.json')) payloads.push(response.url());
+test('pagination only fetches its cacheable payload during navigation', async ({ page }) => {
+  const client = await page.context().newCDPSession(page);
+  const cacheHits: boolean[] = [];
+  const payloads: { cacheControl: string | null; url: string }[] = [];
+  await client.send('Network.enable');
+  client.on('Network.responseReceived', ({ response }) => {
+    const url = new URL(response.url);
+    if (url.pathname === '/_payload.json' && url.searchParams.get('page') === '2') {
+      cacheHits.push(response.fromDiskCache);
+    }
+  });
+  page.on('response', async response => {
+    const url = new URL(response.url());
+    if (url.pathname !== '/_payload.json' || url.searchParams.get('page') !== '2') return;
+
+    payloads.push({
+      cacheControl: await response.headerValue('cache-control'),
+      url: response.url(),
+    });
   });
 
   await page.goto('/');
   const next = page.getByRole('link', { name: 'Next page' });
 
   await expect(next).toBeVisible();
-  await expect
-    .poll(() => payloads.some(url => url.includes('_payload.json') && new URL(url).searchParams.get('page') === '2'))
-    .toBe(true);
+  await page.waitForTimeout(750);
+  expect(payloads).toEqual([]);
 
   await next.click();
   await page.waitForURL(url => url.searchParams.get('page') === '2');
   await expect(page.getByText(/Page 2 of [\d,]+/)).toBeVisible();
+  await expect.poll(() => payloads.length).toBe(1);
+  expect(payloads[0]?.url).toContain('_b=');
+  expect(payloads[0]?.cacheControl).toBe('public, max-age=300, s-maxage=3600, stale-while-revalidate=60');
+
+  await page.getByRole('link', { name: 'Previous page' }).click();
+  await page.waitForURL(url => url.searchParams.get('page') === null);
+  await page.getByRole('link', { name: 'Next page' }).click();
+  await page.waitForURL(url => url.searchParams.get('page') === '2');
+
+  await expect.poll(() => cacheHits.length).toBe(2);
+  expect(cacheHits).toEqual([false, true]);
 });
 
 test('the first page is restored without a page query', async ({ page }) => {

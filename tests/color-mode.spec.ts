@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.removeItem('nuxt-color-mode'));
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('color-mode-test-ready')) return;
+
+    localStorage.removeItem('nuxt-color-mode');
+    sessionStorage.setItem('color-mode-test-ready', 'true');
+  });
 });
 
 test('system mode follows the OS color scheme', async ({ page }) => {
