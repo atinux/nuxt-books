@@ -51,6 +51,14 @@
 }
 
 @layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
   body {
     @apply selection:bg-accent bg-surface dark:bg-surface-dark font-sans text-black antialiased selection:text-white dark:text-white;
   }

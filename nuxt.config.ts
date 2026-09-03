@@ -2,6 +2,15 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-01',
+  colorMode: {
+    classSuffix: '',
+    dataValue: 'theme',
+    disableTransition: true,
+    fallback: 'light',
+    preference: 'system',
+    storage: 'localStorage',
+    storageKey: 'nuxt-color-mode',
+  },
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
   experimental: {

@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import type { BookDetails } from '#shared/types/book';
-
-const route = useRoute('id');
 const router = useRouter();
-const id = computed(() => String(route.params.id));
-const { data: book, error } = await useFetch<BookDetails>(() => `/api/books/${id.value}`);
+const route = useRoute();
+
+const { data: book, error } = await useFetch<BookDetails>(`/api/books/${route.params.id}`);
 
 if (error.value || !book.value) {
   throw createError({ fatal: true, status: 404, statusText: 'Book not found' });

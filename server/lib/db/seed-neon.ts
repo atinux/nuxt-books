@@ -9,8 +9,7 @@ const TARGET_MAX_DATABASE_MB = Number(process.env.TARGET_MAX_DATABASE_MB ?? 400)
 const TARGET_MAX_DATABASE_BYTES = TARGET_MAX_DATABASE_MB * 1024 * 1024;
 const targetDatabaseUrl = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
 const sourceDatabaseUrl =
-  process.env.SOURCE_DATABASE_URL ??
-  `postgresql://${encodeURIComponent(os.userInfo().username)}@localhost/nuxt-books`;
+  process.env.SOURCE_DATABASE_URL ?? `postgresql://${encodeURIComponent(os.userInfo().username)}@localhost/nuxt-books`;
 
 if (!targetDatabaseUrl) throw new Error('DATABASE_URL environment variable is not set');
 if (!Number.isInteger(TARGET_BOOKS) || TARGET_BOOKS < 1) throw new Error('TARGET_BOOKS must be a positive integer');
@@ -23,9 +22,7 @@ const source = new Pool({ connectionString: sourceDatabaseUrl, max: 1 });
 const target = new Pool({ connectionString: targetDatabaseUrl, max: 2 });
 
 async function getTargetSize() {
-  const result = await target.query<{ bytes: string }>(
-    'SELECT pg_database_size(current_database())::bigint AS bytes',
-  );
+  const result = await target.query<{ bytes: string }>('SELECT pg_database_size(current_database())::bigint AS bytes');
   return Number(result.rows[0]?.bytes ?? 0);
 }
 

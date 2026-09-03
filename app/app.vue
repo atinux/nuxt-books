@@ -1,7 +1,9 @@
 <script setup lang="ts">
 const runtimeConfig = useRuntimeConfig();
+const colorMode = useColorMode();
 const description =
   'Browse two million Goodreads books with Nuxt 4 ISR, extracted payloads, and smart route prefetching.';
+const themeColor = computed(() => (colorMode.value === 'dark' ? '#121212' : '#fafafa'));
 
 useHead({
   bodyAttrs: {
@@ -10,8 +12,7 @@ useHead({
   htmlAttrs: { lang: 'en' },
   link: [{ href: '/logo.svg', rel: 'icon', type: 'image/svg+xml' }],
   meta: [
-    { content: '#fafafa', media: '(prefers-color-scheme: light)', name: 'theme-color' },
-    { content: '#121212', media: '(prefers-color-scheme: dark)', name: 'theme-color' },
+    { content: themeColor, name: 'theme-color' },
     { content: 'cover', name: 'viewport-fit' },
   ],
   titleTemplate: title => (title ? `${title} · NuxtBooks` : 'NuxtBooks'),
@@ -31,7 +32,7 @@ useSeoMeta({
   <div>
     <NuxtLoadingIndicator color="var(--color-action)" />
     <NuxtLayout>
-      <NuxtPage keepalive />
+      <NuxtPage />
     </NuxtLayout>
     <OfflineIndicator />
     <AppToaster />
