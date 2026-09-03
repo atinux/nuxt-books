@@ -25,8 +25,12 @@ export default defineNuxtConfig({
   },
   modules: ['@nuxt/image', '@nuxtjs/color-mode', '@nuxt/eslint', '@vercel/analytics', '@vercel/speed-insights'],
   routeRules: {
-    '/': { isr: true },
-    '/**': { isr: true },
+    '/': { static: true },
+    '/**': { static: true },
+    '/_payload.json': {
+      static: true
+    },
+    '/**/_payload.json': { static: true },
     '/api/books': {
       isr: {
         expiration: 3600,
