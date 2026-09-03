@@ -32,6 +32,23 @@ test('pagination is available while the exact count loads', async ({ page }) => 
   expect(countRequests).toBe(1);
 });
 
+test('visible pagination warms the adjacent books API cache', async ({ page }) => {
+  let nextPageRequests = 0;
+
+  page.on('request', request => {
+    const url = new URL(request.url());
+    if (url.pathname === '/api/books' && url.searchParams.get('page') === '2') nextPageRequests++;
+  });
+
+  await page.goto('/');
+  const next = page.getByRole('link', { name: 'Next page' });
+  await expect(next).toBeVisible();
+  await next.scrollIntoViewIfNeeded();
+
+  await expect.poll(() => nextPageRequests).toBe(1);
+  await expect(page).toHaveURL('/');
+});
+
 test('pagination fetches an extracted payload and reuses the browser cache', async ({ page }) => {
   const client = await page.context().newCDPSession(page);
   const cacheHits: boolean[] = [];
