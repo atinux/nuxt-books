@@ -103,3 +103,21 @@ test('the first page is restored without a page query', async ({ page }) => {
   await page.waitForURL(url => url.searchParams.get('page') === null);
   await expect(page.getByText(/Page 1 of [\d,]+/)).toBeVisible();
 });
+
+test('pagination returns the document to the top', async ({ page }) => {
+  await page.goto('/');
+  const next = page.getByRole('link', { name: 'Next page' });
+
+  await next.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await next.click();
+  await page.waitForURL(url => url.searchParams.get('page') === '2');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  const previous = page.getByRole('link', { name: 'Previous page' });
+  await previous.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await previous.click();
+  await page.waitForURL(url => url.searchParams.get('page') === null);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});

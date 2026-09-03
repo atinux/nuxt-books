@@ -32,6 +32,13 @@ function warmAdjacentPages() {
   if (props.hasNext) warmPage(nextSearchParams.value);
 }
 
+function startPageNavigation(event: MouseEvent, direction: 'next' | 'previous') {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+  pendingDirection.value = direction;
+  window.scrollTo({ left: 0, top: 0 });
+}
+
 watch(
   () => route.fullPath,
   () => {
@@ -66,7 +73,7 @@ const stepClass =
       :class="stepClass"
       prefetch-on="visibility"
       :to="previousHref"
-      @click="pendingDirection = 'previous'"
+      @click="startPageNavigation($event, 'previous')"
     >
       <AppIcon v-if="pendingDirection === 'previous'" name="loader" class="size-3.5 animate-spin" />
       <AppIcon v-else name="chevron-left" class="size-4" />
@@ -95,7 +102,7 @@ const stepClass =
       :class="stepClass"
       prefetch-on="visibility"
       :to="nextHref"
-      @click="pendingDirection = 'next'"
+      @click="startPageNavigation($event, 'next')"
     >
       Next
       <AppIcon v-if="pendingDirection === 'next'" name="loader" class="size-3.5 animate-spin" />
