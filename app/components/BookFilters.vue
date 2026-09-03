@@ -12,26 +12,12 @@ import {
   RATING_FILTER_VALUES,
   YEAR_FILTER_VALUES,
 } from '#shared/utils/book-constants';
-import { buildHref, parseSearchParams, withFilters } from '#shared/utils/url-state';
-import type { SearchParams } from '#shared/utils/url-state';
-
 defineProps<{ idPrefix: string }>();
 
-const route = useRoute();
-const pending = ref(false);
-const filters = computed(() => parseSearchParams(route.query));
+const { commit, filters, pending, preview } = useCatalogFilters();
 const activeCount = computed(
   () => Object.entries(filters.value).filter(([key, value]) => key !== 'page' && Boolean(value)).length,
 );
-
-async function commit(patch: Partial<SearchParams>) {
-  pending.value = true;
-  try {
-    await navigateTo(buildHref(withFilters(filters.value, patch)), { replace: true });
-  } finally {
-    pending.value = false;
-  }
-}
 
 function selectedIndex(values: readonly number[], value: number) {
   return values.reduce(
@@ -46,6 +32,17 @@ function rangeValue(event: Event, values: readonly number[]) {
 
 function toggleList(slug: string) {
   void commit({ list: filters.value.list === slug ? undefined : slug });
+}
+
+function clear() {
+  void commit({
+    language: undefined,
+    list: undefined,
+    pages: undefined,
+    rating: undefined,
+    search: undefined,
+    year: undefined,
+  });
 }
 </script>
 
@@ -71,6 +68,14 @@ function toggleList(slug: string) {
             min="0"
             :value="selectedIndex(YEAR_FILTER_VALUES, Number(filters.year ?? MAX_YEAR))"
             type="range"
+            @input="
+              preview({
+                year:
+                  rangeValue($event, YEAR_FILTER_VALUES) === MAX_YEAR
+                    ? undefined
+                    : String(rangeValue($event, YEAR_FILTER_VALUES)),
+              })
+            "
             @change="
               commit({
                 year:
@@ -102,6 +107,14 @@ function toggleList(slug: string) {
             min="0"
             :value="selectedIndex(RATING_FILTER_VALUES, Number(filters.rating ?? MIN_RATING))"
             type="range"
+            @input="
+              preview({
+                rating:
+                  rangeValue($event, RATING_FILTER_VALUES) === MIN_RATING
+                    ? undefined
+                    : String(rangeValue($event, RATING_FILTER_VALUES)),
+              })
+            "
             @change="
               commit({
                 rating:
@@ -132,6 +145,14 @@ function toggleList(slug: string) {
             min="0"
             :value="selectedIndex(PAGE_FILTER_VALUES, Number(filters.pages ?? MAX_PAGES))"
             type="range"
+            @input="
+              preview({
+                pages:
+                  rangeValue($event, PAGE_FILTER_VALUES) === MAX_PAGES
+                    ? undefined
+                    : String(rangeValue($event, PAGE_FILTER_VALUES)),
+              })
+            "
             @change="
               commit({
                 pages:
@@ -192,7 +213,7 @@ function toggleList(slug: string) {
       <button
         class="border-divider hover:border-gray/40 hover:bg-card dark:border-divider-dark dark:hover:border-gray/30 dark:hover:bg-card-dark inline-flex h-9 w-full items-center justify-center gap-2 rounded-full border bg-white px-4 text-sm font-semibold text-black transition-colors dark:bg-transparent dark:text-white"
         type="button"
-        @click="navigateTo('/', { replace: true })"
+        @click="clear"
       >
         Clear all filters
       </button>

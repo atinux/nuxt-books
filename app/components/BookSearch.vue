@@ -1,29 +1,18 @@
 <script setup lang="ts">
-import { buildHref, parseSearchParams, withFilters } from '#shared/utils/url-state';
-
 const DEBOUNCE_MS = 220;
-const route = useRoute();
 const inputId = useId();
 const input = ref<HTMLInputElement>();
 const value = ref('');
-const pending = ref(false);
+const mounted = ref(false);
+const { commit, filters, pending, preview } = useCatalogFilters();
 let timer: ReturnType<typeof setTimeout> | undefined;
 
-function syncFromRoute() {
-  value.value = parseSearchParams(route.query).search ?? '';
-}
-
 async function navigate(search: string) {
-  const current = parseSearchParams(route.query);
-  pending.value = true;
-  try {
-    await navigateTo(buildHref(withFilters(current, { search: search.trim() || undefined })), { replace: true });
-  } finally {
-    pending.value = false;
-  }
+  await commit({ search: search.trim() || undefined });
 }
 
 function scheduleNavigate() {
+  preview({ search: value.value.trim() || undefined });
   clearTimeout(timer);
   timer = setTimeout(() => navigate(value.value), DEBOUNCE_MS);
 }
@@ -40,7 +29,16 @@ function clear() {
   input.value?.focus();
 }
 
-watch(() => route.fullPath, syncFromRoute, { immediate: true });
+watch(
+  () => filters.value.search,
+  search => {
+    if (mounted.value) value.value = search ?? '';
+  },
+);
+onMounted(() => {
+  value.value = filters.value.search ?? '';
+  mounted.value = true;
+});
 onBeforeUnmount(() => clearTimeout(timer));
 </script>
 

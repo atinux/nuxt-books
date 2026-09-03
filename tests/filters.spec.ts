@@ -9,6 +9,30 @@ async function nudgeSlider(page: Page, nth: number, expected: RegExp) {
   }).toPass({ timeout: 15000 });
 }
 
+test('filter query state is applied after mount without hydration warnings', async ({ browser }) => {
+  const serverContext = await browser.newContext({ javaScriptEnabled: false });
+  const serverPage = await serverContext.newPage();
+  await serverPage.goto('/?language=fre&rating=4&year=2000');
+  await expect(serverPage.getByLabel('Minimum rating').first()).toHaveValue('0');
+  await expect(serverPage.getByText('Any rating').first()).toBeVisible();
+  await serverContext.close();
+
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const hydrationWarnings: string[] = [];
+  page.on('console', message => {
+    if (/hydration/i.test(message.text())) hydrationWarnings.push(message.text());
+  });
+
+  await page.goto('/?language=fre&rating=4&year=2000');
+  await expect(page.getByLabel('Language').first()).toHaveValue('fre');
+  await expect(page.getByLabel('Minimum rating').first()).toHaveValue('8');
+  await expect(page.getByText('4+ stars').first()).toBeVisible();
+  await expect(page.getByText('2000').first()).toBeVisible();
+  expect(hydrationWarnings).toEqual([]);
+  await context.close();
+});
+
 test('changing a filter resets pagination and clear restores the defaults', async ({ page }) => {
   await page.goto('/?page=2');
   await nudgeSlider(page, 1, /rating=0.5/);
@@ -28,6 +52,28 @@ test('the clear button only appears once a filter is active', async ({ page }) =
 
   await nudgeSlider(page, 1, /rating=0.5/);
   await expect(page.getByRole('button', { name: 'Clear all filters' })).toBeVisible();
+});
+
+test('a slider updates optimistically while the catalog request is pending', async ({ page }) => {
+  let releaseCatalog = () => {};
+  const catalogGate = new Promise<void>(resolve => {
+    releaseCatalog = resolve;
+  });
+
+  await page.route('**/api/books?**', async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname === '/api/books' && url.searchParams.get('rating') === '0.5') await catalogGate;
+    await route.continue();
+  });
+
+  await page.goto('/');
+  await page.getByRole('slider').nth(1).press('ArrowRight');
+  await expect(page.getByText('0.5+ stars').first()).toBeVisible();
+  await expect(page.locator('[data-filtering]').first()).toBeVisible();
+
+  releaseCatalog();
+  await expect(page).toHaveURL(/rating=0.5/);
+  await expect(page.locator('[data-filtering]')).toHaveCount(0);
 });
 
 test('the language filter drives the URL', async ({ page }) => {
