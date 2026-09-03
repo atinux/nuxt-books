@@ -1,20 +1,51 @@
-import { eq, sql } from 'drizzle-orm';
+import { and, count, eq, gte, isNull, lte, not, sql } from 'drizzle-orm';
 import { PREVIEW_BOOKS } from '../data/preview-books';
-import { buildCatalogCountStatement, buildCatalogPageStatement } from '../lib/db/catalog-query';
-import { db, requireSql } from '../lib/db/drizzle';
+import { db } from '../lib/db/drizzle';
 import { authors, books, bookToAuthor } from '../lib/db/schema';
-import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MIN_YEAR } from '#shared/utils/book-constants';
-import type { Row } from '@libsql/client';
-import type { BookDetails, BookSummary } from '#shared/types/book';
+import { EMPTY_IMAGE_URL, ITEMS_PER_PAGE, MIN_RATING, MIN_YEAR } from '#shared/utils/book-constants';
+import type { BookDetails, CatalogPageResponse } from '#shared/types/book';
 import type { BookFilters, BookQuery } from '#shared/utils/book-utils';
 
-function toBookSummary(row: Row): BookSummary {
-  return {
-    id: Number(row.id),
-    image_url: typeof row.image_url === 'string' ? row.image_url : null,
-    thumbhash: typeof row.thumbhash === 'string' ? row.thumbhash : null,
-    title: String(row.title),
-  };
+const yearFilter = (year: number) => and(gte(books.publication_year, MIN_YEAR), lte(books.publication_year, year));
+
+const ratingFilter = (rating: number) => (rating > MIN_RATING ? sql`${books.average_rating} >= ${rating}` : undefined);
+
+const languageFilter = (language: string) => {
+  if (!language) return undefined;
+  if (language === 'en') return sql`${books.language_code} IN ('eng', 'en-US', 'en-GB')`;
+  return eq(books.language_code, language);
+};
+
+const pageCountFilter = (maxPages: number) => lte(books.num_pages, maxPages);
+
+const imageFilter = () => and(not(isNull(books.image_url)), sql`${books.image_url} != ${EMPTY_IMAGE_URL}`);
+
+const searchFilter = (search: string) =>
+  search
+    ? sql`to_tsvector('english', ${books.title_tsv}) @@ plainto_tsquery('english', unaccent(${search}))`
+    : undefined;
+
+const isbnFilter = (isbns: string) => {
+  if (!isbns) return undefined;
+  const values = isbns.split(',').map(value => value.trim());
+  return sql`${books.isbn} IN (${sql.join(
+    values.map(value => sql`${value}`),
+    sql`, `,
+  )})`;
+};
+
+function getWhereClause({ isbns, language, maxPages, rating, search, year }: BookFilters) {
+  const filters = [
+    yearFilter(year),
+    ratingFilter(rating),
+    languageFilter(language),
+    pageCountFilter(maxPages),
+    imageFilter(),
+    searchFilter(search),
+    isbnFilter(isbns),
+  ].filter(filter => filter !== undefined);
+
+  return filters.length ? and(...filters) : undefined;
 }
 
 function filterPreview({ isbns, language, maxPages, rating, search, year }: BookFilters): BookDetails[] {
@@ -42,21 +73,37 @@ function filterPreview({ isbns, language, maxPages, rating, search, year }: Book
   });
 }
 
-export async function getBooksPage(query: BookQuery): Promise<BookSummary[]> {
+export async function getBooksPage(query: BookQuery): Promise<CatalogPageResponse> {
   if (!db) {
     const start = (query.page - 1) * ITEMS_PER_PAGE;
-    return filterPreview(query).slice(start, start + ITEMS_PER_PAGE);
+    const books = filterPreview(query).slice(start, start + ITEMS_PER_PAGE + 1);
+    return { books: books.slice(0, ITEMS_PER_PAGE), hasNext: books.length > ITEMS_PER_PAGE };
   }
 
-  const result = await requireSql().execute(buildCatalogPageStatement(query));
-  return result.rows.map(toBookSummary);
+  const result = await db
+    .select({
+      id: books.id,
+      image_url: books.image_url,
+      thumbhash: books.thumbhash,
+      title: books.title,
+    })
+    .from(books)
+    .where(getWhereClause(query))
+    .orderBy(books.id)
+    .limit(ITEMS_PER_PAGE + 1)
+    .offset((query.page - 1) * ITEMS_PER_PAGE);
+
+  return {
+    books: result.slice(0, ITEMS_PER_PAGE),
+    hasNext: result.length > ITEMS_PER_PAGE,
+  };
 }
 
 export async function getBooksCount(filters: BookFilters): Promise<number> {
   if (!db) return filterPreview(filters).length;
 
-  const result = await requireSql().execute(buildCatalogCountStatement(filters));
-  return Number(result.rows[0]?.total ?? 0);
+  const result = await db.select({ total: count() }).from(books).where(getWhereClause(filters));
+  return result[0]?.total ?? 0;
 }
 
 export async function getBookById(id: string): Promise<BookDetails | undefined> {
@@ -67,8 +114,8 @@ export async function getBookById(id: string): Promise<BookDetails | undefined> 
 
   const result = await db
     .select({
-      authorsJson: sql<string>`coalesce(json_group_array(${authors.name}) filter (where ${authors.name} is not null), '[]')`,
-      average_rating: sql<string | null>`cast(${books.average_rating} as text)`,
+      authors: sql<string[]>`array_remove(array_agg(${authors.name}), NULL)`,
+      average_rating: books.average_rating,
       description: books.description,
       id: books.id,
       image_url: books.image_url,
@@ -88,9 +135,5 @@ export async function getBookById(id: string): Promise<BookDetails | undefined> 
     .groupBy(books.id)
     .limit(1);
 
-  const book = result[0];
-  if (!book) return undefined;
-
-  const { authorsJson, ...details } = book;
-  return { ...details, authors: JSON.parse(authorsJson) as string[] };
+  return result[0];
 }

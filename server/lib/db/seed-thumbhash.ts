@@ -4,8 +4,8 @@ import pLimit from 'p-limit';
 import sharp from 'sharp';
 import * as ThumbHash from 'thumbhash';
 import { EMPTY_IMAGE_URL } from '../../../shared/utils/book-constants';
-import { requireDatabaseUrl, requireSql } from './drizzle';
-import { createCheckpointScope, processEntities } from './seed-utils';
+import { requireSql } from './drizzle';
+import { processEntities } from './seed-utils';
 import type { SqlClient } from './drizzle';
 
 const BATCH_SIZE = 900;
@@ -54,9 +54,7 @@ async function processBook(book: BookData): Promise<[string, string] | null> {
     const imageBuffer = await fetchImage(book.image_url);
     if (imageBuffer) {
       const thumbHash = await generateThumbHash(imageBuffer);
-      if (thumbHash) {
-        return [thumbHash, book.image_url];
-      }
+      if (thumbHash) return [thumbHash, book.image_url];
     }
   }
   return null;
@@ -65,38 +63,33 @@ async function processBook(book: BookData): Promise<[string, string] | null> {
 async function batchUpdateThumbHash(batch: BookData[], sqlQuery: SqlClient) {
   const updateThumbhashQuery = `
     UPDATE books
-    SET thumbhash = ?
-    WHERE image_url = ?
+    SET thumbhash = $1
+    WHERE image_url = $2
   `;
 
   const processedBooks = await Promise.all(batch.map(book => limit(() => processBook(book))));
-  const statements = processedBooks
-    .filter((result): result is [string, string] => result !== null)
-    .map(([thumbHash, imageUrl]) => ({ args: [thumbHash, imageUrl], sql: updateThumbhashQuery }));
 
-  if (!statements.length) return 0;
-
-  const results = await sqlQuery.batch(statements, 'write');
-  return results.reduce((total, result) => total + result.rowsAffected, 0);
+  return sqlQuery.transaction(tx =>
+    Promise.all(
+      processedBooks
+        .filter((result): result is [string, string] => result !== null)
+        .map(([thumbHash, imageUrl]) => tx.query(updateThumbhashQuery, [thumbHash, imageUrl])),
+    ),
+  );
 }
 
 async function main() {
   try {
     const sql = requireSql();
-    const dataFile = path.resolve('./server/lib/db/books.json');
-    const checkpointScope = createCheckpointScope(requireDatabaseUrl(), dataFile);
-    const { affectedEntities, processedLines } = await processEntities<BookData>(
-      dataFile,
+    const bookCount = await processEntities<BookData>(
+      path.resolve('./server/lib/db/books.json'),
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchUpdateThumbHash,
       sql,
       TOTAL_BOOKS,
-      checkpointScope,
     );
-    console.log(
-      `Updated thumbhash for ${affectedEntities.toLocaleString()} books (${processedLines.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} lines processed)`,
-    );
+    console.log(`Updated thumbhash for ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`);
   } catch (error) {
     console.error('Error updating thumbhash:', error);
     process.exitCode = 1;

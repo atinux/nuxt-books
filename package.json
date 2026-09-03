@@ -10,8 +10,6 @@
     "preview": "nuxt preview",
     "start": "node .output/server/index.mjs",
     "postinstall": "nuxt prepare",
-    "test:catalog": "node --import tsx --test server/lib/db/catalog-query.test.ts",
-    "test:seed": "node --import tsx --test server/lib/db/seed-utils.test.ts",
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -24,12 +22,12 @@
     "db:setup": "pnpm db:migrate && pnpm db:seed-authors && pnpm db:seed-books",
     "db:seed-authors": "tsx server/lib/db/seed-authors.ts",
     "db:seed-books": "tsx server/lib/db/seed-books.ts",
+    "db:seed-neon": "tsx server/lib/db/seed-neon.ts",
     "db:seed-thumbhash": "tsx server/lib/db/seed-thumbhash.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
-    "@libsql/client": "^0.17.4",
     "@lucide/vue": "^1.38.0",
     "@nuxt/image": "^2.1.0",
     "@nuxtjs/color-mode": "^4.0.1",
@@ -40,6 +38,7 @@
     "drizzle-orm": "^0.45.2",
     "nuxt": "^4.5.2",
     "p-limit": "^7.3.1",
+    "pg": "^8.23.0",
     "tailwind-merge": "^3.6.0",
     "thumbhash": "^0.1.1",
     "unlazy": "^2.0.1",
@@ -47,10 +46,12 @@
     "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
+    "@nuxt/cli": "4.0.0-alpha.0",
     "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.3.0",
+    "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",

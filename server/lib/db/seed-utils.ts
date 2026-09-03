@@ -1,45 +1,16 @@
-import { createHash } from 'crypto';
 import fs from 'fs';
-import path from 'path';
 import readline from 'readline';
 import { createGunzip } from 'zlib';
 import type { SqlClient } from './drizzle';
 
-interface ImportCheckpoint {
-  processedLines: number;
-  scope: string;
+export async function saveCheckpoint(checkpointFile: string, processedLines: number) {
+  await fs.promises.writeFile(checkpointFile, JSON.stringify({ processedLines }), 'utf8');
 }
 
-export interface ProcessEntitiesResult {
-  affectedEntities: number;
-  processedLines: number;
-}
-
-export function createCheckpointScope(databaseUrl: string, filePath: string) {
-  return createHash('sha256')
-    .update(`${databaseUrl}\0${path.resolve(filePath)}`)
-    .digest('hex');
-}
-
-export async function saveCheckpoint(checkpointFile: string, processedLines: number, scope: string) {
-  await fs.promises.writeFile(checkpointFile, JSON.stringify({ processedLines, scope }), 'utf8');
-}
-
-export async function loadCheckpoint(checkpointFile: string, scope: string): Promise<number> {
+export async function loadCheckpoint(checkpointFile: string): Promise<number> {
   try {
     const data = await fs.promises.readFile(checkpointFile, 'utf8');
-    const checkpoint = JSON.parse(data) as Partial<ImportCheckpoint>;
-
-    if (
-      checkpoint.scope !== scope ||
-      !Number.isInteger(checkpoint.processedLines) ||
-      Number(checkpoint.processedLines) < 0
-    ) {
-      console.log(`Ignoring checkpoint ${checkpointFile}: database or source file changed`);
-      return 0;
-    }
-
-    return Number(checkpoint.processedLines);
+    return JSON.parse(data).processedLines;
   } catch {
     return 0;
   }
@@ -49,24 +20,19 @@ export async function processEntities<T>(
   filePath: string,
   checkpointFile: string,
   batchSize: number,
-  batchInsertFunction: (batch: T[], sqlQuery: SqlClient) => Promise<number>,
+  batchInsertFunction: (batch: T[], sqlQuery: SqlClient) => Promise<unknown>,
   sqlQuery: SqlClient,
   totalEntities: number,
-  checkpointScope: string,
-): Promise<ProcessEntitiesResult> {
+): Promise<number> {
   const usesCheckpoints = totalEntities > batchSize;
-  const startLine = usesCheckpoints ? await loadCheckpoint(checkpointFile, checkpointScope) : 0;
-  let affectedEntities = 0;
+  const startLine = usesCheckpoints ? await loadCheckpoint(checkpointFile) : 0;
   let processedLines = 0;
   let batch: T[] = [];
   const startTime = Date.now();
 
   const fileStream = fs.createReadStream(filePath);
   const input = filePath.endsWith('.gz') ? fileStream.pipe(createGunzip()) : fileStream;
-  const rl = readline.createInterface({
-    crlfDelay: Infinity,
-    input,
-  });
+  const rl = readline.createInterface({ crlfDelay: Infinity, input });
 
   for await (const line of rl) {
     if (processedLines < startLine) {
@@ -88,12 +54,10 @@ export async function processEntities<T>(
 
     if (batch.length >= batchSize) {
       const batchStartTime = Date.now();
-      affectedEntities += await batchInsertFunction(batch, sqlQuery);
+      await batchInsertFunction(batch, sqlQuery);
       const batchEndTime = Date.now();
       batch = [];
-      if (usesCheckpoints) {
-        await saveCheckpoint(checkpointFile, processedLines, checkpointScope);
-      }
+      if (usesCheckpoints) await saveCheckpoint(checkpointFile, processedLines);
       const elapsedSeconds = (Date.now() - startTime) / 1000;
       const batchSeconds = (batchEndTime - batchStartTime) / 1000;
       const remainingEntities = totalEntities - processedLines;
@@ -108,14 +72,12 @@ export async function processEntities<T>(
   }
 
   if (batch.length > 0) {
-    affectedEntities += await batchInsertFunction(batch, sqlQuery);
-    if (usesCheckpoints) {
-      await saveCheckpoint(checkpointFile, processedLines, checkpointScope);
-    }
+    await batchInsertFunction(batch, sqlQuery);
+    if (usesCheckpoints) await saveCheckpoint(checkpointFile, processedLines);
   }
 
   const totalSeconds = (Date.now() - startTime) / 1000;
   console.log(`Total processing time: ${(totalSeconds / 60).toFixed(2)} minutes`);
 
-  return { affectedEntities, processedLines };
+  return processedLines;
 }

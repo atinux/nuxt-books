@@ -22,12 +22,20 @@ export default defineNuxtConfig({
       isr: {
         expiration: 3600,
         allowQuery: ['language', 'list', 'page', 'pages', 'rating', 'search', 'year'],
-        passQuery: true
-      }
+        passQuery: true,
+      },
+    },
+    '/api/books/count': {
+      isr: {
+        expiration: 3600,
+        allowQuery: ['language', 'list', 'pages', 'rating', 'search', 'year'],
+        passQuery: true,
+      },
     },
     '/api/books/**': { isr: true },
   },
   runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
     public: {
       baseUrl:
         process.env.NUXT_PUBLIC_BASE_URL ??

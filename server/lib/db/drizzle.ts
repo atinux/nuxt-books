@@ -1,25 +1,48 @@
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
-import type { Client } from '@libsql/client';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 
-const databaseUrl = process.env.TURSO_DATABASE_URL;
-const authToken = process.env.TURSO_AUTH_TOKEN || undefined;
+const connectionString = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
 
-const client = databaseUrl ? createClient({ authToken, url: databaseUrl }) : null;
-export const db = client ? drizzle({ client }) : null;
-export type SqlClient = Client;
+const pool = connectionString ? new Pool({ connectionString }) : null;
+export const db = pool ? drizzle({ client: pool }) : null;
 
-export function requireDatabaseUrl() {
-  if (!databaseUrl) throw new Error('TURSO_DATABASE_URL environment variable is not set');
-  return databaseUrl;
+export type SqlExecutor = {
+  query: (text: string, values?: unknown[]) => Promise<unknown>;
+};
+
+export type SqlClient = SqlExecutor & {
+  transaction: <T>(callback: (client: SqlExecutor) => Promise<T>) => Promise<T>;
+};
+
+function createSqlClient(clientPool: Pool): SqlClient {
+  return {
+    query: (text, values) => clientPool.query(text, values),
+    async transaction(callback) {
+      const client = await clientPool.connect();
+
+      try {
+        await client.query('BEGIN');
+        const result = await callback({ query: (text, values) => client.query(text, values) });
+        await client.query('COMMIT');
+        return result;
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+  };
 }
 
+const sql = pool ? createSqlClient(pool) : null;
+
 export function requireSql() {
-  if (!client) throw new Error('TURSO_DATABASE_URL environment variable is not set');
-  return client;
+  if (!sql) throw new Error('DATABASE_URL environment variable is not set');
+  return sql;
 }
 
 export function requireDb() {
-  if (!db) throw new Error('TURSO_DATABASE_URL environment variable is not set');
+  if (!db) throw new Error('DATABASE_URL environment variable is not set');
   return db;
 }

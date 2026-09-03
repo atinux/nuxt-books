@@ -17,7 +17,11 @@ export type BookDetails = BookSummary & {
   authors: string[];
 };
 
-export type CatalogResponse = {
+export type CatalogPageResponse = {
   books: BookSummary[];
+  hasNext: boolean;
+};
+
+export type CatalogCountResponse = {
   total: number;
 };

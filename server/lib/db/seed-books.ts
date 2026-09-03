@@ -1,7 +1,7 @@
 import './load-env';
 import path from 'path';
-import { requireDatabaseUrl, requireSql } from './drizzle';
-import { createCheckpointScope, processEntities } from './seed-utils';
+import { requireSql } from './drizzle';
+import { processEntities } from './seed-utils';
 import type { SqlClient } from './drizzle';
 
 const BATCH_SIZE = 900;
@@ -31,86 +31,59 @@ interface BookData {
 }
 
 async function batchInsertBooks(batch: BookData[], sqlQuery: SqlClient) {
-  const insertBooksQuery = `
-    INSERT OR IGNORE INTO books (id, isbn, isbn13, title, publication_year, publisher, image_url, description, num_pages, language_code, text_reviews_count, ratings_count, average_rating, series, popular_shelves)
-    SELECT
-      CAST(json_extract(value, '$.id') AS INTEGER),
-      json_extract(value, '$.isbn'),
-      json_extract(value, '$.isbn13'),
-      json_extract(value, '$.title'),
-      CAST(json_extract(value, '$.publication_year') AS INTEGER),
-      json_extract(value, '$.publisher'),
-      json_extract(value, '$.image_url'),
-      json_extract(value, '$.description'),
-      CAST(json_extract(value, '$.num_pages') AS INTEGER),
-      json_extract(value, '$.language_code'),
-      CAST(json_extract(value, '$.text_reviews_count') AS INTEGER),
-      CAST(json_extract(value, '$.ratings_count') AS INTEGER),
-      CAST(json_extract(value, '$.average_rating') AS REAL),
-      json_extract(value, '$.series'),
-      json_extract(value, '$.popular_shelves')
-    FROM json_each(?)
-  `;
-
-  const insertAuthorsQuery = `
-    INSERT OR IGNORE INTO book_to_author (book_id, author_id)
-    SELECT
-      CAST(json_extract(value, '$[0]') AS INTEGER),
-      CAST(json_extract(value, '$[1]') AS TEXT)
-    FROM json_each(?)
-    WHERE EXISTS (
-      SELECT 1 FROM books WHERE books.id = CAST(json_extract(value, '$[0]') AS INTEGER)
-    ) AND EXISTS (
-      SELECT 1 FROM authors WHERE authors.id = CAST(json_extract(value, '$[1]') AS TEXT)
+  const insertBookAndAuthorsQuery = `
+    WITH inserted_book AS (
+      INSERT INTO books (id, isbn, isbn13, title, publication_year, publisher, image_url, description, num_pages, language_code, text_reviews_count, ratings_count, average_rating, series, popular_shelves, title_tsv)
+      VALUES ($1::integer, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, unaccent($4))
+      ON CONFLICT DO NOTHING
+      RETURNING id
     )
+    INSERT INTO book_to_author (book_id, author_id)
+    SELECT inserted_book.id, unnest($16::text[])
+    FROM inserted_book
+    WHERE inserted_book.id IS NOT NULL
+    ON CONFLICT DO NOTHING
   `;
 
-  const books = batch.map(book => ({
-    average_rating: book.average_rating ? Number(book.average_rating) : null,
-    description: book.description || null,
-    id: Number(book.book_id),
-    image_url: book.image_url || null,
-    isbn: book.isbn || null,
-    isbn13: book.isbn13 || null,
-    language_code: book.language_code || null,
-    num_pages: book.num_pages ? Number(book.num_pages) : null,
-    popular_shelves: book.popular_shelves,
-    publication_year: book.publication_year ? Number(book.publication_year) : null,
-    publisher: book.publisher || null,
-    ratings_count: book.ratings_count ? Number(book.ratings_count) : null,
-    series: book.series,
-    text_reviews_count: book.text_reviews_count ? Number(book.text_reviews_count) : null,
-    title: book.title,
-  }));
-  const bookAuthors = batch.flatMap(book =>
-    book.authors.map(author => [Number(book.book_id), author.author_id] as const),
+  return sqlQuery.transaction(tx =>
+    Promise.all(
+      batch.map(book =>
+        tx.query(insertBookAndAuthorsQuery, [
+          parseInt(book.book_id),
+          book.isbn || null,
+          book.isbn13 || null,
+          book.title,
+          book.publication_year ? parseInt(book.publication_year) : null,
+          book.publisher || null,
+          book.image_url || null,
+          book.description || null,
+          book.num_pages ? parseInt(book.num_pages) : null,
+          book.language_code || null,
+          book.text_reviews_count ? parseInt(book.text_reviews_count) : null,
+          book.ratings_count ? parseInt(book.ratings_count) : null,
+          book.average_rating ? book.average_rating : null,
+          book.series || null,
+          JSON.stringify(book.popular_shelves),
+          book.authors.map(author => author.author_id),
+        ]),
+      ),
+    ),
   );
-  const statements = [{ args: [JSON.stringify(books)], sql: insertBooksQuery }];
-
-  if (bookAuthors.length) {
-    statements.push({ args: [JSON.stringify(bookAuthors)], sql: insertAuthorsQuery });
-  }
-
-  const results = await sqlQuery.batch(statements, 'write');
-  return results[0]?.rowsAffected ?? 0;
 }
 
 async function main() {
   try {
     const sql = requireSql();
-    const checkpointScope = createCheckpointScope(requireDatabaseUrl(), DATA_FILE);
-    const { affectedEntities, processedLines } = await processEntities<BookData>(
+    const bookCount = await processEntities<BookData>(
       DATA_FILE,
       CHECKPOINT_FILE,
       BATCH_SIZE,
       batchInsertBooks,
       sql,
       TOTAL_BOOKS,
-      checkpointScope,
     );
-    console.log(
-      `Inserted ${affectedEntities.toLocaleString()} books (${processedLines.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} lines processed)`,
-    );
+    await sql.query("SELECT setval(pg_get_serial_sequence('books', 'id'), (SELECT max(id) FROM books))");
+    console.log(`Seeded ${bookCount.toLocaleString()} / ${TOTAL_BOOKS.toLocaleString()} books`);
   } catch (error) {
     console.error('Error seeding books:', error);
     process.exitCode = 1;

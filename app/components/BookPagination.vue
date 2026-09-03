@@ -2,11 +2,11 @@
 import { buildHref, getCurrentPage, getTotalPages, withPage } from '#shared/utils/url-state';
 import type { SearchParams } from '#shared/utils/url-state';
 
-const props = defineProps<{ searchParams: SearchParams; total: number }>();
+const props = defineProps<{ hasNext: boolean; searchParams: SearchParams; total?: number }>();
 const route = useRoute();
 const pendingDirection = ref<'next' | 'previous'>();
 
-const totalPages = computed(() => getTotalPages(props.total));
+const totalPages = computed(() => (props.total === undefined ? undefined : getTotalPages(props.total)));
 const currentPage = computed(() => getCurrentPage(props.searchParams, totalPages.value));
 const previousHref = computed(() => buildHref(withPage(props.searchParams, currentPage.value - 1)));
 const nextHref = computed(() => buildHref(withPage(props.searchParams, currentPage.value + 1)));
@@ -33,7 +33,7 @@ async function prefetchPayload(href: string) {
 
 function prefetchAdjacentPages() {
   if (currentPage.value > 1) void prefetchPayload(previousHref.value);
-  if (currentPage.value < totalPages.value) void prefetchPayload(nextHref.value);
+  if (props.hasNext) void prefetchPayload(nextHref.value);
 }
 
 watch(
@@ -70,15 +70,19 @@ const stepClass =
     </span>
 
     <p class="text-muted flex items-center gap-2 text-xs tabular-nums sm:text-sm">
-      <span class="hidden sm:inline">
+      <span v-if="total !== undefined" class="hidden sm:inline">
         <span class="font-medium text-black dark:text-white">{{ total.toLocaleString() }}</span> books
       </span>
+      <span v-else aria-hidden="true" class="skeleton-animation skeleton-subtle hidden h-4 w-20 sm:block" />
       <span aria-hidden="true" class="bg-divider dark:bg-divider-dark hidden h-3 w-px sm:block" />
-      <span>Page {{ currentPage.toLocaleString() }} of {{ totalPages.toLocaleString() }}</span>
+      <span>
+        Page {{ currentPage.toLocaleString() }}
+        <template v-if="totalPages !== undefined">of {{ totalPages.toLocaleString() }}</template>
+      </span>
     </p>
 
     <NuxtLink
-      v-if="currentPage < totalPages"
+      v-if="hasNext"
       aria-label="Next page"
       :class="stepClass"
       prefetch-on="visibility"

@@ -1,6 +1,6 @@
 import './load-env';
 import path from 'path';
-import { migrate } from 'drizzle-orm/libsql/migrator';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
 import { requireDb } from './drizzle';
 

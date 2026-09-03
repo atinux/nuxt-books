@@ -6,6 +6,32 @@ test('the app shell and catalog render on first load', async ({ page }) => {
   await expect(page.getByRole('link', { name: /W\.C\. Fields/ })).toBeVisible();
 });
 
+test('pagination is available while the exact count loads', async ({ page }) => {
+  let countRequests = 0;
+  let releaseCount = () => {};
+  const countGate = new Promise<void>(resolve => {
+    releaseCount = resolve;
+  });
+
+  await page.route('**/api/books/count**', async route => {
+    countRequests++;
+    await countGate;
+    await route.continue();
+  });
+
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Next page' })).toBeVisible();
+  await expect(page.getByText('Page 1', { exact: true })).toBeVisible();
+
+  releaseCount();
+  await expect(page.getByText(/Page 1 of [\d,]+/)).toBeVisible();
+
+  await page.getByRole('link', { name: 'Next page' }).click();
+  await page.waitForURL(url => url.searchParams.get('page') === '2');
+  await page.waitForTimeout(500);
+  expect(countRequests).toBe(1);
+});
+
 test('the next page payload is prefetched when its link becomes visible', async ({ page }) => {
   const payloads: string[] = [];
   page.on('response', response => {

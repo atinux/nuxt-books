@@ -1,10 +1,20 @@
 <script setup lang="ts">
 import { parseSearchParams } from '#shared/utils/url-state';
-import type { CatalogResponse } from '#shared/types/book';
+import type { CatalogCountResponse, CatalogPageResponse } from '#shared/types/book';
 
 const route = useRoute();
 const query = computed(() => parseSearchParams(route.query));
-const { data, error, status } = await useFetch<CatalogResponse>('/api/books', { query, server: false });
+const countQuery = reactive({
+  language: computed(() => query.value.language),
+  list: computed(() => query.value.list),
+  pages: computed(() => query.value.pages),
+  rating: computed(() => query.value.rating),
+  search: computed(() => query.value.search),
+  year: computed(() => query.value.year),
+});
+const booksRequest = useFetch<CatalogPageResponse>('/api/books', { query, server: false });
+const countRequest = useFetch<CatalogCountResponse>('/api/books/count', { query: countQuery, server: false });
+const [{ data, error, status }, { data: countData }] = await Promise.all([booksRequest, countRequest]);
 </script>
 
 <template>
@@ -35,7 +45,12 @@ const { data, error, status } = await useFetch<CatalogResponse>('/api/books', { 
     </div>
 
     <footer class="border-divider dark:border-divider-dark mt-auto border-t px-4 py-3 sm:px-6">
-      <BookPagination v-if="data" :search-params="query" :total="data.total" />
+      <BookPagination
+        v-if="data"
+        :has-next="data.hasNext"
+        :search-params="query"
+        :total="countData?.total"
+      />
       <div v-else aria-hidden="true" class="flex items-center justify-between gap-4">
         <span class="text-muted inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm opacity-40">
           <AppIcon name="chevron-left" class="size-4" /> Previous
