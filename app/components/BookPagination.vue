@@ -24,7 +24,7 @@ const stepClass =
 
 <template>
   <nav aria-label="Pagination" class="flex items-center justify-between gap-4">
-    <NuxtLink
+    <AppFastLink
       v-if="currentPage > 1"
       aria-label="Previous page"
       :class="stepClass"
@@ -35,7 +35,7 @@ const stepClass =
       <AppIcon v-if="pendingDirection === 'previous'" name="loader" class="size-3.5 animate-spin" />
       <AppIcon v-else name="chevron-left" class="size-4" />
       Previous
-    </NuxtLink>
+    </AppFastLink>
     <span v-else aria-disabled="true" :class="[stepClass, 'pointer-events-none opacity-40']">
       <AppIcon name="chevron-left" class="size-4" />
       Previous
@@ -53,7 +53,7 @@ const stepClass =
       </span>
     </p>
 
-    <NuxtLink
+    <AppFastLink
       v-if="hasNext"
       aria-label="Next page"
       :class="stepClass"
@@ -64,7 +64,7 @@ const stepClass =
       Next
       <AppIcon v-if="pendingDirection === 'next'" name="loader" class="size-3.5 animate-spin" />
       <AppIcon v-else name="chevron-right" class="size-4" />
-    </NuxtLink>
+    </AppFastLink>
     <span v-else aria-disabled="true" :class="[stepClass, 'pointer-events-none opacity-40']">
       Next
       <AppIcon name="chevron-right" class="size-4" />

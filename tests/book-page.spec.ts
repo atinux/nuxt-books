@@ -11,6 +11,30 @@ test('a book navigation keeps the app shell mounted', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Back to books' })).toBeVisible();
 });
 
+test('a book navigation starts on primary-button mousedown', async ({ page }) => {
+  await page.goto('/');
+  const book = page.getByRole('link', { name: /W\.C\. Fields/ });
+
+  await expect(book).toBeVisible();
+  await book.dispatchEvent('mousedown', { button: 0 });
+
+  await page.waitForURL(url => url.pathname === '/5333265');
+});
+
+test('fast book links preserve modified clicks and keyboard navigation', async ({ page }) => {
+  await page.goto('/');
+  const book = page.getByRole('link', { name: /W\.C\. Fields/ });
+
+  await expect(book).toBeVisible();
+  await book.dispatchEvent('mousedown', { button: 0, metaKey: true });
+  await page.waitForTimeout(100);
+  await expect(page).toHaveURL('/');
+
+  await book.focus();
+  await book.press('Enter');
+  await page.waitForURL(url => url.pathname === '/5333265');
+});
+
 test('a book detail cover has a responsive image source', async ({ page }) => {
   await page.goto('/900044?page=2');
   const cover = page.getByRole('img', { name: 'The Second Harbor' });

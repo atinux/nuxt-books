@@ -12,11 +12,17 @@ const countQuery = reactive({
   search: computed(() => query.value.search),
   year: computed(() => query.value.year),
 });
-const booksRequest = useFetch<CatalogPageResponse>('/api/books', { query, server: false, lazy: true });
+const booksRequest = useFetch<CatalogPageResponse>('/api/books', {
+  dedupe: 'cancel',
+  lazy: true,
+  query,
+  server: false,
+});
 const countRequest = useFetch<CatalogCountResponse>('/api/books/count', {
+  dedupe: 'cancel',
+  lazy: true,
   query: countQuery,
   server: false,
-  lazy: true,
 });
 const [{ data, error, status }, { data: countData }] = await Promise.all([booksRequest, countRequest]);
 </script>

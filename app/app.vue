@@ -30,7 +30,6 @@ useSeoMeta({
 
 <template>
   <div>
-    <NuxtLoadingIndicator color="var(--color-action)" />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
