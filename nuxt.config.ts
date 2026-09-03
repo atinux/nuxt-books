@@ -25,14 +25,8 @@ export default defineNuxtConfig({
   },
   modules: ['@nuxt/image', '@nuxtjs/color-mode', '@nuxt/eslint', '@vercel/analytics', '@vercel/speed-insights'],
   routeRules: {
-    '/': { isr: 3600 },
-    '/**': { isr: 3600 },
-    '/_payload.json': {
-      headers: { 'cache-control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=60' },
-    },
-    '/**/_payload.json': {
-      headers: { 'cache-control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=60' },
-    },
+    '/': { isr: true },
+    '/**': { isr: true },
     '/api/books': {
       isr: {
         expiration: 3600,
