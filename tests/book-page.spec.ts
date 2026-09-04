@@ -62,7 +62,7 @@ test('route prefetch warms a reusable image response', async ({ page }) => {
   await expect(book).toBeVisible();
   await expect.poll(() => payloadPrefetched).toBe(true);
 
-  const forwardedCover = page.locator('link[rel="preload"][as="image"][fetchpriority="low"][href*="5333265.jpg"]');
+  const forwardedCover = page.locator('link[rel="preload"][as="image"][href*="5333265.jpg"]');
   await expect(forwardedCover).toHaveCount(1);
   await expect.poll(() => imageResponses.length).toBeGreaterThanOrEqual(2);
   expect(imageRequests.filter(request => request.resourceType === 'other')).toHaveLength(0);

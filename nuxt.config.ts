@@ -8,8 +8,7 @@ export default defineNuxtConfig({
     compatibilityVersion: 5,
   },
   experimental: {
-    // Optimizer-backed image hints are normalized to reusable low-priority
-    // preloads by app/plugins/prefetch-image-preloads.client.ts.
+    // A pnpm hotpatch preserves preload semantics for forwarded image hints.
     prefetchPreloadTags: true,
   },
   image: {

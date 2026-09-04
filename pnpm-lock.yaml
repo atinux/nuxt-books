@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  nuxt-nightly@4.6.0-29803612.ea5d49fb: 318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce
+
 importers:
 
   .:
@@ -40,7 +43,7 @@ importers:
         version: 0.45.2(@libsql/client@0.17.4(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@neondatabase/serverless@1.1.0)(@opentelemetry/api@1.9.0)(@types/pg@8.23.1)(@vercel/postgres@0.9.0)(pg@8.23.0)
       nuxt:
         specifier: npm:nuxt-nightly@latest
-        version: nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb)
+        version: nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb)
       p-limit:
         specifier: ^7.3.1
         version: 7.3.1
@@ -6818,7 +6821,7 @@ snapshots:
       mocked-exports: 0.1.1
       nitropack: 2.13.4(@libsql/client@0.17.4(bufferutil@4.1.0)(utf-8-validate@6.0.6))(drizzle-orm@0.45.2(@libsql/client@0.17.4(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@neondatabase/serverless@1.1.0)(@opentelemetry/api@1.9.0)(@types/pg@8.23.1)(@vercel/postgres@0.9.0)(pg@8.23.0))(rolldown@1.2.6)(srvx@0.12.7)(supports-color@10.2.2)(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12)(yaml@2.9.0))
       nostics: 1.2.0
-      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb)
+      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb)
       ohash: 2.0.12
       pathe: 2.0.3
       rou3: 0.9.2
@@ -6923,7 +6926,7 @@ snapshots:
       js-tokens: 10.0.0
       knitwork: 1.3.0
       mocked-exports: 0.1.1
-      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb)
+      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb)
       pathe: 2.0.3
       pkg-types: 2.3.1
       postcss: 8.5.26
@@ -6978,7 +6981,7 @@ snapshots:
       defu: 6.1.7
       exsolve: 1.1.1
       mocked-exports: 0.1.1
-      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb)
+      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb)
       pathe: 2.0.3
       srvx: 0.12.5
       ufo: 1.6.4
@@ -7564,7 +7567,7 @@ snapshots:
 
   '@vercel/analytics@2.0.1(nuxt-nightly@4.6.0-29803612.ea5d49fb)(react@19.2.8)(vue@3.5.42(typescript@6.0.3))':
     optionalDependencies:
-      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb)
+      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb)
       react: 19.2.8
       vue: 3.5.42(typescript@6.0.3)
 
@@ -7597,7 +7600,7 @@ snapshots:
 
   '@vercel/speed-insights@2.0.0(nuxt-nightly@4.6.0-29803612.ea5d49fb)(react@19.2.8)(vue@3.5.42(typescript@6.0.3))':
     optionalDependencies:
-      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb)
+      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb)
       react: 19.2.8
       vue: 3.5.42(typescript@6.0.3)
 
@@ -9822,7 +9825,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb):
+  nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb):
     dependencies:
       '@dxup/nuxt': 0.5.10(esbuild@0.28.2)(magicast@0.5.4)(rolldown@1.2.6)(rollup@4.63.1)(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12)(yaml@2.9.0))
       '@nuxt/cli': '@nuxt/cli-nightly@4.0.0-20260902-074550-8bcf1bc(@nuxt/schema-nightly@4.6.0-29803612.ea5d49fb)(jiti@2.7.0)(rolldown@1.2.6)'
@@ -11443,7 +11446,7 @@ snapshots:
     optionalDependencies:
       '@nuxt/kit': '@nuxt/kit-nightly@4.6.0-29803612.ea5d49fb(confbox@0.2.4)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.2.3)(mlly@1.8.2)(rolldown@1.2.6)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.6)(rollup@4.63.1)(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12)(yaml@2.9.0)))'
       '@nuxt/schema': '@nuxt/schema-nightly@4.6.0-29803612.ea5d49fb'
-      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(90e2bf23dc23bce8fcf7f082e7ef62bb)
+      nuxt: nuxt-nightly@4.6.0-29803612.ea5d49fb(patch_hash=318015495e36ee3e418637d626a9278f5801056a4fbae574bf127c3585af0dce)(90e2bf23dc23bce8fcf7f082e7ef62bb)
 
   vue-tsc@3.3.11(typescript@6.0.3):
     dependencies:
