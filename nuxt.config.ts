@@ -8,7 +8,8 @@ export default defineNuxtConfig({
     compatibilityVersion: 5,
   },
   experimental: {
-    // https://nuxt.com/blog/v4-5#%EF%B8%8F-forwarded-preload-hints-on-prefetch
+    // Optimizer-backed image hints are normalized to reusable low-priority
+    // preloads by app/plugins/prefetch-image-preloads.client.ts.
     prefetchPreloadTags: true,
   },
   image: {
@@ -25,7 +26,7 @@ export default defineNuxtConfig({
         base: 'nuxt-books:v1',
         driver: process.env.VERCEL ? 'vercel-runtime-cache' : 'memory',
       },
-    }
+    },
   },
   // Nuxt requires a cache route rule to generate runtime _payload.json routes.
   routeRules: {
