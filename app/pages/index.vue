@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { parseSearchParams } from '#shared/utils/url-state';
+import { parseSearchParams, stringifySearchParams } from '#shared/utils/url-state';
 import type { CatalogCountResponse, CatalogPageResponse } from '#shared/types/book';
 
 const route = useRoute();
-const query = computed(() => parseSearchParams(route.query));
+// The route's query object changes when a kept-alive page is deactivated. Keep
+// equivalent catalog inputs referentially stable so useFetch does not refetch.
+const serializedQuery = computed(() => stringifySearchParams(parseSearchParams(route.query)));
+const query = computed(() => parseSearchParams(Object.fromEntries(new URLSearchParams(serializedQuery.value))));
 const countQuery = reactive({
   language: computed(() => query.value.language),
   list: computed(() => query.value.list),
