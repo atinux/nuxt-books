@@ -12,7 +12,7 @@ NuxtBooks serves a curated catalog of 100,000 Goodreads books that fits within t
 
 ---
 
-NuxtBooks is a Nuxt rebuild of the archived [Vercel book inventory example](https://github.com/vercel-labs/book-inventory). You can download the [full Goodreads dataset from the UCSD Book Graph project](https://mengtingwan.github.io/data/goodreads.html).
+NuxtBooks is a rebuild of [NextBooks](https://github.com/vercel-labs/next-books), but with [Nuxt](https://github.com/nuxt/nuxt). You can download the [full Goodreads dataset from the UCSD Book Graph project](https://mengtingwan.github.io/data/goodreads.html).
 
 ## Navigation and caching
 
