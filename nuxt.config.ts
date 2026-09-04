@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   experimental: {
     // A pnpm hotpatch preserves preload semantics for forwarded image hints.
     prefetchPreloadTags: true,
-    ssrStreaming: true
+    early404: true
   },
   image: {
     domains: ['images.gr-assets.com', 's.gr-assets.com'],
