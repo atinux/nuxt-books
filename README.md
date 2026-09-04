@@ -37,7 +37,7 @@ NuxtBooks controls when it fetches route payloads and priority cover images so l
 - **Fast links:** [`<FastLink>`](app/components/FastLink.vue) wraps `<NuxtLink>` and starts an unmodified primary-button navigation on `mousedown`. Modified clicks, keyboard navigation, interactive descendants, and Nuxt's built-in prefetch behavior remain unchanged.
 - **Preserved page state:** [`<NuxtPage keepalive>`](app/app.vue) uses [Nuxt's keep-alive support](https://nuxt.com/docs/4.x/directory-structure/app/pages#keepalive) to retain the catalog and book page instances across route changes. Returning from a book restores the loaded catalog results and local page state without remounting the catalog page.
 - **Book routes:** links on the first catalog page use [visibility-based prefetching](https://nuxt.com/docs/4.x/api/components/nuxt-link#prefetch-links). Links on later pages wait for hover or keyboard focus, which limits unnecessary requests while preserving intent-based prefetching.
-- **Priority images:** the first ten covers on each catalog page and the cover on each book page use `<NuxtImg preload>`. When a book route is prefetched, [`experimental.prefetchPreloadTags`](https://nuxt.com/docs/4.x/guide/going-further/experimental-features#prefetchpreloadtags) forwards the destination cover's preload hint to the current document as `rel="prefetch"`. This lower priority lets the browser download the next cover without competing with the current page's critical resources.
+- **Priority images:** the first ten covers on each catalog page and the cover on each book page use `<NuxtImg preload>`. [`experimental.prefetchPreloadTags`](https://nuxt.com/docs/4.x/guide/going-further/experimental-features#prefetchpreloadtags) forwards a destination cover hint during route prefetch. A [temporary Nuxt hotpatch](patches/nuxt-nightly@4.6.0-29803612.ea5d49fb.patch) preserves `rel="preload"` for hints with `as="image"` instead of changing them to generic prefetches. The browser then sends its image-specific `Accept` header and can reuse the response on navigation.
 - **Pagination:** when the controls enter the viewport, NuxtBooks requests the adjacent `/api/books` variants to warm their server cache entries. The pagination links also prefetch their `_payload.json` responses for client navigation.
 
 ## Run locally
@@ -67,7 +67,7 @@ Run the Playwright suite against a production Nitro build:
 pnpm test:e2e
 ```
 
-The suite covers extracted-payload navigation, prefetching, `FastLink` behavior, search cancellation, pagination warming, and scroll restoration. Cached handlers use the in-memory storage driver during this local run.
+The suite covers extracted-payload navigation, prefetching, `FastLink` behavior, search cancellation, kept-alive catalog restoration, image-preload reuse, pagination warming, and scroll restoration. Cached handlers use the in-memory storage driver during this local run.
 
 Only a Vercel deployment uses the Runtime Cache driver. After changing cache storage, keys, or handler policy, deploy a preview and inspect reads, writes, and hit rates in Vercel Runtime Cache Observability.
 

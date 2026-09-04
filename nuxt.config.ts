@@ -8,8 +8,9 @@ export default defineNuxtConfig({
     compatibilityVersion: 5,
   },
   experimental: {
-    // https://nuxt.com/blog/v4-5#%EF%B8%8F-forwarded-preload-hints-on-prefetch
+    // A pnpm hotpatch preserves preload semantics for forwarded image hints.
     prefetchPreloadTags: true,
+    early404: true
   },
   image: {
     domains: ['images.gr-assets.com', 's.gr-assets.com'],
@@ -25,7 +26,7 @@ export default defineNuxtConfig({
         base: 'nuxt-books:v1',
         driver: process.env.VERCEL ? 'vercel-runtime-cache' : 'memory',
       },
-    }
+    },
   },
   // Nuxt requires a cache route rule to generate runtime _payload.json routes.
   routeRules: {

@@ -1,5 +1,39 @@
 import { expect, test } from '@playwright/test';
 
+test('initial client-only loading hydrates without dimming the skeleton', async ({ page }) => {
+  const hydrationWarnings: string[] = [];
+  page.on('console', message => {
+    if (/hydration/i.test(message.text())) hydrationWarnings.push(message.text());
+  });
+  let releaseCatalog = () => {};
+  const catalogGate = new Promise<void>(resolve => {
+    releaseCatalog = resolve;
+  });
+  await page.route(/\/api\/books(?:\?|$)/, async route => {
+    await catalogGate;
+    await route.continue();
+  });
+
+  try {
+    const request = page.waitForRequest(request => new URL(request.url()).pathname === '/api/books');
+    await page.goto('/');
+    await request;
+    const skeleton = page.locator('main div[aria-hidden="true"].grid');
+    await expect(skeleton).toBeVisible();
+    await expect(skeleton.locator('..')).not.toHaveClass(/opacity-60/);
+    await expect(page.locator('[data-filtering]')).toHaveCount(0);
+  } finally {
+    releaseCatalog();
+  }
+  await expect(
+    page
+      .locator('main a')
+      .filter({ has: page.locator('img') })
+      .first(),
+  ).toBeVisible();
+  expect(hydrationWarnings).toEqual([]);
+});
+
 test('the app shell and catalog render on first load', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('searchbox', { name: 'Search books' })).toBeVisible();

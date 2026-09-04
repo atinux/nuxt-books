@@ -4,3 +4,5 @@ allowBuilds:
   sharp: true
   unrs-resolver: false
   utf-8-validate: false
+patchedDependencies:
+  nuxt-nightly@4.6.0-29803612.ea5d49fb: patches/nuxt-nightly@4.6.0-29803612.ea5d49fb.patch

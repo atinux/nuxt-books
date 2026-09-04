@@ -28,14 +28,16 @@ const countRequest = useFetch<CatalogCountResponse>('/api/books/count', {
   server: false,
 });
 const [{ data, error, status }, { data: countData }] = await Promise.all([booksRequest, countRequest]);
+// Initial client-only loading uses the skeleton; only dim an existing catalog.
+const isFiltering = computed(() => Boolean(data.value) && status.value === 'pending');
 </script>
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
     <div
       class="flex-1 px-4 py-5 transition-opacity duration-200 ease-out sm:px-6"
-      :class="{ 'opacity-60': status === 'pending' }"
-      :data-filtering="status === 'pending' ? '' : undefined"
+      :class="{ 'opacity-60': isFiltering }"
+      :data-filtering="isFiltering ? '' : undefined"
     >
       <div v-if="error" class="grid flex-1 place-items-center px-6 py-20 text-center">
         <div class="flex max-w-sm flex-col items-center gap-3">
