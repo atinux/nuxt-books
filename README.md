@@ -12,20 +12,32 @@ NuxtBooks serves a curated catalog of 100,000 Goodreads books that fits within t
 
 ---
 
-NuxtBooks is a rebuild of [NextBooks](https://github.com/vercel-labs/next-books), but with [Nuxt](https://github.com/nuxt/nuxt). You can download the [full Goodreads dataset from the UCSD Book Graph project](https://mengtingwan.github.io/data/goodreads.html).
+NuxtBooks rebuilds [NextBooks](https://github.com/vercel-labs/next-books) with [Nuxt](https://github.com/nuxt/nuxt). You can download the complete source dataset from the [UCSD Book Graph project](https://mengtingwan.github.io/data/goodreads.html).
 
-## Navigation and caching
+## How it works
 
-Catalog and book pages render dynamically rather than using ISR. On Vercel, Nitro mounts its `cache` storage on [Vercel Runtime Cache](https://vercel.com/docs/caching/runtime-cache); local and test builds use Nitro's in-memory fallback.
+NuxtBooks renders pages dynamically, caches reusable database responses on the server, and prefetches the route data and images most likely to be needed next.
 
-- **Cached API data:** `/api/books`, `/api/books/count`, and `/api/books/:id` use `defineCachedEventHandler` with a one-hour stale-while-revalidate window. Stable hashed keys are derived from normalized filters, pagination, or the book ID so equivalent requests share an entry.
-- **Runtime Cache namespace:** Vercel entries use the versioned `nuxt-books:v1` namespace. Bumping the version intentionally starts a fresh cache.
-- **Dynamic page payloads:** the header-only `routeRules` cache marker keeps page rendering dynamic while allowing Nuxt to expose and browser-cache runtime `_payload.json` responses for client navigation. `/api/**` is excluded because the handlers own their cache policy.
-- **Book prefetching:** first-page book links prefetch when they enter the viewport. Books on later catalog pages wait for pointer or keyboard intent.
-- **Pagination warming:** when the pagination controls enter the viewport, the app requests adjacent `/api/books` query variants so their Runtime Cache entries are warm before navigation. The navigation itself still fetches the extracted `_payload.json` route.
-- **Forward compatibility:** `future.compatibilityVersion: 5` opts into the documented Nuxt 5 defaults while the app remains on Nuxt 4.
+### Server caching
 
-See [Nitro caching](https://nitro.build/docs/cache), [Nuxt payload extraction](https://nuxt.com/docs/4.x/getting-started/prerendering#payload-extraction), and [`<NuxtLink>` prefetching](https://nuxt.com/docs/4.x/api/components/nuxt-link#prefetch-links) for the underlying behavior.
+Catalog and book pages don't use incremental static regeneration (ISR). A header-only page `routeRules` cache marker lets Nuxt expose browser-cacheable `_payload.json` responses for client navigation without storing the rendered pages in Nitro. The `/api/**` routes are excluded because their handlers define their own cache policy. See [Nuxt payload extraction](https://nuxt.com/docs/4.x/getting-started/prerendering#payload-extraction) for details.
+
+The `/api/books`, `/api/books/count`, and `/api/books/:id` routes use [`defineCachedEventHandler`](https://nitro.build/docs/cache#cached-handlers). Cached responses remain fresh for one hour. After that, Nitro can serve the stale value while it refreshes the entry in the background. Stable hashed keys derived from normalized filters, pagination, or book IDs ensure that equivalent requests share an entry.
+
+On Vercel, Nitro stores these entries in [Vercel Runtime Cache](https://vercel.com/docs/caching/runtime-cache) under the versioned `nuxt-books:v1` namespace. Local development and tests use the same handlers with an in-memory cache. Change the namespace version only when every existing entry must be invalidated.
+
+### Navigation and image prefetching
+
+NuxtBooks controls when it fetches route payloads and priority cover images so likely navigations start early without prefetching every book at once.
+
+<!-- prettier-ignore -->
+> [!NOTE]
+> `prefetchPreloadTags` is experimental and may change in a future Nuxt release.
+
+- **Fast links:** [`<FastLink>`](app/components/FastLink.vue) wraps `<NuxtLink>` and starts an unmodified primary-button navigation on `mousedown`. Modified clicks, keyboard navigation, interactive descendants, and Nuxt's built-in prefetch behavior remain unchanged.
+- **Book routes:** links on the first catalog page use [visibility-based prefetching](https://nuxt.com/docs/4.x/api/components/nuxt-link#prefetch-links). Links on later pages wait for hover or keyboard focus, which limits unnecessary requests while preserving intent-based prefetching.
+- **Priority images:** the first ten covers on each catalog page and the cover on each book page use `<NuxtImg preload>`. When a book route is prefetched, [`experimental.prefetchPreloadTags`](https://nuxt.com/docs/4.x/guide/going-further/experimental-features#prefetchpreloadtags) forwards the destination cover's preload hint to the current document as `rel="prefetch"`. This lower priority lets the browser download the next cover without competing with the current page's critical resources.
+- **Pagination:** when the controls enter the viewport, NuxtBooks requests the adjacent `/api/books` variants to warm their server cache entries. The pagination links also prefetch their `_payload.json` responses for client navigation.
 
 ## Run locally
 
@@ -48,19 +60,23 @@ pnpm build
 
 ## Testing
 
-The Playwright suite runs against a production Nitro build. It exercises the in-memory version of the cached handlers plus extracted-payload navigation and prefetching, not only development-server behavior.
+Run the Playwright suite against a production Nitro build:
 
 ```bash
 pnpm test:e2e
 ```
 
-Only a Vercel preview deployment uses the actual Runtime Cache backend. Use the Runtime Cache section of Vercel Observability to verify reads, writes, and hit rates after changing cache storage or keys.
+The suite covers extracted-payload navigation, prefetching, `FastLink` behavior, search cancellation, pagination warming, and scroll restoration. Cached handlers use the in-memory storage driver during this local run.
+
+Only a Vercel deployment uses the Runtime Cache driver. After changing cache storage, keys, or handler policy, deploy a preview and inspect reads, writes, and hit rates in Vercel Runtime Cache Observability.
 
 ## Database
 
-The original dataset contains more than two million Goodreads books. The schema uses PostgreSQL's `unaccent` extension for accent-insensitive title search.
+The original dataset contains more than two million Goodreads books, while the hosted catalog contains a curated 100,000-book subset. The schema uses PostgreSQL's `unaccent` extension for accent-insensitive title search.
 
-Connect a Neon database through the Vercel Marketplace, or set `DATABASE_URL` to another PostgreSQL connection string. Then create the schema and load the bundled four-book sample:
+### Load the sample data
+
+Connect a Neon database through the Vercel Marketplace, or set `DATABASE_URL` to another PostgreSQL connection string. `POSTGRES_URL` remains supported for existing environments. Create the schema and load the bundled four-book sample:
 
 ```bash
 pnpm db:setup
@@ -71,6 +87,8 @@ Optionally generate cover-image placeholders for the four bundled sample books:
 ```bash
 pnpm db:seed-thumbhash
 ```
+
+### Import the complete dataset
 
 To import the complete UCSD Goodreads catalog, create the schema without loading the sample, then download the compressed book and author metadata files into the ignored `data/` directory. The seeders read gzip files directly, preserve Goodreads IDs, and checkpoint large imports:
 
@@ -87,7 +105,9 @@ BOOKS_DATA_PATH=./data/books.json.gz TOTAL_BOOKS=2360655 pnpm db:seed-books
 
 `TOTAL_AUTHORS` and `TOTAL_BOOKS` are used for progress estimates and checkpoint reporting; the seeders process each input file to the end.
 
-For a quota-limited Neon database, import a curated subset from a complete local PostgreSQL catalog instead of loading every author and book. The importer selects the most-rated catalog-eligible books, inserts only their referenced authors, preserves complete book metadata, and stops if the target exceeds its configured soft storage limit:
+### Create a Neon subset
+
+For a quota-limited Neon database, import a curated subset from a complete local PostgreSQL catalog. The importer selects the most-rated catalog-eligible books, inserts only their referenced authors, preserves complete book metadata, and stops if the target exceeds its configured soft storage limit:
 
 ```bash
 pnpm db:migrate

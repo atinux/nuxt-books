@@ -31,7 +31,7 @@ useSeoMeta({
 <template>
   <div>
     <NuxtLayout>
-      <NuxtPage />
+      <NuxtPage keepalive />
     </NuxtLayout>
     <OfflineIndicator />
     <AppToaster />
