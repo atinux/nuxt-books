@@ -4,7 +4,7 @@ defineProps<{ idPrefix: string; mobile?: boolean }>();
 
 <template>
   <div class="flex items-center justify-between gap-2">
-    <NuxtLink
+    <FastLink
       aria-label="NuxtBooks home"
       class="inline-flex items-center gap-2 text-base font-semibold tracking-tight"
       prefetch-on="visibility"
@@ -12,7 +12,7 @@ defineProps<{ idPrefix: string; mobile?: boolean }>();
     >
       <BookMark class="text-action size-5" />
       NuxtBooks
-    </NuxtLink>
+    </FastLink>
   </div>
 
   <div class="border-divider dark:border-divider-dark mt-6 border-b pb-5">

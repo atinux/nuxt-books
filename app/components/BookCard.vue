@@ -17,7 +17,7 @@ const href = computed(() => {
 </script>
 
 <template>
-  <AppFastLink
+  <FastLink
     class="focus-visible:ring-action focus-visible:ring-offset-surface dark:focus-visible:ring-offset-surface-dark group relative block rounded-md transition-transform duration-200 ease-out hover:z-10 hover:scale-[1.04] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     :prefetch-on="eagerPrefetch ? 'visibility' : 'interaction'"
     :to="href"
@@ -31,5 +31,5 @@ const href = computed(() => {
       :title="book.title"
     />
     <span class="sr-only">{{ book.title }}</span>
-  </AppFastLink>
+  </FastLink>
 </template>

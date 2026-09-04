@@ -2,22 +2,14 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-01',
-  colorMode: {
-    classSuffix: '',
-    dataValue: 'theme',
-    disableTransition: true,
-    fallback: 'light',
-    preference: 'system',
-    storage: 'localStorage',
-    storageKey: 'nuxt-color-mode',
-  },
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
-  experimental: {
-    payloadExtraction: 'client',
-  },
   future: {
     compatibilityVersion: 5,
+  },
+  experimental: {
+    // https://nuxt.com/blog/v4-5#%EF%B8%8F-forwarded-preload-hints-on-prefetch
+    prefetchPreloadTags: true,
   },
   image: {
     domains: ['images.gr-assets.com', 's.gr-assets.com'],
@@ -28,39 +20,18 @@ export default defineNuxtConfig({
     future: {
       nativeSWR: true,
     },
-    storage: process.env.VERCEL
-      ? {
-          cache: {
-            base: 'nuxt-books:v1',
-            driver: 'vercel-runtime-cache',
-          },
-        }
-      : {},
+    storage: {
+      cache: {
+        base: 'nuxt-books:v1',
+        driver: process.env.VERCEL ? 'vercel-runtime-cache' : 'memory',
+      },
+    }
   },
   // Nuxt requires a cache route rule to generate runtime _payload.json routes.
   routeRules: {
-    '/**': { cache: { headersOnly: true, maxAge: 300 } },
+    '/**': { cache: { headersOnly: true, maxAge: 3600 } },
     '/api/**': { cache: false },
   },
-  // routeRules: {
-  //   '/': { isr: 3600 },
-  //   '/**': { isr: 3600 },
-  //   '/api/books': {
-  //     isr: {
-  //       expiration: 3600,
-  //       allowQuery: ['language', 'list', 'page', 'pages', 'rating', 'search', 'year'],
-  //       passQuery: true,
-  //     },
-  //   },
-  //   '/api/books/count': {
-  //     isr: {
-  //       expiration: 3600,
-  //       allowQuery: ['language', 'list', 'pages', 'rating', 'search', 'year'],
-  //       passQuery: true,
-  //     },
-  //   },
-  //   '/api/books/**': { isr: true },
-  // },
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
     public: {

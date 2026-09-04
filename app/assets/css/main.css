@@ -19,8 +19,7 @@
   --color-accent: #2563eb;
   --color-accent-hover: #1d4ed8;
   --color-accent-fade: #2563eb22;
-  --color-action: #2563eb;
-  --color-action-hover: #1d4ed8;
+  --color-action: #00DC82;
 
   --color-success: #0fa958;
   --color-danger: #e54848;
@@ -46,8 +45,7 @@
   --color-accent: #3b82f6;
   --color-accent-hover: #2563eb;
   --color-accent-fade: #3b82f622;
-  --color-action: #3b82f6;
-  --color-action-hover: #2563eb;
+  --color-action: #00DC82;
 }
 
 @layer base {
